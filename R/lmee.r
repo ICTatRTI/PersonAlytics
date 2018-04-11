@@ -18,8 +18,7 @@
 
 lmee <- function(fixed, data, random, correlation = NULL, method = "REML", ...)
 {
-  library(nlme)
-  m1 <- try(lme(fixed=fixed,
+  m1 <- try(nlme::lme(fixed=fixed,
                 data=data,
                 random=random,
                 correlation=correlation,
@@ -30,8 +29,8 @@ lmee <- function(fixed, data, random, correlation = NULL, method = "REML", ...)
 
   if( 'try-error'%in%class(m1) | !eds(m1) )
   {
-    ctrl <- lmeControl(opt='optim')
-    m1 <- try(lme(fixed=fixed,
+    ctrl <- nlme::lmeControl(opt='optim')
+    m1 <- try(nlme::lme(fixed=fixed,
                   data=data,
                   random=random,
                   correlation=correlation,

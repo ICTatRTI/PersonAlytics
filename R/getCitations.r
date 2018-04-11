@@ -17,8 +17,8 @@ getCitations <- function(load=FALSE)
     RColorBrewer = "RColorBrewer" ,
     Rmisc        = "Rmisc"        ,
     Hmisc        = "Hmisc"        ,
-    mgcv         = "mgcv"         ,
-    R6           = "R6")
+    mgcv         = "mgcv"
+    )
   if(load)
   {
     new.packages <- packages[!(packages %in% installed.packages()[,"Package"])]
