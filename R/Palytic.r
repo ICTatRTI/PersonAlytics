@@ -11,35 +11,41 @@ source('./r/eds.r')
 Palytic <- R6::R6Class("Palytic",
              public = list
              (
-                       errors = list(),
-                       warnings = list(),
-                       data = NULL, # consider pass by reference environment
-                       fixed = NULL,
-                       random = NULL,
-                       time_power = 1,
-                       ar_order   = 1,
-                       nlme0 = NULL,
-                       method = "ML",
-                       family = NO(),
+                       errors     = NULL,
+                       warnings   = NULL,
+                       data       = NULL, # consider pass by reference environment
+                       fixed      = NULL,
+                       random     = NULL,
+                       time_power = NULL,
+                       ar_order   = NULL,
+                       nlme0      = NULL,
+                       method     = NULL,
+                       family     = NULL,
+                       TrySilent  = NULL,
 
-                       initialize = function(errors = list(),
-                                             warnings = list(),
-                                             data = NULL,
-                                             fixed = NULL,
-                                             random = NULL,
+                       initialize = function(errors     = list(),
+                                             warnings   = list(),
+                                             data       = NULL,
+                                             fixed      = NULL,
+                                             random     = NULL,
                                              time_power = 1,
-                                             ar_order = 1,
-                                             nlme0 = NULL,
-                                             method = "ML")
+                                             ar_order   = 1,
+                                             nlme0      = NULL,
+                                             method     = "ML",
+                                             family     = NO(),
+                                             TrySilent  = TRUE)
                        {
-                         self$errors = errors
-                         self$warnings = warnings
-                         self$data = data
-                         self$fixed = fixed
-                         self$random = random
+                         self$errors     = errors
+                         self$warnings   = warnings
+                         self$data       = data
+                         self$fixed      = fixed
+                         self$random     = random
                          self$time_power = time_power
-                         self$ar_order = ar_order
-                         self$nlme0 = nlme0
+                         self$ar_order   = ar_order
+                         self$nlme0      = nlme0
+                         self$method     = method
+                         self$family     = family
+                         self$TrySilent  = TrySilent
                        } # eof initialize
               ) # eof public
 )
@@ -55,7 +61,7 @@ Palytic$set("public", "lme",
                                   method=self$method,
                                   keep.data=FALSE,
                                   na.action=na.omit),
-                        silent = TRUE)
+                        silent = self$TrySilent)
 
               if( 'try-error' %in% class(m1) | !eds(m1) )
               {
@@ -68,7 +74,7 @@ Palytic$set("public", "lme",
                                     control=self$ctrl,
                                     keep.data=FALSE,
                                     na.action=na.omit),
-                          silent = TRUE)
+                          silent = self$TrySilent)
               }
               if( 'lme' %in% class(m1) )
               {
@@ -103,10 +109,11 @@ Palytic$set("public", "gamlss",
               # 2. if the former, missing data treatment needs to be augmented,
               #    e.g., you could add a function to pre-treat the data based
               #    on variables in the analysis
-              m1 <- try(gamlss(formula = frm,
-                               data    = na.omit(self$data),
+
+              m1 <- try(gamlss::gamlss(formula = frm,
+                               data    = self$data,
                                family  = self$family),
-                        silent = TRUE)
+                      silent = self$TrySilent)
 
               if('gamlss' %in% class(m1))
               {
@@ -131,16 +138,15 @@ Ovary$Phase <- as.numeric(Ovary$Time > .5)
 Ovary$TimeSin <- sin(2*pi*Ovary$Time)
 
 # check with debug
-Palytic$debug("lme")
-t1 <- Palytic$new(data=Ovary, fixed = formula("follicles ~ TimeSin*Phase"),
-                  random = formula(" ~ TimeSin | Mare"))
-t1$lme()
-t1$gamlss()
-
+#Palytic$debug("lme")
+#Palytic$debug("gamlss")
 # check without debug, require reinitializing object
-Palytic$undebug("lme")
+#Palytic$undebug("lme")
+#Palytic$undebug("gamlss")
+
 t1 <- Palytic$new(data=Ovary, fixed = formula("follicles ~ TimeSin*Phase"),
-                  random = formula(" ~ TimeSin | Mare"))
+                  random = formula(" ~ TimeSin | Mare"), TrySilent=FALSE)
+t1$gamlss()
 t1$lme()
 
 
