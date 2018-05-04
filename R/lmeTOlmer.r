@@ -10,3 +10,4 @@ lmeTOlmer <- function(lme.mod, data, method='REML')
   #warnings()
   return(lmer.mod)
 }
+
