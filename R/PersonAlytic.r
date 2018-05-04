@@ -3,11 +3,11 @@
 #'
 
 PersonAlytic <- function(data=NULL,
-                         id,
+                         ids,
                          dvs,
                          phase,
                          time,
-                         cvs=NULL,
+                         ivs=NULL,
                          ind.mods=TRUE,
                          grp.mod =FALSE)
 {
@@ -20,18 +20,23 @@ PersonAlytic <- function(data=NULL,
     data$TimeSin <- sin(2*pi*data$Time)
     dvs    <- 'follicles'
     phase  <- 'Phase'
-    id     <- 'Mare'
+    ids     <- 'Mare'
     time   <- 'TimeSin'
   }
 
-  # unique ids
-  uid <- unique(data[[id]])
+  # unique idss
+  uids <- unique(data[[ids]])
 
   # dimensions for loops
-  P <- 1:length(uid)
-  C <- 1:length(cvs); if(is.null(cvs)) C <- cvs
-  D <- 1:length(dvs)
+  ID <- 1:length(uid)
+  IV <- 1:length(ivs); if(is.null(ivs)) IV <- 1
+  DV <- 1:length(dvs)
 
+  dims <- list(ID=ID, IV=IV, DV=DV)
 
+  if( any( lapply(dims, length) > 1) )
+  {
+    .htp()
+  }
 
 }

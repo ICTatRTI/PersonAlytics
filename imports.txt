@@ -12,5 +12,9 @@
         lattice (>= 0.20-35),
         pbkrtest (>= 0.4-7),
         survival (>= 2.41-3),
-        RColorBrewer (>= 1.1-2)
-        
+        RColorBrewer (>= 1.1-2),
+		snow (>= 0.4-2),
+		doSNOW (>= 1.0.14),
+		foreach (>= 1.4.3),
+		iterators (>= 1.0.8),
+        parallel
