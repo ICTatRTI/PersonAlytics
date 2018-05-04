@@ -52,10 +52,11 @@ Palytic <- R6::R6Class("Palytic",
 
 
 Palytic$set("public", "lme",
-            function()
+            function(w=NULL)
             {
+              if(is.null(w)) w <- 1:nrow(self$data)
               m1 <- try(nlme::lme(fixed=self$fixed,
-                                  data=self$data,
+                                  data=self$data[w,],
                                   random=self$random,
                                   correlation=self$correlation,
                                   method=self$method,
@@ -67,7 +68,7 @@ Palytic$set("public", "lme",
               {
                 ctrl <- nlme::lmeControl(opt='optim')
                 m1 <- try(nlme::lme(fixed=self$fixed,
-                                    data=self$data,
+                                    data=self$data[w,],
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
@@ -91,8 +92,13 @@ Palytic$set("public", "lme",
 )
 
 Palytic$set("public", "gamlss",
-            function()
+            function(w=NULL)
             {
+              if(is.null(w)) w <- 1:nrow(self$data)
+              # Note that there is no gamlss::re in frm, but there is
+              # gamlss::gamlss in the model fitting. I'm still trying to figure
+              # out why having the former causes a crash, while failing to have
+              # the latter also causes a crash, yet the discrepancy works
               frm <- paste(deparse(self$fixed),
                            '+ re(random = ',
                            deparse(self$random),
@@ -111,7 +117,7 @@ Palytic$set("public", "gamlss",
               #    on variables in the analysis
 
               m1 <- try(gamlss::gamlss(formula = frm,
-                               data    = self$data,
+                               data    = self$data[w,], # no missing data handling yet
                                family  = self$family),
                       silent = self$TrySilent)
 
@@ -148,6 +154,11 @@ t1 <- Palytic$new(data=Ovary, fixed = formula("follicles ~ TimeSin*Phase"),
                   random = formula(" ~ TimeSin | Mare"), TrySilent=FALSE)
 t1$gamlss()
 t1$lme()
+
+# single subject test
+w <- which(Ovary$Mare==1)
+t1$gamlss(w)
+t1$lme(w)
 
 
 
