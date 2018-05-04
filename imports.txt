@@ -1,4 +1,7 @@
-        mgcv (>= 1.8-23),
+        R6 (>= 2.2.2),
+		gamlss (>= 5.0-2),
+		nlme (>= 3.1-131),
+		mgcv (>= 1.8-23),
         Rmisc (>= 1.5),
         gridExtra (>= 2.2.1),
         Matrix (>= 1.2-12),
@@ -9,5 +12,5 @@
         lattice (>= 0.20-35),
         pbkrtest (>= 0.4-7),
         survival (>= 2.41-3),
-        RColorBrewer (>= 1.1-2),
-        lme4 (>= 1.1-13)
+        RColorBrewer (>= 1.1-2)
+        
