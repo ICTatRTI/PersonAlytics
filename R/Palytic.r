@@ -16,8 +16,8 @@ Palytic <- R6::R6Class("Palytic",
                        data       = NULL, # consider pass by reference environment
                        fixed      = NULL,
                        random     = NULL,
-                       time_power = NULL,
-                       ar_order   = NULL,
+                       time_power = NULL, # this implies it can be overridden
+                       ar_order   = NULL, # this implies it can be overridden
                        nlme0      = NULL,
                        method     = NULL,
                        family     = NULL,
@@ -91,6 +91,29 @@ Palytic$set("public", "lme",
             overwrite = TRUE
 )
 
+# this should only be applied to one participant at a time
+Palytic$set("public", "getAR.order",
+            function(w)
+            {
+              if(is.null(w)) stop('getAR.order() only works on 1 participant at a time')
+              frmToChar(self$fixed)
+              frmToChar(self$random)
+              forecast::auto.arima(y)
+
+
+            },
+            overwrite = TRUE)
+
+Palytic$set("public", "getTime.Order",
+            function()
+            {
+
+            },
+            overwrite = TRUE)
+
+
+### this needs to be expanded to include our list, e.g.,
+#   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
 Palytic$set("public", "gamlss",
             function(w=NULL)
             {

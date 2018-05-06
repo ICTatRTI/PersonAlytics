@@ -17,4 +17,5 @@
 		doSNOW (>= 1.0.14),
 		foreach (>= 1.4.3),
 		iterators (>= 1.0.8),
+		forecast (>= 8.2),
         parallel

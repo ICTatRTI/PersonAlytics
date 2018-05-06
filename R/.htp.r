@@ -33,7 +33,10 @@
       IDout <- foreach::foreach(id=dims$ID, .packages = pkgs) %dopar%
       {
         t1$gamlss( which(data[[ids]]==id) )
-        # post processing//do you want it hear? as a method for Palytic objects?
+        # post processing//do you want it here? as a method for Palytic objects?
+        # note that a method doesn't work (yet) b/c we're not saving the gamlss
+        # output the the object t1. We'll need to do this if we want to post-
+        # process on results from the gamlss object.
       }
       # post-estimation aggregation
       names(IDout) <- paste(ids, uid, sep='.')

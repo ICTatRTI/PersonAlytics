@@ -12,9 +12,10 @@ eds <- function(x)
 {
   exists( deparse( substitute(x) ) )
 }
-
-
-
+frmToChar <- function(x)
+{
+  as.character( attr(terms(x), "variables") )[-1L]
+}
 catt <- function(text)
 {
   cat(text, file='model.txt', append=TRUE)
