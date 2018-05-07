@@ -5,19 +5,138 @@
 #'
 #'
 
+# so we need to separate public and private parts. regardless of whether we
+# enscrypt parts of the code, we can use inheritance to separate free and
+# private parts of the Palytic class, e.g., define Palytic in the free
+# package, and in the paid package, update palytic through inheritance
+# http://www.orbifold.net/default/2015/04/24/r6-classes/
+
 library(gamlss) # the formula fails including gamlss::re
 source('./r/eds.r')
 
+
 Palytic <- R6::R6Class("Palytic",
+  private = list(
+    .data       = NULL, # consider pass by reference environment
+    .fixed      = NULL,
+    .random     = NULL,
+    .time_power = 1,
+    .ar_order   = 1,
+    .ma_order   = 0,
+    .family     = NO()
+  ),
+
+
+
+  # use active fields to do simple data validation
+  # https://adv-r.hadley.nz/r6
+  # (use and $validate() field for complex validation, do this for data)
+  active = list(
+    fixed = function(value)
+    {
+      if( missing(value) ){ private$.fixed }
+      else
+      {
+        stopifnot(is.formula(value))
+        private$.fixed <- value
+        self
+      }
+    },
+
+    random = function(value)
+    {
+      if( missing(value) ){ private$.random }
+      else
+      {
+        stopifnot(is.formula(value))
+        private$.random <- value
+        self
+      }
+    },
+
+    time_power = function(value)
+    {
+      if( missing(value) ){ private$.time_power }
+      else
+      {
+        stopifnot(is.numeric(value))
+        private$.time_power <- value
+        self
+      }
+    },
+
+    ar_order = function(value)
+    {
+      if( missing(value) ){ private$.ar_order }
+      else
+      {
+        stopifnot(is.numeric(value))
+        private$.ar_order <- value
+        self
+      }
+    },
+
+    ma_order = function(value)
+    {
+      if( missing(value) ){ private$.mr_order }
+      else
+      {
+        stopifnot(is.numeric(value))
+        private$.ma_order <- value
+        self
+      }
+    },
+
+    family = function(value)
+    {
+      if( missing(value) ){ private$.family }
+      else
+      {
+        stopifnot("gamlss.family" %in% class(value))
+        private$.family <- value
+        self
+      }
+    }
+  ),
+
+  public = list(
+    initialize = function
+    (
+      data       = NULL,
+      fixed      = NULL,
+      random     = NULL,
+      time_power = 1,
+      ar_order   = 1,
+      ma_order   = 0,
+      family     = gamlss.dist::NO()
+    )
+    {
+      private$.data       <- data
+      private$.fixed      <- fixed
+      private$.random     <- random
+      private$.time_power <- time_power
+      private$.ar_order   <- ar_order
+      private$.ma_order   <- ma_order
+      private$.family     <- family
+    }
+  )
+
+)
+
+t0 <- Palytic$new()
+t0$.fixed
+t0test <- Palytic$new(.fixed='juan')
+t0test$.fixed
+
+##### below this line should be migrated or depricated
+
+Palytic <- R6::R6Class("Palytic",
+
              public = list
              (
                        errors     = NULL,
                        warnings   = NULL,
-                       data       = NULL, # consider pass by reference environment
-                       fixed      = NULL,
-                       random     = NULL,
-                       time_power = NULL, # this implies it can be overridden
-                       ar_order   = NULL, # this implies it can be overridden
+
                        nlme0      = NULL,
                        method     = NULL,
                        family     = NULL,
@@ -91,33 +210,11 @@ Palytic$set("public", "lme",
             overwrite = TRUE
 )
 
-# this should only be applied to one participant at a time
-Palytic$set("public", "getAR.order",
-            function(w)
-            {
-              if(is.null(w)) stop('getAR.order() only works on 1 participant at a time')
-              frmToChar(self$fixed)
-              frmToChar(self$random)
-              forecast::auto.arima(y)
 
 
-            },
-            overwrite = TRUE)
-
-Palytic$set("public", "getTime.Order",
+Palytic$set("public", "gamlss_formula",
             function()
             {
-
-            },
-            overwrite = TRUE)
-
-
-### this needs to be expanded to include our list, e.g.,
-#   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
-Palytic$set("public", "gamlss",
-            function(w=NULL)
-            {
-              if(is.null(w)) w <- 1:nrow(self$data)
               # Note that there is no gamlss::re in frm, but there is
               # gamlss::gamlss in the model fitting. I'm still trying to figure
               # out why having the former causes a crash, while failing to have
@@ -131,6 +228,19 @@ Palytic$set("public", "gamlss",
                            deparse(self$correlation),
                            ')')
               frm <- formula(frm)
+              return(frm)
+            },
+            overwrite = TRUE
+)
+
+
+### this needs to be expanded to include our list, e.g.,
+#   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
+Palytic$set("public", "gamlss",
+            function(w=NULL)
+            {
+              if(is.null(w)) w <- 1:nrow(self$data)
+
 
               # I don't like having na.omit here, you need to test
               # 1. whether it does the whole data set (likely) or just the
@@ -160,6 +270,13 @@ Palytic$set("public", "gamlss",
             overwrite = TRUE
 )
 
+Palytic$set("public", "gamlssw",
+             function(w)
+             {
+               self$gamlss(w)
+             },
+             overwrite = TRUE
+)
 
 Ovary <- as.data.frame(nlme::Ovary)
 Ovary$Mare <- factor(Ovary$Mare, ordered = FALSE)
@@ -181,6 +298,7 @@ t1$lme()
 # single subject test
 w <- which(Ovary$Mare==1)
 t1$gamlss(w)
+t1$gamlssw(w)
 t1$lme(w)
 
 

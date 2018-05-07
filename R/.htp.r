@@ -2,6 +2,9 @@
 #'
 
 
+# the current state of using Palytic is to create one object for
+# loops across individuals, but overwrite the the Palytic object
+# for loops across dvs/ivs
 .htp <- function(data, dvs, phase, ids, uid, time, ivs, ivsl)
 {
   # parralelization
