@@ -1,3 +1,10 @@
+#'
+#'
+#'
+
+# When does it make sense to use active bindings?
+# - if you need to check the data each time the field is accessed
+# - e.g., yes for formula b/c it may get changed
 
 .active <- function()
 {
@@ -8,11 +15,7 @@
       if( missing(value) ){ private$.data }
       else
       {
-        stopifnot(is.data.frame(value) | is.matrix(value))
-        #stop("`$fixed` is read only", call. = FALSE)
-        print('jigglywiggly') # the data function in .active isn't invoked on data given at init
-        private$.data <- value
-        self
+        stop("`$data` is read only", call. = FALSE)
       }
     },
 

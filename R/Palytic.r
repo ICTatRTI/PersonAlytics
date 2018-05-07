@@ -48,6 +48,11 @@ Palytic <- R6::R6Class("Palytic",
       errors     = list()
     )
     {
+      # if we leave data as read only, it must me done here, otherwise
+      # active applies making it read only
+      if(! is.data.frame(data)) stop('data must be a data.frame')
+      data$timmy <- data[,1]^2
+
       private$.data       <- data
       private$.fixed      <- fixed
       private$.random     <- random
@@ -58,6 +63,15 @@ Palytic <- R6::R6Class("Palytic",
       private$.is_clean   <- FALSE
       private$.warnings   <- list() # can we not put this in public and still use them?
       private$.errors     <- list()
+
+      # move simple checks and/or 1 time checks
+      # I'm thinking we should make data immutable, you give it once
+      # then you can do a lot of things to it (active can check each new
+      # formula, especially in updates from .Palytic), but you don't change
+      # the data b/c there are expensive checks that should only be done once.
+      # Don't think of checking data for variables in the formula, check the
+      # formula for presence in the data.
+
     },
 
     # note that data cleaning won't happen if the data or formula are
@@ -66,21 +80,18 @@ Palytic <- R6::R6Class("Palytic",
     # here, commit and test
     clean = function()
     {
-
-      if( all( c(
-        (is.data.frame(self$data) | is.matrix(self$data)),
-        'formula' %in% class(self$fixed),
-        'formula' %in% class(self$random) ) ) )
-      {
         self$data     <- .clean(self$data, self$fixed, self$random)
         self$is_clean <- TRUE
-      }
-      else stop('Provide data, fixed, and random inputs')
     },
 
     test = function()
     {
       if( !self$is_clean ) self$clean()
+    },
+
+    hist = function()
+    {
+      hist(self$data[,1])
     }
 
   )
@@ -88,6 +99,9 @@ Palytic <- R6::R6Class("Palytic",
 )
 
 # active binding tests
+# https://cran.r-project.org/web/packages/R6/vignettes/Introduction.html#active-bindings
+# "Active bindings look like fields, but each time they are accessed,
+# they call a function. They are always publicly visible."
 t0 <- Palytic$new()
 t0$ar_order
 t0$ar_order <- 3
@@ -99,12 +113,24 @@ t0$fixed <- formula('follicles ~ TimeSin * Phase')
 t0$fixed
 rm(t0)
 
-
 # test active binding and clean function
 #Palytic$debug('clean')
 t0 <- Palytic$new()
-t0$clean()
+t0$hist() # this attempts to use self$data, but does access the data function
+t0$clean()# this fails b/c data is not the right value
+t0$is_clean
+
+t0 <- Palytic$new(data='bob') # active binging not invoked, apparent the field isn't being 'accesssed'
+t0$hist() # nor here, it fails b/c it is the wrong type of data, not b/c check was invoked
+
+t0$data <- 'bob'
+t0$hist()
+
 t0$data <- matrix(rnorm(300), ncol=3) # this invokes the active binding test
+t0 <- Palytic$new(data = data.frame(matrix(rnorm(300), ncol=3))) # this invokes the active binding test
+t0$hist()
+t0$clean()
+t0$is_clean
 t0 <- Palytic$new(data=Ovary, fixed = formula("follicles ~ TimeSin*Phase"),
                   random = formula(" ~ TimeSin | Mare")) # this does not invoke active binding
 t0$clean() # this invokes the active binding test
