@@ -31,13 +31,20 @@ Palytic <- R6::R6Class("Palytic",
   # use active fields to do simple data validation
   # https://adv-r.hadley.nz/r6
   # (use and $validate() field for complex validation, do this for data)
+  #
+  # at one point I made formula read only, but it makes more sense for the
+  # object to have the formula change able, eg in loops. Also, for public
+  # users it will be usefull to change out the data with everything else
+  # the same, e.g., set up the analysis once, save the R workspace and
+  # change the data for update.
   active = list(
     fixed = function(value)
     {
       if( missing(value) ){ private$.fixed }
       else
       {
-        stopifnot(is.formula(value))
+        stopifnot("formula" %in% class(value))
+        #stop("`$fixed` is read only", call. = FALSE)
         private$.fixed <- value
         self
       }
@@ -48,7 +55,8 @@ Palytic <- R6::R6Class("Palytic",
       if( missing(value) ){ private$.random }
       else
       {
-        stopifnot(is.formula(value))
+        stopifnot("formula" %in% class(value))
+        #stop("`$random` is read only", call. = FALSE)
         private$.random <- value
         self
       }
@@ -124,9 +132,14 @@ Palytic <- R6::R6Class("Palytic",
 )
 
 t0 <- Palytic$new()
-t0$.fixed
-t0test <- Palytic$new(.fixed='juan')
-t0test$.fixed
+t0$ar_order
+t0$ar_order <- 3
+t0$ar_order
+t0$ar_order <- 'test' # fails
+t0$fixed
+t0$fixed <- 'test'
+t0$fixed <- formula('follicles ~ TimeSin * Phase')
+t0$fixed
 
 ##### below this line should be migrated or depricated
 
