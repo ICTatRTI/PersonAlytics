@@ -23,21 +23,28 @@ Palytic <- R6::R6Class("Palytic",
     .time_power = 1,
     .ar_order   = 1,
     .ma_order   = 0,
-    .family     = NO()
+    .family     = NO(),
+    .is_clean   = FALSE
   ),
 
-
-
-  # use active fields to do simple data validation
-  # https://adv-r.hadley.nz/r6
-  # (use and $validate() field for complex validation, do this for data)
-  #
   # at one point I made formula read only, but it makes more sense for the
   # object to have the formula change able, eg in loops. Also, for public
   # users it will be usefull to change out the data with everything else
   # the same, e.g., set up the analysis once, save the R workspace and
   # change the data for update.
   active = list(
+    data = function(value)
+    {
+      if( missing(value) ){ private$.fixed }
+      else
+      {
+        stopifnot(c("matrix", "data.frame") %in% class(value))
+        #stop("`$fixed` is read only", call. = FALSE)
+        private$.data <- value
+        self
+      }
+    },
+
     fixed = function(value)
     {
       if( missing(value) ){ private$.fixed }
@@ -104,8 +111,20 @@ Palytic <- R6::R6Class("Palytic",
         private$.family <- value
         self
       }
+    },
+
+    is_clean = function(value)
+    {
+      if( missing(value) ){ private$.is_clean }
+      else
+      {
+        stopifnot("logical" %in% class(value))
+        private$.is_clean <- value
+        self
+      }
     }
   ),
+
 
   public = list(
     initialize = function
@@ -116,7 +135,8 @@ Palytic <- R6::R6Class("Palytic",
       time_power = 1,
       ar_order   = 1,
       ma_order   = 0,
-      family     = gamlss.dist::NO()
+      family     = gamlss.dist::NO(),
+      is_clean   = FALSE
     )
     {
       private$.data       <- data
@@ -126,7 +146,22 @@ Palytic <- R6::R6Class("Palytic",
       private$.ar_order   <- ar_order
       private$.ma_order   <- ma_order
       private$.family     <- family
+      private$.is_clean   <- FALSE
+    },
+
+    clean = function()
+    {
+      if( all( c(
+        c('data.frame', 'matrix') %in% class(private$data),
+        'formula' %in% class(private$fixed),
+        'formula' %in% class(private$random) ) ) )
+      {
+        private$data     <- .clean(private$data, private$fixed, private$random)
+        private$is_clean <- TRUE
+      }
+      else stop('Provide data, fixed, and random inputs')
     }
+
   )
 
 )
