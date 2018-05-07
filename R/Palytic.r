@@ -20,12 +20,15 @@ source('./r/.active.r')
 Palytic <- R6::R6Class("Palytic",
   private = list(
     .data       = NULL, # consider pass by reference environment
-    .fixed      = NULL,
-    .random     = NULL,
+
+    .y          = NULL,
+    .phase      = NULL,
+    .time       = NULL,
+    .ivs        = NULL,
     .time_power = 1,
     .ar_order   = 1,
     .ma_order   = 0,
-    .family     = NO(),
+    .family     = NULL,
     .is_clean   = FALSE,
     .warnings   = list(),
     .errors     = list()
@@ -37,8 +40,10 @@ Palytic <- R6::R6Class("Palytic",
     initialize = function
     (
       data       = NULL,
-      fixed      = NULL,
-      random     = NULL,
+      y          = NULL,
+      phase      = NULL,
+      time       = NULL,
+      ivs        = NULL,
       time_power = 1,
       ar_order   = 1,
       ma_order   = 0,
@@ -50,27 +55,23 @@ Palytic <- R6::R6Class("Palytic",
     {
       # if we leave data as read only, it must me done here, otherwise
       # active applies making it read only
-      if(! is.data.frame(data)) stop('data must be a data.frame')
-      data$timmy <- data[,1]^2
+      #if(! is.data.frame(data)) stop('data must be a data.frame')
+      #data$timmy <- data[,1]^2
 
       private$.data       <- data
-      private$.fixed      <- fixed
-      private$.random     <- random
+
+      private$.y          <- y
+      private$.phase      <- phase
+      private$.time       <- time
+      private$.ivs        <- ivs
       private$.time_power <- time_power
       private$.ar_order   <- ar_order
       private$.ma_order   <- ma_order
       private$.family     <- family
-      private$.is_clean   <- FALSE
-      private$.warnings   <- list() # can we not put this in public and still use them?
-      private$.errors     <- list()
 
-      # move simple checks and/or 1 time checks
-      # I'm thinking we should make data immutable, you give it once
-      # then you can do a lot of things to it (active can check each new
-      # formula, especially in updates from .Palytic), but you don't change
-      # the data b/c there are expensive checks that should only be done once.
-      # Don't think of checking data for variables in the formula, check the
-      # formula for presence in the data.
+      private$.is_clean   <- is_clean
+      private$.warnings   <- warnings
+      private$.errors     <- errors
 
     },
 
@@ -97,6 +98,26 @@ Palytic <- R6::R6Class("Palytic",
   )
 
 )
+
+
+Ovary <- as.data.frame(nlme::Ovary)
+Ovary$Mare <- factor(Ovary$Mare, ordered = FALSE)
+Ovary$Phase <- as.numeric(Ovary$Time > .5)
+Ovary$TimeSin <- sin(2*pi*Ovary$Time)
+
+t0 <- Palytic$new(data=Ovary,
+                  y='follicles',
+                  phase = 'Phase',
+                  time = 'TimeSin')
+head(t0$data)
+t0$y
+t0$y <- 1
+t0$y <- 'frogs'
+t0$y
+t0$ivs
+t0$ivs <- c(t0$y, t0$phase)
+t0$ivs <- c(t0$y, t0$phase, 'jimmy')
+t0$ivs <- c(t0$y, t0$phase, 'jimmy', 'phillys')
 
 # active binding tests
 # https://cran.r-project.org/web/packages/R6/vignettes/Introduction.html#active-bindings
@@ -287,10 +308,7 @@ Palytic$set("public", "gamlssw",
              overwrite = TRUE
 )
 
-Ovary <- as.data.frame(nlme::Ovary)
-Ovary$Mare <- factor(Ovary$Mare, ordered = FALSE)
-Ovary$Phase <- as.numeric(Ovary$Time > .5)
-Ovary$TimeSin <- sin(2*pi*Ovary$Time)
+
 
 # check with debug
 #Palytic$debug("lme")

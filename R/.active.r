@@ -19,26 +19,79 @@
       }
     },
 
-    fixed = function(value)
+    y = function(value)
     {
-      if( missing(value) ){ private$.fixed }
+      if( missing(value) ) private$.y
       else
       {
-        stopifnot("formula" %in% class(value))
-        #stop("`$fixed` is read only", call. = FALSE)
-        private$.fixed <- value
+        if(! is.character(value) )
+        {
+          stop('y must be a character variable name in data')
+        }
+        if( is.null(private$.data[[value]]) )
+        {
+          stop( paste(value, 'is not in the data') )
+        }
+        private$.y <- value
         self
       }
     },
 
-    random = function(value)
+    phase = function(value)
     {
-      if( missing(value) ){ private$.random }
+      if( missing(value) ) private$.phase
       else
       {
-        stopifnot("formula" %in% class(value))
-        #stop("`$random` is read only", call. = FALSE)
-        private$.random <- value
+        if(! is.character(value) )
+        {
+          stop('phase must be a character variable name in the data')
+        }
+        if( is.null(private$.data[[value]]) )
+        {
+          stop( paste(value, 'is not in the data') )
+        }
+        private$.phase <- value
+        self
+      }
+    },
+
+    time = function(value)
+    {
+      if( missing(value) ) private$.time
+      else
+      {
+        if(! is.character(value) )
+        {
+          stop('time must be a character variable name in the data')
+        }
+        if( is.null(private$.data[[value]]) )
+        {
+          stop( paste(value, 'is not in the data') )
+        }
+        private$.time <- value
+        self
+      }
+    },
+
+    ivs = function(value)
+    {
+      if( missing(value) ) private$.ivs
+      else
+      {
+        if(! is.character(value) )
+        {
+          stop('ivs must be a character vector of variables in the data')
+        }
+        if( ! all(value %in% names(private$.data) ) )
+        {
+          nov <- value[ which(! value %in% names(private$.data )) ]
+          if(length(nov)==1) stop( paste(nov, 'is not in the data') )
+          if(length(nov)>=2)
+          {
+            stop( paste(paste(nov, collapse=', '), 'are not in the data') )
+          }
+        }
+        private$.ivs <- value
         self
       }
     },
@@ -48,7 +101,11 @@
       if( missing(value) ){ private$.time_power }
       else
       {
-        stopifnot(is.numeric(value))
+        if(! is.numeric(value) ) stop('time_power must be numeric')
+        if( round(value, 0) != value | vaue < 1 )
+        {
+          stop('time_power must be a positive whole number')
+        }
         private$.time_power <- value
         self
       }
@@ -59,7 +116,11 @@
       if( missing(value) ){ private$.ar_order }
       else
       {
-        stopifnot(is.numeric(value))
+        if(! is.numeric(value) ) stop('ar_order must be numeric')
+        if( round(value, 0) != value | vaue < 0 )
+        {
+          stop('ar_order must be a positive whole number or 0')
+        }
         private$.ar_order <- value
         self
       }
@@ -70,7 +131,11 @@
       if( missing(value) ){ private$.mr_order }
       else
       {
-        stopifnot(is.numeric(value))
+        if(! is.numeric(value) ) stop('ma_order must be numeric')
+        if( round(value, 0) != value | vaue < 0 )
+        {
+          stop('ma_order must be a positive whole number or 0')
+        }
         private$.ma_order <- value
         self
       }
