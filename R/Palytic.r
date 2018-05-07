@@ -13,6 +13,8 @@
 
 library(gamlss) # the formula fails including gamlss::re
 source('./r/eds.r')
+source('./r/.clean.r')
+source('./r/.active.r')
 
 
 Palytic <- R6::R6Class("Palytic",
@@ -24,107 +26,12 @@ Palytic <- R6::R6Class("Palytic",
     .ar_order   = 1,
     .ma_order   = 0,
     .family     = NO(),
-    .is_clean   = FALSE
+    .is_clean   = FALSE,
+    .warnings   = list(),
+    .errors     = list()
   ),
 
-  # at one point I made formula read only, but it makes more sense for the
-  # object to have the formula change able, eg in loops. Also, for public
-  # users it will be usefull to change out the data with everything else
-  # the same, e.g., set up the analysis once, save the R workspace and
-  # change the data for update.
-  active = list(
-    data = function(value)
-    {
-      if( missing(value) ){ private$.fixed }
-      else
-      {
-        stopifnot(c("matrix", "data.frame") %in% class(value))
-        #stop("`$fixed` is read only", call. = FALSE)
-        private$.data <- value
-        self
-      }
-    },
-
-    fixed = function(value)
-    {
-      if( missing(value) ){ private$.fixed }
-      else
-      {
-        stopifnot("formula" %in% class(value))
-        #stop("`$fixed` is read only", call. = FALSE)
-        private$.fixed <- value
-        self
-      }
-    },
-
-    random = function(value)
-    {
-      if( missing(value) ){ private$.random }
-      else
-      {
-        stopifnot("formula" %in% class(value))
-        #stop("`$random` is read only", call. = FALSE)
-        private$.random <- value
-        self
-      }
-    },
-
-    time_power = function(value)
-    {
-      if( missing(value) ){ private$.time_power }
-      else
-      {
-        stopifnot(is.numeric(value))
-        private$.time_power <- value
-        self
-      }
-    },
-
-    ar_order = function(value)
-    {
-      if( missing(value) ){ private$.ar_order }
-      else
-      {
-        stopifnot(is.numeric(value))
-        private$.ar_order <- value
-        self
-      }
-    },
-
-    ma_order = function(value)
-    {
-      if( missing(value) ){ private$.mr_order }
-      else
-      {
-        stopifnot(is.numeric(value))
-        private$.ma_order <- value
-        self
-      }
-    },
-
-    family = function(value)
-    {
-      if( missing(value) ){ private$.family }
-      else
-      {
-        stopifnot("gamlss.family" %in% class(value))
-        private$.family <- value
-        self
-      }
-    },
-
-    is_clean = function(value)
-    {
-      if( missing(value) ){ private$.is_clean }
-      else
-      {
-        stopifnot("logical" %in% class(value))
-        private$.is_clean <- value
-        self
-      }
-    }
-  ),
-
+  active = .active(),
 
   public = list(
     initialize = function
@@ -136,7 +43,9 @@ Palytic <- R6::R6Class("Palytic",
       ar_order   = 1,
       ma_order   = 0,
       family     = gamlss.dist::NO(),
-      is_clean   = FALSE
+      is_clean   = FALSE,
+      warnings   = list(),
+      errors     = list()
     )
     {
       private$.data       <- data
@@ -147,34 +56,60 @@ Palytic <- R6::R6Class("Palytic",
       private$.ma_order   <- ma_order
       private$.family     <- family
       private$.is_clean   <- FALSE
+      private$.warnings   <- list() # can we not put this in public and still use them?
+      private$.errors     <- list()
     },
 
+    # note that data cleaning won't happen if the data or formula are
+    # overwritten, can we dispatch a method whenever something gets changed?
+    # it looks like active binding invokes it's checks, so we don't need them
+    # here, commit and test
     clean = function()
     {
+
       if( all( c(
-        c('data.frame', 'matrix') %in% class(private$data),
-        'formula' %in% class(private$fixed),
-        'formula' %in% class(private$random) ) ) )
+        (is.data.frame(self$data) | is.matrix(self$data)),
+        'formula' %in% class(self$fixed),
+        'formula' %in% class(self$random) ) ) )
       {
-        private$data     <- .clean(private$data, private$fixed, private$random)
-        private$is_clean <- TRUE
+        self$data     <- .clean(self$data, self$fixed, self$random)
+        self$is_clean <- TRUE
       }
       else stop('Provide data, fixed, and random inputs')
+    },
+
+    test = function()
+    {
+      if( !self$is_clean ) self$clean()
     }
 
   )
 
 )
 
+# active binding tests
 t0 <- Palytic$new()
 t0$ar_order
 t0$ar_order <- 3
 t0$ar_order
-t0$ar_order <- 'test' # fails
+t0$ar_order <- 'test' # error as it should be
 t0$fixed
-t0$fixed <- 'test'
+t0$fixed <- 'test' # error as it should be
 t0$fixed <- formula('follicles ~ TimeSin * Phase')
 t0$fixed
+rm(t0)
+
+
+# test active binding and clean function
+#Palytic$debug('clean')
+t0 <- Palytic$new()
+t0$clean()
+t0$data <- matrix(rnorm(300), ncol=3) # this invokes the active binding test
+t0 <- Palytic$new(data=Ovary, fixed = formula("follicles ~ TimeSin*Phase"),
+                  random = formula(" ~ TimeSin | Mare")) # this does not invoke active binding
+t0$clean() # this invokes the active binding test
+t0$test() # but this does not
+
 
 ##### below this line should be migrated or depricated
 
