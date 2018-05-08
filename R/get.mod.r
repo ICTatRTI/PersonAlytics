@@ -9,5 +9,5 @@ get.mod <- function(mod)
     correlation=correlation
   )
   ### put warnings not captured by lmee in log
-  #pact.err(warnings(), save_model, 'get.mod()')
+  #pact.err(warnings(), save_model, "get.mod()")
 }

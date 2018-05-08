@@ -27,9 +27,9 @@ lmee <- function(fixed, data, random, correlation = NULL, method = "REML", ...)
                 na.action=na.omit,
                 ...), silent = TRUE)
 
-  if( 'try-error'%in%class(m1) | !eds(m1) )
+  if( "try-error"%in%class(m1) | !eds(m1) )
   {
-    ctrl <- nlme::lmeControl(opt='optim')
+    ctrl <- nlme::lmeControl(opt="optim")
     m1 <- try(nlme::lme(fixed=fixed,
                   data=data,
                   random=random,
@@ -40,7 +40,7 @@ lmee <- function(fixed, data, random, correlation = NULL, method = "REML", ...)
                   na.action=na.omit,
                   ...), silent = TRUE)
   }
-  if( 'lme'%in%class(m1) )
+  if( "lme"%in%class(m1) )
   {
     m1$call$fixed <- fixed
     m1$call$random <- random
@@ -48,7 +48,7 @@ lmee <- function(fixed, data, random, correlation = NULL, method = "REML", ...)
   }
   else
   {
-    return('Model did not converge')
+    return("Model did not converge")
   }
 }
 

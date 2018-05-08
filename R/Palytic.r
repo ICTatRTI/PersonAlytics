@@ -11,27 +11,31 @@
 # package, and in the paid package, update palytic through inheritance
 # http://www.orbifold.net/default/2015/04/24/r6-classes/
 
-library(gamlss) # the formula fails including gamlss::re
-source('./r/eds.r')
-source('./r/.clean.r')
-source('./r/.active.r')
+#library(gamlss) # the formula fails including gamlss::re
+source("./r/eds.r")
+source("./r/.clean.r")
+source("./r/.active.r")
 
 
 Palytic <- R6::R6Class("Palytic",
   private = list(
     .data       = NULL, # consider pass by reference environment
-
+    .ids        = NULL,
     .y          = NULL,
     .phase      = NULL,
     .time       = NULL,
     .ivs        = NULL,
     .time_power = 1,
-    .ar_order   = 1,
-    .ma_order   = 0,
+    .correlation= NULL,
     .family     = NULL,
+    .fixed      = NULL,
+    .random     = NULL,
+    .formula    = NULL,
+    .method     = NULL,
     .is_clean   = FALSE,
     .warnings   = list(),
-    .errors     = list()
+    .errors     = list(),
+    .try_silent = TRUE
   ),
 
   active = .active(),
@@ -39,60 +43,71 @@ Palytic <- R6::R6Class("Palytic",
   public = list(
     initialize = function
     (
-      data       = NULL,
-      y          = NULL,
-      phase      = NULL,
-      time       = NULL,
-      ivs        = NULL,
-      time_power = 1,
-      ar_order   = 1,
-      ma_order   = 0,
-      family     = gamlss.dist::NO(),
-      is_clean   = FALSE,
-      warnings   = list(),
-      errors     = list()
+      data        = NULL,
+      ids         = NULL,
+      y           = NULL,
+      phase       = NULL,
+      time        = NULL,
+      ivs         = NULL,
+      time_power  = 1,
+      correlation = NULL,
+      family      = gamlss.dist::NO(),
+      fixed       = NULL,
+      random      = NULL,
+      formula     = NULL,
+      method      = "ML",
+      is_clean    = FALSE,
+      warnings    = list(), # can we hide these? or just make them read only?
+      errors      = list(),
+      try_silent = TRUE
     )
     {
+      if(is.null(fixed)) fixed <- formula( paste(y, "~", phase, "*", time) )
+      if(is.null(random)) random <- formula( paste("~", time, "|", ids))
+      if(is.null(formula))
+      {
+        formula <- formula( paste(deparse(fixed),
+                     "+ re(random = ",
+                     #"+ gamlss::re(random = ", # produces error, require(gamlss)
+                     deparse(random),
+                     ", method=",
+                     deparse(method),
+                     ", correlation =",
+                     deparse(correlation),
+                     ")")
+                    )
+      }
+
+      # may need to add a check whether fixed, random, and formula conform,
+      # e.g., if a user provides a formula not implied by y, phase, time, ids
+      # but does not provide fixed and random
+
+
       # if we leave data as read only, it must me done here, otherwise
       # active applies making it read only
-      #if(! is.data.frame(data)) stop('data must be a data.frame')
+      #  -- na.omit should be applied here in some way
+      #if(! is.data.frame(data)) stop("data must be a data.frame")
       #data$timmy <- data[,1]^2
 
-      private$.data       <- data
+      private$.data        <- data # add data cleaning, if any,here (e.g. phase.align)
 
-      private$.y          <- y
-      private$.phase      <- phase
-      private$.time       <- time
-      private$.ivs        <- ivs
-      private$.time_power <- time_power
-      private$.ar_order   <- ar_order
-      private$.ma_order   <- ma_order
-      private$.family     <- family
+      private$.ids         <- ids
+      private$.y           <- y
+      private$.phase       <- phase
+      private$.time        <- time
+      private$.ivs         <- ivs
+      private$.time_power  <- time_power
+      private$.correlation <- correlation
+      private$.family      <- family
+      private$.fixed       <- fixed
+      private$.random      <- random
+      private$.formula     <- formula
+      private$.method      <- method
+      private$.is_clean    <- is_clean
+      private$.warnings    <- warnings
+      private$.errors      <- errors
+      private$.try_silent  <- TRUE
 
-      private$.is_clean   <- is_clean
-      private$.warnings   <- warnings
-      private$.errors     <- errors
-
-    },
-
-    # note that data cleaning won't happen if the data or formula are
-    # overwritten, can we dispatch a method whenever something gets changed?
-    # it looks like active binding invokes it's checks, so we don't need them
-    # here, commit and test
-    clean = function()
-    {
-        self$data     <- .clean(self$data, self$fixed, self$random)
-        self$is_clean <- TRUE
-    },
-
-    test = function()
-    {
-      if( !self$is_clean ) self$clean()
-    },
-
-    hist = function()
-    {
-      hist(self$data[,1])
     }
 
   )
@@ -105,101 +120,14 @@ Ovary$Mare <- factor(Ovary$Mare, ordered = FALSE)
 Ovary$Phase <- as.numeric(Ovary$Time > .5)
 Ovary$TimeSin <- sin(2*pi*Ovary$Time)
 
-t0 <- Palytic$new(data=Ovary,
-                  y='follicles',
-                  phase = 'Phase',
-                  time = 'TimeSin')
-head(t0$data)
-t0$y
-t0$y <- 1
-t0$y <- 'frogs'
-t0$y
-t0$ivs
-t0$ivs <- c(t0$y, t0$phase)
-t0$ivs <- c(t0$y, t0$phase, 'jimmy')
-t0$ivs <- c(t0$y, t0$phase, 'jimmy', 'phillys')
-
-# active binding tests
-# https://cran.r-project.org/web/packages/R6/vignettes/Introduction.html#active-bindings
-# "Active bindings look like fields, but each time they are accessed,
-# they call a function. They are always publicly visible."
-t0 <- Palytic$new()
-t0$ar_order
-t0$ar_order <- 3
-t0$ar_order
-t0$ar_order <- 'test' # error as it should be
+t0 <- Palytic$new(data=Ovary, ids="Mare", y="follicles", phase="Phase",
+                  time="TimeSin")
 t0$fixed
-t0$fixed <- 'test' # error as it should be
-t0$fixed <- formula('follicles ~ TimeSin * Phase')
-t0$fixed
-rm(t0)
+t0$random
+t0$formula
+t0$method
 
-# test active binding and clean function
-#Palytic$debug('clean')
-t0 <- Palytic$new()
-t0$hist() # this attempts to use self$data, but does access the data function
-t0$clean()# this fails b/c data is not the right value
-t0$is_clean
-
-t0 <- Palytic$new(data='bob') # active binging not invoked, apparent the field isn't being 'accesssed'
-t0$hist() # nor here, it fails b/c it is the wrong type of data, not b/c check was invoked
-
-t0$data <- 'bob'
-t0$hist()
-
-t0$data <- matrix(rnorm(300), ncol=3) # this invokes the active binding test
-t0 <- Palytic$new(data = data.frame(matrix(rnorm(300), ncol=3))) # this invokes the active binding test
-t0$hist()
-t0$clean()
-t0$is_clean
-t0 <- Palytic$new(data=Ovary, fixed = formula("follicles ~ TimeSin*Phase"),
-                  random = formula(" ~ TimeSin | Mare")) # this does not invoke active binding
-t0$clean() # this invokes the active binding test
-t0$test() # but this does not
-
-
-##### below this line should be migrated or depricated
-
-Palytic <- R6::R6Class("Palytic",
-
-             public = list
-             (
-                       errors     = NULL,
-                       warnings   = NULL,
-
-                       nlme0      = NULL,
-                       method     = NULL,
-                       family     = NULL,
-                       TrySilent  = NULL,
-
-                       initialize = function(errors     = list(),
-                                             warnings   = list(),
-                                             data       = NULL,
-                                             fixed      = NULL,
-                                             random     = NULL,
-                                             time_power = 1,
-                                             ar_order   = 1,
-                                             nlme0      = NULL,
-                                             method     = "ML",
-                                             family     = NO(),
-                                             TrySilent  = TRUE)
-                       {
-                         self$errors     = errors
-                         self$warnings   = warnings
-                         self$data       = data
-                         self$fixed      = fixed
-                         self$random     = random
-                         self$time_power = time_power
-                         self$ar_order   = ar_order
-                         self$nlme0      = nlme0
-                         self$method     = method
-                         self$family     = family
-                         self$TrySilent  = TrySilent
-                       } # eof initialize
-              ) # eof public
-)
-
-
+# add methods
 Palytic$set("public", "lme",
             function(w=NULL)
             {
@@ -211,11 +139,11 @@ Palytic$set("public", "lme",
                                   method=self$method,
                                   keep.data=FALSE,
                                   na.action=na.omit),
-                        silent = self$TrySilent)
+                        silent = self$try_silent)
 
-              if( 'try-error' %in% class(m1) | !eds(m1) )
+              if( "try-error" %in% class(m1) | !eds(m1) )
               {
-                ctrl <- nlme::lmeControl(opt='optim')
+                ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
                                     data=self$data[w,],
                                     random=self$random,
@@ -224,9 +152,9 @@ Palytic$set("public", "lme",
                                     control=self$ctrl,
                                     keep.data=FALSE,
                                     na.action=na.omit),
-                          silent = self$TrySilent)
+                          silent = self$try_silent)
               }
-              if( 'lme' %in% class(m1) )
+              if( "lme" %in% class(m1) )
               {
                 m1$call$fixed  <- self$fixed
                 m1$call$random <- self$random
@@ -234,80 +162,41 @@ Palytic$set("public", "lme",
               }
               else
               {
-                return('Model did not converge')
+                return("Model did not converge")
               }
             },
             overwrite = TRUE
 )
 
-
-
-Palytic$set("public", "gamlss_formula",
-            function()
-            {
-              # Note that there is no gamlss::re in frm, but there is
-              # gamlss::gamlss in the model fitting. I'm still trying to figure
-              # out why having the former causes a crash, while failing to have
-              # the latter also causes a crash, yet the discrepancy works
-              frm <- paste(deparse(self$fixed),
-                           '+ re(random = ',
-                           deparse(self$random),
-                           ', method=',
-                           deparse(self$method),
-                           ', correlation =',
-                           deparse(self$correlation),
-                           ')')
-              frm <- formula(frm)
-              return(frm)
-            },
-            overwrite = TRUE
-)
 
 
 ### this needs to be expanded to include our list, e.g.,
 #   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
+# -- this will be done in Palytic augmentations in .Palytic
 Palytic$set("public", "gamlss",
             function(w=NULL)
             {
               if(is.null(w)) w <- 1:nrow(self$data)
-
-
-              # I don't like having na.omit here, you need to test
-              # 1. whether it does the whole data set (likely) or just the
-              #    variables in the analysis
-              # 2. if the former, missing data treatment needs to be augmented,
-              #    e.g., you could add a function to pre-treat the data based
-              #    on variables in the analysis
-
-              m1 <- try(gamlss::gamlss(formula = frm,
-                               data    = self$data[w,], # no missing data handling yet
+              require(gamlss)
+              m1 <- try(gamlss::gamlss(formula = self$formula,
+                               data    = self$data[w,],
                                family  = self$family),
-                      silent = self$TrySilent)
+                      silent = self$try_silent)
 
-              if('gamlss' %in% class(m1))
+              if("gamlss" %in% class(m1))
               {
-                m1$call$formula <- frm
+                m1$call$formula <- self$formula
                 m1$family <- self$family
                 return(m1)
               }
-              if('try-error' %in% class(m1))
+              if("try-error" %in% class(m1))
               {
-                return('Model did not converge')
+                return("Model did not converge")
               }
-
 
             },
             overwrite = TRUE
 )
-
-Palytic$set("public", "gamlssw",
-             function(w)
-             {
-               self$gamlss(w)
-             },
-             overwrite = TRUE
-)
-
 
 
 # check with debug
@@ -317,8 +206,12 @@ Palytic$set("public", "gamlssw",
 #Palytic$undebug("lme")
 #Palytic$undebug("gamlss")
 
+
+t0 <- Palytic$new(data=Ovary, id="Mare", y="follicles", phase="Phase",
+                  time="TimeSin", try_silent=FALSE)
+
 t1 <- Palytic$new(data=Ovary, fixed = formula("follicles ~ TimeSin*Phase"),
-                  random = formula(" ~ TimeSin | Mare"), TrySilent=FALSE)
+                  random = formula(" ~ TimeSin | Mare"), try_silent=FALSE)
 t1$gamlss()
 t1$lme()
 

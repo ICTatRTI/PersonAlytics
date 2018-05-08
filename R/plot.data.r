@@ -4,14 +4,14 @@
 plot.data <- function(id, dv, time, n, fit.nlme, fit.lme4, phase, which.fit="lme4")
 {
   ### why am i using lme4? does nlme work?
-  if(!exists('which.fit')) which.fit="lme4"
+  if(!exists("which.fit")) which.fit="lme4"
 
   ### data
   # extract raw and fitted data
   dat      <- dat.nlme <- fit.nlme$data
   dat.lme4 <- model.frame(fit.lme4)
   # get fitted values
-  fitted.nlme <- fit.nlme$"Individual Model Based"[,'fixed'] # options are 'fixed' and id
+  fitted.nlme <- fit.nlme$"Individual Model Based"[,"fixed"] # options are "fixed" and id
   fitted.lme4 <- fitted(fit.lme4)     # all(fitted(fit.lme4) == predict(fit.lme4))
   # choose which fitted value to use
   if(which.fit=="nlme") fitted.val <- fitted.nlme
@@ -38,7 +38,7 @@ plot.data <- function(id, dv, time, n, fit.nlme, fit.lme4, phase, which.fit="lme
   dat <- data.frame(dat, SE=SE, SE2=SE2, predvar=predvar)
 
   ### set up list of matrices to store plotting data
-  plotdat  <- vector('list', 0)
+  plotdat  <- vector("list", 0)
 
   ### make ID character
   dat[,id] <- as.character(dat[,id])
@@ -58,5 +58,5 @@ plot.data <- function(id, dv, time, n, fit.nlme, fit.lme4, phase, which.fit="lme
                                                    leg=rep("Individual Model Based", nr.dat),
                                                    phase=dat[,phase])
   save(dat, plotdat, id, dv, time, n, phase,
-       file='plotData.Rdata')
+       file="plotData.Rdata")
 }

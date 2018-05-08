@@ -17,7 +17,7 @@ alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
     ### this automatically takes the levels alphabetically except for the
     #   selected phase.Level; user input will be needed in the future
     phase.Levels <- c(phase.Level, phase.Levels[phase.Levels!=phase.Level])
-    min.times <- max.times <- vector('list', 0)
+    min.times <- max.times <- vector("list", 0)
 
     ### rescale intraphase times to start at 0
     for(i in 1:length(phase.Levels))

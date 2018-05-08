@@ -18,7 +18,7 @@ test.Mod <- function(mod1, mod2, data, KR=TRUE, KRmethod="ML", override=TRUE)
       try.lrt  <- try(mod.test <- anova(mod1, mod2), silent = TRUE)
       if(!"try-error"%in%is(try.lrt))
       {
-        if('p-value'%in%names(mod.test))
+        if("p-value"%in%names(mod.test))
         {
           mod.test <- data.frame(mod.names, mod.test)[,c(1:3, 5:12)]
           row.names(mod.test) <- NULL
@@ -39,11 +39,11 @@ test.Mod <- function(mod1, mod2, data, KR=TRUE, KRmethod="ML", override=TRUE)
       {
         p <- mod.test$stats$p.value
       }
-      if("try-error"%in%is(try.kr)) mod.test <- attr(try.kr, 'condition')
+      if("try-error"%in%is(try.kr)) mod.test <- attr(try.kr, "condition")
     }
   }
   # put warnings not captured by lmee in log
-  #pact.err(warnings(), save_model, 'test.mod()')
+  #pact.err(warnings(), save_model, "test.mod()")
 
   ### return tests
   return( list(test.type=ifelse(KR, "KR", "LRT"),

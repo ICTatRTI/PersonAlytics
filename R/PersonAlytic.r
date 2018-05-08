@@ -27,10 +27,10 @@ PersonAlytic <- function(data=NULL,
     data$Mare <- factor(data$Mare, ordered = FALSE)
     data$Phase <- as.numeric(data$Time > .5)
     data$TimeSin <- sin(2*pi*data$Time)
-    dvs    <- 'follicles'
-    phase  <- 'Phase'
-    ids     <- 'Mare'
-    time   <- 'TimeSin'
+    dvs    <- "follicles"
+    phase  <- "Phase"
+    ids    <- "Mare"
+    time   <- "TimeSin"
   }
 
   # unique ids
@@ -46,10 +46,10 @@ PersonAlytic <- function(data=NULL,
   {
     t1 <- Palytic$new(data=data,
                       fixed  = formula(paste(
-                        paste(dvs, '~', time, '*', phase),
-                        paste(ivs, collapse = '+'),
-                        collapse = '+')),
-                      random = formula(paste('~', time, '|', ids)) )
+                        paste(dvs, "~", time, "*", phase),
+                        paste(ivs, collapse = "+"),
+                        collapse = "+")),
+                      random = formula(paste("~", time, "|", ids)) )
     Grp.out <- t1$gamlss()
   }
   else DVout <- .htp(data, dvs, phase, ids, uid, time, ivs, ivsl)
