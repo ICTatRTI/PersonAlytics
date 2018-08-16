@@ -57,7 +57,7 @@
 #' @name PersonAlytics
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
-
+NULL
 
 #' Curelator test data
 #'
@@ -130,6 +130,7 @@
 #' )
 #' names(outdf) <- c('Model', 'Mean', 'se')
 #' outdf
+NULL
 
 #' Ovary data from nlme modified for ideographic clinical trial analysis
 #'

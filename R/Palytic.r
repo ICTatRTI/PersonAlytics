@@ -148,7 +148,7 @@
 #' t2$formula
 #'
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare',
-#'                   dv='follicles', time='TimeSin', phase='Phase')
+#'                   dv='follicles', time='Time', phase='Phase')
 #' t1$getTime_Power()
 #' t1$time_powesr
 #' # getAR_order works on one case at a time
@@ -1119,7 +1119,7 @@ Palytic$set("public", "getAR_order",
                         maxAR=3    ,
                         maxMA=3    ,
                         crit="BIC" ,
-                        lrt=TRUE   ,
+                        lrt=FALSE  , # only valid for nested models, AR, MA are not nested
                         alpha=.05  )
                {
                  # check whether time is (approximately) equally spaced, use the
@@ -1202,7 +1202,7 @@ Palytic$set("public", "getAR_order",
                        names(corModsid) <- unlist( lapply(corModsid,
                                                           function(x) x$call$correlation) )
 
-                       if(lrt)
+                       if(lrt) # consider depricating, tests are invalid, models are not nested
                        {
                          lrts <- lapply( lapply( corModsid,
                                                  function(x) anova(x, nullMod)),
@@ -1261,7 +1261,7 @@ Palytic$set("public", "getAR_order",
                      {
                        return( "NULL" )
                      }
-                   }
+                   } # end of dopar
                    #parallel::stopCluster(cl)
 
                    self$corStructs <- data.frame(ids=uid,

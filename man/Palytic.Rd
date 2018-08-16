@@ -167,7 +167,7 @@ t2$formula <- formula(follicles ~ Time * Phase +
 t2$formula
 
 t1 <- Palytic$new(data = OvaryICT, ids='Mare',
-                  dv='follicles', time='TimeSin', phase='Phase')
+                  dv='follicles', time='Time', phase='Phase')
 t1$getTime_Power()
 t1$time_powesr
 # getAR_order works on one case at a time

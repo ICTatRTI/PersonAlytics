@@ -78,7 +78,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <h2>Introduction</h2>
 <p>The pupropose of this vignette is to document unit testing of the <code>PersonAlytics</code> software. In what follows, the test <code>all.equal()</code> is used to verify that output is equivalent to expected results. If the test passes, the result printed out will be <code>TRUE</code>. When this document is produced using the current version of <code>PersonAlytics</code>, the file <code>&quot;YourRLibrary\PersonAlytics\inst\doc\PersonAlytics_Verification.R&quot;</code> is created with all the <code>R</code> code in this document. The file <code>PersonAlytics_Verification.R</code> can be run to verify results using the installed version of <code>PersonAlytics</code>.</p>
 <p>First, load <code>PersonAlytics</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#library(PersonAlytics)</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PersonAlytics)</code></pre></div>
 <div id="does-palytic-create-formulae-correctly" class="section level4">
 <h4>Does <code>Palytic</code> create formulae correctly?</h4>
 <p>Create a new <code>Palytic</code> (see <code>?Palytic</code> after loading <code>PersonAlytics</code>) object using the OvaryICT data (see <code>?OvaryICT</code> after loading <code>PersonAlytics</code>).</p>
@@ -145,7 +145,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">t1<span class="op">$</span>formula</code></pre></div>
 <pre><code>## follicles ~ Time * Phase + re(random = ~Time | Mare, method = &quot;REML&quot;, 
 ##     correlation = NULL)
-## &lt;environment: 0x000000002ee6e758&gt;</code></pre>
+## &lt;environment: 0x000000002f1df0b8&gt;</code></pre>
 <p>Update the residual correlation structure and test whether it is specified correctly in the <code>correlation</code> slot of the <code>Palytic</code> object (used by <code>lme</code>):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  t1<span class="op">$</span>correlation &lt;-<span class="st"> &quot;corARMA(p=1, q=0)&quot;</span>
   <span class="kw">all.equal</span>(t1<span class="op">$</span>correlation, <span class="st">&quot;nlme::corARMA(p=1, q=0)&quot;</span>)</code></pre></div>
@@ -154,7 +154,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  t1<span class="op">$</span>formula</code></pre></div>
 <pre><code>## follicles ~ Time * Phase + re(random = ~Time | Mare, method = &quot;REML&quot;, 
 ##     correlation = nlme::corARMA(p = 1, q = 0))
-## &lt;environment: 0x000000002fe06050&gt;</code></pre>
+## &lt;environment: 0x0000000030140860&gt;</code></pre>
 </div>
 <div id="the-personalytic-interface" class="section level4">
 <h4>The <code>PersonAlytic</code> Interface</h4>
