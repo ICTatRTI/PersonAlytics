@@ -1,4 +1,4 @@
-### align the data at the transition between the first and second phase
+### align the data at the .transition between the first and second phase
 alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
 {
   time.old <- dat[,time]
@@ -19,7 +19,7 @@ alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
     phase.Levels <- c(phase.Level, phase.Levels[phase.Levels!=phase.Level])
     min.times <- max.times <- vector("list", 0)
 
-    ### rescale intraphase times to start at 0
+    ### rescale in.traphase times to start at 0
     for(i in 1:length(phase.Levels))
     {
       temp      <- dat[dat[,phase]==phase.Levels[i], c(id,time)]
@@ -61,7 +61,7 @@ alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
     dat <- dat[order(dat[,id], dat[,time]),]
   }
 
-  ### alignment to the first phase transition
+  ### alignment to the first phase .transition
   if(do.plot)
   {
     par(mfrow=c(2,2))

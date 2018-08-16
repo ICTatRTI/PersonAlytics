@@ -1,0 +1,151 @@
+---
+title: "Verification Tests for PersonAlyticsLite"
+author: "Stephen Tueller"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(nlme)
+```
+
+## Introduction
+The pupropose of this vignette is to document unit testing of the `PersonAlyticsLite` software. In what follows, the test `all.equal()` is used to verify that output is equivalent to expected results. If the test passes, the result printed out will be `TRUE`. When this document is produced using the current version of `PersonAlyticsLite`, the file `"YourRLibrary\PersonAlyticsLite\inst\doc\PersonAlyticsLite_Verification.R"` is created with all the `R` code in this document. The file `PersonAlyticsLite_Verification.R` can be run to verify results using the installed version of `PersonAlyticsLite`.
+
+First, load `PersonAlyticsLite`:
+
+```{r, message=FALSE}
+library(PersonAlyticsLite)
+```
+
+#### Does `Palytic` create formulae correctly?
+
+Create a new `Palytic` (see `?Palytic` after loading `PersonAlyticsLite`) object using the OvaryICT data (see `?OvaryICT` after loading `PersonAlyticsLite`).
+
+```{r, warning=FALSE}
+t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                  time='Time', phase='Phase')
+```
+
+Test whether inputing text values for variances and the data set name yields a `Palytic` object with the correct formulae. 
+
+```{r}
+all.equal(t1$fixed, formula("follicles ~ Time * Phase"))
+all.equal(t1$random, formula("~Time | Mare"))
+all.equal(t1$formula, formula(paste("follicles ~ Time * Phase +",
+                                       "re(random = ~Time | Mare,",
+                                        "method = 'REML', correlation = NULL)")))
+all.equal(t1$correlation, NULL)
+```
+
+\newpage
+
+#### Does a 'manual' run of `gamlss` and `lme` yield the same estimates as the `gamlss` and `lme` methods of `Palytic`?
+
+Fit the models implied by the default formulae (see the prior section) using both `lme` and `gamlss`.
+
+```{r, warning=FALSE, message=FALSE}
+  t1.gamlss <- t1$gamlss() # Palytic gamlss
+  t1.lme    <- t1$lme() # Palytic lme
+```
+
+Fit the same models 'manually'. 
+  
+```{r, message=FALSE, warning=FALSE}
+  library(gamlss)
+  t0.gamlss <- gamlss(follicles ~ Time * Phase +
+                        re(random = ~Time | Mare, method = "REML"),
+                      data = OvaryICT) # 'manual' gamlss
+  t0.lme <- nlme::lme(t1$fixed, OvaryICT, t1$random) # 'manual' lme
+  capture.output( t0.gamlss.table <- summary( t0.gamlss ), file='NUL')
+  capture.output( t1.gamlss.table <- summary( t1.gamlss ), file='NUL')
+```
+
+Test whether manual `gamlss` and `gamlss` via `Palytic$gamlss()` provide the same results.
+
+```{r}  
+  all.equal(t0.gamlss.table, t1.gamlss.table, tolerance = .002)
+```
+
+Test whether manual `lme` and `lme` via `Palytic$lme()` provide the same results.
+
+```{r} 
+  all.equal(summary(t0.lme)$tTable, summary(t1.lme)$tTable)
+```
+
+Although `lme` and `gamlss` utilize different test statistics, they are expected to give similar fixed effects estimates.
+
+```{r}
+  all.equal(t1.gamlss.table[1:4,1], summary(t1.lme)$tTable[,1], tolerance = .005)
+```
+
+#### Are the model values as expected? 
+
+Here we check the output against known values that should be produced for parameter estimates for both the `lme` and `gamlss` methods for the `Palytic` object used in this example.
+
+```{r}
+  all.equal(as.vector( t0.gamlss.table[,1] ), 
+            c(10.6898310,  -0.8637036,  10.9724586,  -8.6439015,   1.1633329))
+  all.equal(as.vector( summary(t1.lme)$tTable[,1] ), 
+            c(10.6616306, -0.8689801, 10.9720945, -8.6438502 ))
+```
+
+
+#### Illustrate formula updating
+
+Since a `Palytic` object can be used to fit models using both `lme` and `gamlss`, formula updating is implemented via `R6` active bindings. First we create a new `Palytic` object using the OvaryICT data (see `?OvaryICT` after loading `PersonAlyticsLite`).
+
+```{r, warning=FALSE}
+  t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                    time='Time', phase='Phase')
+```
+
+Notice that the correlation and formula are, by default, `NULL`.
+
+```{r}
+t1$correlation
+t1$formula
+```
+
+Update the residual correlation structure and test whether it is specified correctly in the `correlation` slot of the `Palytic` object (used by `lme`):
+
+```{r}
+  t1$correlation <- "corARMA(p=1, q=0)"
+  all.equal(t1$correlation, "nlme::corARMA(p=1, q=0)")
+```
+
+
+Check whether the `formula` slot (used by `gamlss`) has been updated with the new correlation ARMA(1,0) structure:
+
+```{r}
+  t1$formula
+```
+
+#### The `PersonAlytic` Interface
+
+The `PersonAlytic` (see `?Personalytic`) function provides a simplified user interface for fitting one model and is the primary interface intended for most users. 
+
+```{r, warning=FALSE}
+t1simple <- PersonAlytic(data=OvaryICT,
+                 ids="Mare",
+                 dv="follicles",
+                 phase="Phase",
+                 time="Time")
+capture.output(t1simple.summary <- summary(t1simple), file='NUL')
+```
+
+Compare to results from a direct use of `Palytic`
+
+```{r, warning=FALSE}
+t1palytic <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                    time='Time', phase='Phase')
+capture.output(t1palytic.summary <- summary(t1palytic$gamlss()), file='NUL')
+all.equal(t1simple.summary, t1palytic.summary)
+```
+

@@ -1,0 +1,178 @@
+---
+title: "Single Case Mixed Effects Models"
+author: "Stephen Tueller"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(nlme)
+```
+
+## Models
+
+There are several ways to estimate the mean (and its standard error) of a time series. Naive estimates can come from descriptive statistics (see `Descr.` in Table 1), or equivalently, a linear model (see `LM` in Table 1). These will be biased and the standard error will be underestimated because correlation of observations clustered within an individual are ignored. This special case of clustering in serial data called autocorrelation in the time series literature.
+
+A time series model will provide an estimate that is theoretically unbiased (see `AR1` in Table 1). But a limitation of basic time series models is the inability to regress the series on predictors. Time series also cannot accomodate transformations of the time variable which are implemented as random slopes in the mixed effects model (e.g., quadratic time, cubic time, etc.).
+
+The mixed effects model uses random intercepts (and potentially random slopes) to deal with nested data. When N=1, the variance of the random effects will effectually be 0, but the estimates and standard errors for the fixed effects will be less biased. When fitting a random intercept only model, the estimate and standard error of the 'mean of the intercepts' will be closer to the mean estimated with a time series model, even though the mean of one random intercept is ill-defined, and the variance of one random intercept is not defined.
+
+This is illustrated in Table 1 where the mean and standard error of the follicle count for one mare from models with combinations of fixed effects, random intercepts and slopes, and an AR(1) model for residuals are reported. Note that relative to the AR(1) model, the first two rows have underestimated standard errors, as is expected when ignoring clustering. The intercept only random effects model `RE.i` is an alternative to the AR(1) model for correcting the standard error, and the results are similar for the two models. Just because the variance of the random effect is not defined when N=1 doesn't invalidate the correction to the standard error (i.e., N=1 is just a special case of N>1 where the random effect variances depricate to 0).  
+
+```{r mods}
+library(nlme)
+
+# select the 1st mare
+wm   <- Ovary$Mare==1
+
+# mean and standard error of the mean, ignoring autocorrelation
+f.mn <- mean(Ovary$follicles[wm])
+f.se.mn <- sd(Ovary$follicles[wm])/sqrt(length(Ovary$follicles[wm]))
+
+# naive linear model
+f.lm <- lm(follicles ~ 1, data=Ovary[wm,])
+
+# Autoregressive model
+f.ts <- ar(ts(Ovary$follicles[wm]))
+f.ts.mn <- f.ts$x.mean
+f.ts.se.mn <- f.ts$var.pred/sqrt(length(Ovary$follicles[wm]))
+
+# the best AR order is 1
+f.ts$order
+# but do we need ARIMA? No, AR(1) is still adequate
+(f.arima <- forecast::auto.arima(Ovary$follicles[wm]))
+
+# random intercept model
+f.re.i <-lme(follicles ~ 1, data=Ovary[wm,], random = ~ 1 | Mare)
+
+# random intercept model, AR(1)
+f.re.i.ar1 <-lme(follicles ~ 1, data=Ovary[wm,], random = ~ 1 | Mare,
+                 correlation = corAR1())
+
+# random intercept and slope model
+f.re.is <-lme(follicles ~ 1, data=Ovary[wm,], random = ~ Time | Mare)
+
+# random intercept and slope model, AR(1)
+f.re.is.ar1 <-lme(follicles ~ 1, data=Ovary[wm,], random = ~ Time | Mare,
+                  correlation = corAR1())
+
+
+# random intercept model, fixed effect for time
+f.ret.i <-lme(follicles ~ Time, data=Ovary[wm,], random = ~ 1 | Mare)
+
+# random intercept model, AR(1), fixed effect for time
+f.ret.i.ar1 <-lme(follicles ~ Time, data=Ovary[wm,], random = ~ 1 | Mare,
+                 correlation = corAR1())
+
+# random intercept and slope model, fixed effect for time
+f.ret.is <-lme(follicles ~ Time, data=Ovary[wm,], random = ~ Time | Mare)
+
+# random intercept and slope model, AR(1), fixed effect for time
+f.ret.is.ar1 <-lme(follicles ~ Time, data=Ovary[wm,], random = ~ Time | Mare,
+                  correlation = corAR1())
+
+# table the results
+rownms <- c('Descr.', 'LM', 'AR1', 'RE.i', 'RE.i.AR1', 'RE.is', 'RE.is.AR',
+            'RE.t.i', 'RE.t.i.AR1', 'RE.t.is', 'RE.t.is.AR1')
+outmat <- 
+data.frame(Model=rownms,
+           matrix(c(f.mn, f.se.mn,
+                    summary(f.lm)$coef[1:2],
+                    f.ts.mn, f.ts.se.mn,
+                    summary(f.re.i)$tTable[1:2],
+                    summary(f.re.i.ar1)$tTable[1:2],
+                    summary(f.re.is)$tTable[1:2],
+                    summary(f.re.is.ar1)$tTable[1:2],
+                    summary(f.ret.i)$tTable[1,1:2],
+                    summary(f.ret.i.ar1)$tTable[1,1:2],
+                    summary(f.ret.is)$tTable[1,1:2],
+                    summary(f.ret.is.ar1)$tTable[1,1:2]), ncol=2, byrow=TRUE))
+names(outmat) <- c('Model', 'Mean', 'se')
+
+```
+
+```{r echo=FALSE, results='asis'}
+kable(outmat, caption='Table 1. Comparisons of estimates of the mean of a time series')
+```
+
+Note. RE=random effects, .i=random intercepts, .is=random intercepts and slopes, AR1 indicates an AR(1) model for the residuals, and .t=inclusion of a fixed effect for time.
+
+\newpage 
+
+## Residuals
+
+The residuals for the models above are highly correlated and often identical (see Figure 1 and Table 2). This is to be expected, since the only way a residual can change is when there is something different to subtract out from the observed variable. Hence the linear model, random intercept model, and random intercept with AR(1) all have the same residuals. Because the random intercepts have no variance and the 'mean of the random intercepts' is the same as the mean in the linear model, the residuals will be the same. What changes is the estimate of the standard error. Similarly, adding a residual autocorrelation structure to the random intercept does not change the residuals, it only estimates the autocorrelation of the residuals (which in turn affects the estimate of the standard errors, theoretically making it more correct and avoiding Type II errors).
+
+Figure 1. Scatterplots of the residuals from models reported in Table 1
+
+```{r echo=FALSE, results='asis'}
+f.resids <- data.frame(f.ts = f.ts$resid,
+                       f.lm = resid(f.lm),
+                       f.re.i       = resid(f.re.i      ),
+                       f.re.i.ar1   = resid(f.re.i.ar1  ),
+                       f.re.is      = resid(f.re.is     ),
+                       f.re.is.ar1  = resid(f.re.is.ar1 ),
+                       f.ret.i      = resid(f.ret.i     ),
+                       f.ret.i.ar1  = resid(f.ret.i.ar1 ),
+                       f.ret.is     = resid(f.ret.is    ),
+                       f.ret.is.ar1 = resid(f.ret.is.ar1))
+pairs(f.resids)
+```
+
+\newpage 
+
+```{r echo=FALSE, results='asis'}
+kable(round(cor(f.resids, use = 'pairwise.complete.obs'),2), caption='Table 2. Correlations of residuals from the models in Table 1')
+```
+
+
+## Random Slopes
+
+Similar to random intercepts, random slopes are a function of time and are used to specify the shape of the time series. For example, linear and quadratic slopes allow for curvature over time. In the case of N=1, the variance of these effects is 0, but the 'mean of the random slopes' (or fixed effects for time) for the individual estimates the rate of change (linear effect) and the rate of change in change (quadratic effect) for that person. Here we see curvature in the relationship between time and the follicle count for the first mare in the ovary data.
+
+```{r echo=FALSE, results='asis'}
+plot(Ovary$Time[wm], Ovary$follicles[wm], type='l')
+```
+
+\newpage 
+
+To model this, we consider a cubic effect of time, which further alters our estimate of the mean number of follicles and its standard error.
+
+```{r cubic}
+f.ret3.is3.ar1 <-lme(follicles ~ Time + I(Time^2) + I(Time^3), 
+                    data=Ovary[wm,], 
+                    random = ~ Time + I(Time^2) + I(Time^3) | Mare,
+                  correlation = corAR1())
+summary(f.ret3.is3.ar1)$tTable
+```
+
+Notice that the standard error of the mean number of follicles gets larger as the model gets more complex. This is expected for two reasons. First, the better we deal with the autocorrelation, the more precise the standard error is, reducing the changes of Type I errors. But we need to do model comparisons to determine whether the additional complexity is deteriorating model fit. This is related to the second issue, power. The greater the complexity of the model, the more power is reduced, increasing the chances of Type II errors.
+
+### `lme4`
+
+The R package lme4 is a descendent of nlme with overlappping functionality. Currently, residual correlation structures are not easily implemented in lme4 (see [https://bbolker.github.io/mixedmodels-misc/notes/corr_braindump.html](https://bbolker.github.io/mixedmodels-misc/notes/corr_braindump.html)). 
+
+<!-- 
+As a simple example of model selection -- commented out for now, the cubic random effects improve fit according to LRT but not AIC/BIC
+
+```{r comps}
+# random slopes do not improve model fit beyond random intercepts
+anova(f.re.i, f.re.is)
+# 
+f.ret3.is.ar1 <-lme(follicles ~ Time + I(Time^2) + I(Time^3), 
+                    data=Ovary[wm,], 
+                    random = ~ 1 | Mare,
+                  correlation = corAR1())
+anova(f.ret3.is.ar1, f.ret3.is3.ar1 )
+```
+--> 
+
+
+
+

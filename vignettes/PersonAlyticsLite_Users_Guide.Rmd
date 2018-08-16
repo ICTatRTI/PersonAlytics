@@ -1,0 +1,101 @@
+---
+title: "PersonAlytics User's Guide"
+author: "Stephen Tueller"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(knitr)
+library(nlme)
+```
+
+## Introduction
+The pupropose of this vignette is to illustrate how to use `PersonAlytics` to analyze single case time series data (also knows as single subject or N-of-1 studies), small sample intensivel longitudinal design data, and ideographic clinical trial data (ICT). An ICT is a single-case or small sample longitudinal data set multiple treatment conditions (at a minimum, a control and treatment conditions).
+
+The `PersonAlytic` framework 
+
+## Installing `PersonAlyticsLite`
+
+First you must install `R`, available at `https://cran.r-project.org/`. It is also suggested that you use a modern code editor such as Rstudio (`https://www.rstudio.com/`). 
+
+`PersonAlyticsLite` requries several packages which can be installed (or updated if you already have them) by pasting the following code[^1] into your `R` console:
+
+[^1]: See https://gist.github.com/stevenworthington/3178163 for original function.
+
+
+```{r eval=FALSE}
+install.deps <- function(pkg)
+{
+  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
+  old.pkg <- pkg[ (pkg %in% installed.packages()[, "Package"])]
+  if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE,
+                                        repos = "https://cran.rstudio.com/")
+  if (length(old.pkg)) update.packages(old.pkg, dependencies = TRUE)
+}
+packages <- c("gamlss", "ggplot2", "multilevel", "nlme", "R6")
+install.deps(packages)
+```
+
+The packages on which `PersonAlyticsLite` builds include
+
+* `gamlss` which is used to fit mixed effects models with multiple distributions
+* `ggplot2` for plotting results (not yet implemented)
+* `multilevel` for illustrating intraclass correlation estimation
+* `nlme` which is used to fit mixed effects models with normal outcomes
+* `R6` an object-oriented approach to programming in R for creating `Palytic` objects, which can be thought of as a suitecase containing all your data and tools for fitting models and displaying results
+
+Now you're ready to install `PersonAlyticsLite` `install.packages(".../path/on/your/computer/PersonAlyticsLite_0.0.1.tar.gz", repos = NULL, type = "source")`. To obtain this file, contact the authors at [https://personalytics.rti.org/](https://personalytics.rti.org/). 
+
+## Starting `PersonAlyticsLite`
+
+Now we can load `PersonAlyticsLite`:
+
+```{r, message=FALSE}
+library(PersonAlyticsLite)
+```
+
+
+```{r}
+#' t1 <- PersonAlytic(data=OvaryICT,
+#'                  ids="Mare",
+#'                  dv="follicles",
+#'                  phase="Phase",
+#'                  time="Time")
+#' # individual level analyses
+#' w <- OvaryICT$Mare==1
+#' t2 <- PersonAlytic(data=OvaryICT,
+#'                  ids="Mare",
+#'                  dv="follicles",
+#'                  phase="Phase",
+#'                  time="Time",
+#'                  subgroup=w)
+#' summary(t2)
+#' # individual level analyses with standardized data
+#' t3 <- PersonAlytic(data=OvaryICT,
+#'                  ids="Mare",
+#'                  dv="follicles",
+#'                  phase="Phase",
+#'                  time="Time",
+#'                  subgroup=w,
+#'                  standardize=TRUE)
+#' summary(t3)
+#' # interaction terms with nlme estimation
+#' set.seed(123)
+#' OvaryICT$iv1 <- factor(cut(runif(nrow(OvaryICT)), breaks=2), labels=c(0,1))
+#' t4 <- PersonAlytic(data=OvaryICT,
+#'                  ids="Mare",
+#'                  dv="follicles",
+#'                  phase="Phase",
+#'                  interactions=list(c('Time', 'Phase'),
+#'                                    c('Time', 'iv1'),
+#'                                    c('Phase',   'iv1')),
+#'                  time="Time",
+#'                  package="nlme")
+#' summary(t4)
+```
