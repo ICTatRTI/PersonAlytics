@@ -2,8 +2,8 @@
 #'
 #' @keywords internal
 
-# the current state of using PalyticHTP is to create one object for
-# loops across individuals, but overwrite the the PalyticHTP object
+# the current state of using Palytic is to create one object for
+# loops across individuals, but overwrite the the Palytic object
 # for loops across dvs/ivs
 htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
                 interactions=NULL, time_power=1, correlation=NULL,
@@ -20,7 +20,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
   for(dv in dims$DV)
   {
     # initialize the null object to be copied (do NOT use $clone() as it has failed in tests)
-    t0 <- PalyticHTP$new(data=data,
+    t0 <- Palytic$new(data=data,
                       ids=ids,
                       dv=dvs[[dv]],
                       time=time,
@@ -228,7 +228,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
             err_id['call'] <- NA
             # this is a placeholder for getting error messsages from lme
             # which needs to be updated in the error handling for
-            # lme in PalyticHTP
+            # lme in Palytic
           }
           if(  "lme"  %in%  class(modid) )
           {

@@ -1,27 +1,51 @@
-#' PersonAlyticsLite: A package for Ideographic Clinical Trial analyses.
+#' PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
 #'
-#' The PersonAlyticsLite package provides the simplified user interface
-#' \code{\link{PersonAlytic}}
-#' for implementing linear mixed effects models for ideagraphic clinical trial
-#' (ICT) data using \code{\link{gamlss}} fit using restricted maximum likelihood
-#' (REML; ML is also an option).
+#' The PersonAlytics package provides the simplified user interface
+#' for implementing linear mixed effects models for idiographic clinical trials
+#' (ICT) data, single case studies, and small N studies with intensive longitudinal
+#' designs. Contact us via \link{https://personalytics.rti.org/} for
+#' licensing options.
 #'
 #' @details
-#' The basic model for ICTs is \eqn{dv=time+phase+phase*time} with random intercepts
-#' and random slopes for time. The phase variable is optional. Additional covariates
-#' can be added.
+#' The basic mixed effects model is \eqn{dv=time+phase+phase*time}
+#' with random intercepts and random slopes for time. The phase variable is optional.
+#' Additional independent variables (or covariates) can be included.
+#' The \code{PersonAlytics} package provides the simplified user interface
+#' for implementing this model using \code{\link{gamlss}} or \code{\link{lme}}.
 #'
-#' This is done via the \code{\link{Palytic}} object, which
-#' offers additional options for advanced users including generalized linear mixed effects
-#' models (see \code{\link{gamlss.family}}), user specific correlation structures, and
-#' user specified random effects structures.
+#' Key features of the \code{PersonAlytics} package include:
 #'
-#' The companion package \code{PersonAlyticsPro} implements automated section of
-#' autoregressive structures and time polynomials via maximum likelihood (ML) model
-#' comparisons. High throughput estimation of individual level models, iterations through
-#' multiple dependent variables, and iterations through multiple independent variables
-#' is also implemented. Contact us via \link{https://personalytics.rti.org/} for
-#' licensing options.
+#' \strong{Automated detection of the residual covariance structure.}
+#' \code{PersonAlytics} automates model comparisons for determining autocorrelation
+#' structure for all patients or for each patient.
+#'
+#' \strong{Automated detection of the function form for the time variable.}
+#' \code{PersonAlytics} automates model comparisons for determining the the functional
+#' form of the relationship between time and the outcome
+#' (i.e., linear vs. quadratic vs. cubic growth models) for all patients or for each patient.
+#'
+#' \strong{Estimation.} The automated covariance structure and function form for time is
+#' done using maximum likelihood (ML) estimators. Final results are estimated using
+#' restricted maximum likelihood (REML).
+#'
+#' \strong{High Throughput.} When users have a list of outcomes (dependent variables),
+#' a list of target covariates, and/or
+#' or desire the analyses to be repeated for each individual in the data set, high
+#' throughput options automate the model fitting process.
+#'
+#' \strong{False Discovery Rate Adjustment.} When hight throughput options are requested,
+#' Type I error correction and false discovery rate adjustments are implemented
+#' post-implementation across target covariates (and individuals if requested) within
+#' each outcome.
+#'
+#' \strong{Linear and Generalized Linear Mixed Effects Models.} Linear mixed effects models
+#' can be fit in either the \code{\link{nlme}} framework or the \code{\link{gamlss}}
+#' approach. The two approaches give nearly identicle fixed effects estimates but differ
+#' in their computation of standard errors and random effects. Generalized linear
+#' mixed effects models can be fit using the \code{\link{gamlss}} option
+#' (see \code{\link{gamlss.family}}). The \code{\link{gamlss}} appoarch also allows models
+#' for dealing with heteroscedasticity implemented by including mixed effects models for
+#' the variance.
 #'
 #' @section PersonAlytics functions
 #' pending...
@@ -30,7 +54,7 @@
 #' See \code{\link{Palytic}}
 #'
 #' @docType package
-#' @name PersonAlyticsLite
+#' @name PersonAlytics
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
 #'

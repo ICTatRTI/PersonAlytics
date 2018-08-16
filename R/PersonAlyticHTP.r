@@ -1,4 +1,4 @@
-#' High through-put options for PalyticHTP objects.
+#' High through-put options for Palytic objects.
 #'
 #' @export
 #' @import PersonAlyticsLite
@@ -7,7 +7,7 @@
 #' @import foreach
 #' @import plyr
 #'
-#' @description A user interface for creating a PalyticHTP object
+#' @description A user interface for creating a Palytic object
 #' (which inherits from \code{\link{Palytic}} and invoking
 #' high through-put options including automated autocorrelation detection, automated
 #' detection of a polynomial for time, and high throughput analyses of all individuals
@@ -46,7 +46,7 @@
 #' @param grp.mod Logical, defaults to \code{FALSE}. Should a group level model be fit
 #' across all IDs? If both \code{ind.mods} and \code{grp.mod} are \code{FALSE},
 #' \code{grp.mod} will be changed to \code{TRUE}.
-#' @param PalyticObj See \code{\link{PalyticHTP}}. If \code{PalyticObj} is submitted
+#' @param PalyticObj See \code{\link{Palytic}}. If \code{PalyticObj} is submitted
 #' then only \code{dvs}, \code{ivsl}, \code{ind.mods}, and \code{grp.mod} will be
 #' used. This allows users access to additional options including generalized linear
 #' mixed effects models via the \code{family} option, user specified \code{correlation}
@@ -142,7 +142,7 @@ PersonAlyticHTP <- function(file=NULL                ,
   if( ! "list" %in% class(dvs) ) dvs <- as.list(dvs)
   if( ! "list" %in% class(ivs) ) ivs <- as.list(ivs)
 
-  # check that inputs conform. this is also done when creating a PalyticHTP
+  # check that inputs conform. this is also done when creating a Palytic
   # object, but we do it early on here to avoid problems after loops start.
   # This is why `clean()` has inputs that apply to PersonAlyticHTP but not to
   # PersonAlytic
@@ -169,9 +169,9 @@ PersonAlyticHTP <- function(file=NULL                ,
   # provided
   #if(!is.null(PalyticObj))
   #{
-  #  if(! class(PalyticObj) %in% 'PalyticHTP')
+  #  if(! class(PalyticObj) %in% 'Palytic')
   #  {
-  #    stop('PalyticObj is not a PalyticHTP object. See ?PalyticHTP')
+  #    stop('PalyticObj is not a Palytic object. See ?Palytic')
   #  }
   #  ids=NULL
   #  phase=NULL

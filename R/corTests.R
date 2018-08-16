@@ -1,6 +1,5 @@
 #' corTests -- this should be turned into a testthat test
 #' @author Stephen Tueller \email{stueller@@rti.org}
-#' @param x Any formula
 #'
 #' @keywords internal
 #'
@@ -168,7 +167,7 @@ corTests <- function()
   	414L, 415L, 416L, 417L, 418L, 419L, 420L), class = "data.frame")
 
 	# null (p)ersonalytic (o)bject
-	po0 <- PalyticHTP$new(data = neg, id = "ID", dvs = "PASAT", time = "Time2")
+	po0 <- Palytic$new(data = neg, id = "ID", dvs = "PASAT", time = "Time2")
 	po0$getAR_order("PASAT")
 	po0$corStructs
 

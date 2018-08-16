@@ -26,7 +26,7 @@ pah <- function()
   random=NULL
   formula=NULL
   charSub=NULL
-  t1=PalyticHTP$new(data=PersonAlyticsLite::OvaryICT,
+  t1=Palytic$new(data=PersonAlyticsLite::OvaryICT,
                 ids="Mare",
                 dv=dvs[[1]],
                 time="TimeSin",

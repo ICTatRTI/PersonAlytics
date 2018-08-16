@@ -6,7 +6,7 @@
 #'
 #' @export
 #'
-#' @usage PalyticHTP(DVout, method)
+#' @usage Palytic(DVout, method)
 #'
 #' @details
 #' @description apply p.adjust and add output and graphics
@@ -152,7 +152,7 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
   tempdata$target_ivr <- tempdata$target_iv
   tempdata$target_iv <- scale(tempdata$target_iv)
 
-  t1 <- PalyticHTP$new(data = tempdata,
+  t1 <- Palytic$new(data = tempdata,
                    ids = "id",
                    dv  = "dv",
                    time = "time",
