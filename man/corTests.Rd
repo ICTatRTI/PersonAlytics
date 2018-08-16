@@ -6,9 +6,6 @@
 \usage{
 corTests()
 }
-\arguments{
-\item{x}{Any formula}
-}
 \description{
 corTests -- this should be turned into a testthat test
 }

@@ -1,7 +1,7 @@
 # easy run defaults for testing
 pah <- function()
 {
-  data=PersonAlyticsLite::OvaryICT
+  data=OvaryICT
   ids="Mare"
   dvs=list("follicles")
   phase="Phase"
@@ -26,7 +26,7 @@ pah <- function()
   random=NULL
   formula=NULL
   charSub=NULL
-  t1=Palytic$new(data=PersonAlyticsLite::OvaryICT,
+  t1=Palytic$new(data=OvaryICT,
                 ids="Mare",
                 dv=dvs[[1]],
                 time="TimeSin",
@@ -42,7 +42,7 @@ pah <- function()
 pahdefault <- function()
 {
   file=NULL
-  data=PersonAlyticsLite::OvaryICT
+  data=OvaryICT
   ids="Mare"
   dvs="follicles"
   time="TimeSin"

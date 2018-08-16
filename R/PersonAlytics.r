@@ -57,8 +57,7 @@
 #' @name PersonAlytics
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
-#'
-NULL
+
 
 #' Curelator test data
 #'
@@ -131,7 +130,6 @@ NULL
 #' )
 #' names(outdf) <- c('Model', 'Mean', 'se')
 #' outdf
-NULL
 
 #' Ovary data from nlme modified for ideographic clinical trial analysis
 #'
@@ -180,10 +178,8 @@ NULL
 #' capture.output(t1.coef <- summary(t1), file = 'NUL')
 #' all.equal(as.vector(t1.coef[,1]),
 #' c(11.2421402, -1.9730995, 0.9126069, -1.9746526, 1.0967642))
-NULL
 
-makeData <- FALSE
-if(makeData)
+if(1==2)
 {
   OvaryICT <- as.data.frame(nlme::Ovary)
   OvaryICT$Mare <- as.numeric(OvaryICT$Mare)
@@ -192,6 +188,3 @@ if(makeData)
   OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
   devtools::use_data(OvaryICT, overwrite = TRUE)
 }
-
-
-

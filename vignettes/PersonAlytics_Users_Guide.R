@@ -16,7 +16,7 @@ library(nlme)
 #  install.deps(packages)
 
 ## ---- message=FALSE------------------------------------------------------
-library(PersonAlyticsLite)
+#library(PersonAlytics)
 
 ## ------------------------------------------------------------------------
 #' t1 <- PersonAlytic(data=OvaryICT,

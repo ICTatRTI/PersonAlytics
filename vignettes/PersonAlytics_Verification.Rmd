@@ -1,10 +1,10 @@
 ---
-title: "Verification Tests for PersonAlyticsLite"
+title: "Verification Tests for PersonAlytics"
 author: "Stephen Tueller"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{Verification Tests for PersonAlytics}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -16,17 +16,17 @@ library(nlme)
 ```
 
 ## Introduction
-The pupropose of this vignette is to document unit testing of the `PersonAlyticsLite` software. In what follows, the test `all.equal()` is used to verify that output is equivalent to expected results. If the test passes, the result printed out will be `TRUE`. When this document is produced using the current version of `PersonAlyticsLite`, the file `"YourRLibrary\PersonAlyticsLite\inst\doc\PersonAlyticsLite_Verification.R"` is created with all the `R` code in this document. The file `PersonAlyticsLite_Verification.R` can be run to verify results using the installed version of `PersonAlyticsLite`.
+The pupropose of this vignette is to document unit testing of the `PersonAlytics` software. In what follows, the test `all.equal()` is used to verify that output is equivalent to expected results. If the test passes, the result printed out will be `TRUE`. When this document is produced using the current version of `PersonAlytics`, the file `"YourRLibrary\PersonAlytics\inst\doc\PersonAlytics_Verification.R"` is created with all the `R` code in this document. The file `PersonAlytics_Verification.R` can be run to verify results using the installed version of `PersonAlytics`.
 
-First, load `PersonAlyticsLite`:
+First, load `PersonAlytics`:
 
 ```{r, message=FALSE}
-library(PersonAlyticsLite)
+library(PersonAlytics)
 ```
 
 #### Does `Palytic` create formulae correctly?
 
-Create a new `Palytic` (see `?Palytic` after loading `PersonAlyticsLite`) object using the OvaryICT data (see `?OvaryICT` after loading `PersonAlyticsLite`).
+Create a new `Palytic` (see `?Palytic` after loading `PersonAlytics`) object using the OvaryICT data (see `?OvaryICT` after loading `PersonAlytics`).
 
 ```{r, warning=FALSE}
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
@@ -99,7 +99,7 @@ Here we check the output against known values that should be produced for parame
 
 #### Illustrate formula updating
 
-Since a `Palytic` object can be used to fit models using both `lme` and `gamlss`, formula updating is implemented via `R6` active bindings. First we create a new `Palytic` object using the OvaryICT data (see `?OvaryICT` after loading `PersonAlyticsLite`).
+Since a `Palytic` object can be used to fit models using both `lme` and `gamlss`, formula updating is implemented via `R6` active bindings. First we create a new `Palytic` object using the OvaryICT data (see `?OvaryICT` after loading `PersonAlytics`).
 
 ```{r, warning=FALSE}
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',

@@ -166,7 +166,7 @@ t2$formula <- formula(follicles ~ Time * Phase +
                       correlation = corARMA(p=1,q=0)))
 t2$formula
 
-t1 <- Palytic$new(data = PersonAlyticsLite::OvaryICT, ids='Mare',
+t1 <- Palytic$new(data = OvaryICT, ids='Mare',
                   dv='follicles', time='TimeSin', phase='Phase')
 t1$getTime_Power()
 t1$time_powesr

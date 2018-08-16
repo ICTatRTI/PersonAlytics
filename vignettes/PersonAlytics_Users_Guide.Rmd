@@ -4,7 +4,7 @@ author: "Stephen Tueller"
 date: "`r Sys.Date()`"
 output: rmarkdown::html_vignette
 vignette: >
-  %\VignetteIndexEntry{Vignette Title}
+  %\VignetteIndexEntry{PersonAlytics User's Guide}
   %\VignetteEngine{knitr::rmarkdown}
   %\VignetteEncoding{UTF-8}
 ---
@@ -20,11 +20,11 @@ The pupropose of this vignette is to illustrate how to use `PersonAlytics` to an
 
 The `PersonAlytic` framework 
 
-## Installing `PersonAlyticsLite`
+## Installing `PersonAlytics`
 
 First you must install `R`, available at `https://cran.r-project.org/`. It is also suggested that you use a modern code editor such as Rstudio (`https://www.rstudio.com/`). 
 
-`PersonAlyticsLite` requries several packages which can be installed (or updated if you already have them) by pasting the following code[^1] into your `R` console:
+`PersonAlytics` requries several packages which can be installed (or updated if you already have them) by pasting the following code[^1] into your `R` console:
 
 [^1]: See https://gist.github.com/stevenworthington/3178163 for original function.
 
@@ -42,7 +42,7 @@ packages <- c("gamlss", "ggplot2", "multilevel", "nlme", "R6")
 install.deps(packages)
 ```
 
-The packages on which `PersonAlyticsLite` builds include
+The packages on which `PersonAlytics` builds include
 
 * `gamlss` which is used to fit mixed effects models with multiple distributions
 * `ggplot2` for plotting results (not yet implemented)
@@ -50,14 +50,14 @@ The packages on which `PersonAlyticsLite` builds include
 * `nlme` which is used to fit mixed effects models with normal outcomes
 * `R6` an object-oriented approach to programming in R for creating `Palytic` objects, which can be thought of as a suitecase containing all your data and tools for fitting models and displaying results
 
-Now you're ready to install `PersonAlyticsLite` `install.packages(".../path/on/your/computer/PersonAlyticsLite_0.0.1.tar.gz", repos = NULL, type = "source")`. To obtain this file, contact the authors at [https://personalytics.rti.org/](https://personalytics.rti.org/). 
+Now you're ready to install `PersonAlytics` `install.packages(".../path/on/your/computer/PersonAlytics_0.0.1.tar.gz", repos = NULL, type = "source")`. To obtain this file, contact the authors at [https://personalytics.rti.org/](https://personalytics.rti.org/). 
 
-## Starting `PersonAlyticsLite`
+## Starting `PersonAlytics`
 
-Now we can load `PersonAlyticsLite`:
+Now we can load `PersonAlytics`:
 
 ```{r, message=FALSE}
-library(PersonAlyticsLite)
+#library(PersonAlytics)
 ```
 
 

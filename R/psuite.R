@@ -8,8 +8,8 @@
 #'
 #' @usage Palytic(DVout, method)
 #'
-#' @details
-#' @description apply p.adjust and add output and graphics
+#' @description
+#' Apply p.adjust and add output and graphics
 #'
 #' @param DVout A data frame created by \code{\link{PersonAlyticHTP}}.
 #' @param method One of \code{\link{p.adjust.methods}}.
@@ -18,7 +18,6 @@
 #' @param alpha The type I error rate.
 #' @param rawdata The raw data for plotting.
 #'
-#' @examples
 
 psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
                    rawdata=NULL)
@@ -53,7 +52,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
   st[2] <- gsub(":", "-", st[2])
   st <- paste(st, collapse="_")
 
-  dn <- paste('PersonAlyticsPro p-value report', st)
+  dn <- paste('PersonAlytics p-value report', st)
   if(!dir.exists((dn)))  dir.create(dn)
 
   fn <- paste(paste("./", dn, "/", sep=""),

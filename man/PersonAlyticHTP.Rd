@@ -113,7 +113,7 @@ Type I error corrections are implemented via [pending].
 }
 \examples{
 # group model
-t1 <- PersonAlyticHTP(data=PersonAlyticsLite::OvaryICT,
+t1 <- PersonAlyticHTP(data=OvaryICT,
                  ids="Mare",
                  dvs="follicles",
                  phase="Phase",
@@ -122,7 +122,7 @@ t1 <- PersonAlyticHTP(data=PersonAlyticsLite::OvaryICT,
                  ind.mods=FALSE,
                  grp.mod=TRUE)
 # individual models (using defaults)
-t1 <- PersonAlyticHTP(data=PersonAlyticsLite::OvaryICT,
+t1 <- PersonAlyticHTP(data=OvaryICT,
                  ids="Mare",
                  dvs="follicles",
                  phase="Phase",

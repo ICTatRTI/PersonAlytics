@@ -20,7 +20,7 @@ Palytic(DVout, method)
 \item{rawdata}{The raw data for plotting.}
 }
 \description{
-apply p.adjust and add output and graphics
+Apply p.adjust and add output and graphics
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}

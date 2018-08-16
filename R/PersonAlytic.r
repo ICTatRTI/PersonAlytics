@@ -46,7 +46,7 @@
 #'
 #' # for more examples, see the user's guide:
 #' \dontrun{
-#' vignette('PersonAlyticsLite_Users_Guide', package='PersonAlyticsLite')
+#' vignette('PersonAlytics_Users_Guide', package='PersonAlytics')
 #' }
 #'
 

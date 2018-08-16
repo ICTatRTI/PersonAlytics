@@ -3,7 +3,7 @@ knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(nlme)
 library(gamlss)
-library(PersonAlyticsLite)
+#library(PersonAlytics)
 
 ## ------------------------------------------------------------------------
 egaov <- aov(follicles ~ factor(Mare), data = Ovary)

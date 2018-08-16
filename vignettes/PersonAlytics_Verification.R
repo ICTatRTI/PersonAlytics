@@ -4,7 +4,7 @@ library(knitr)
 library(nlme)
 
 ## ---- message=FALSE------------------------------------------------------
-library(PersonAlyticsLite)
+library(PersonAlytics)
 
 ## ---- warning=FALSE------------------------------------------------------
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',

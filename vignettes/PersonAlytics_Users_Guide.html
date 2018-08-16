@@ -79,10 +79,10 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>The pupropose of this vignette is to illustrate how to use <code>PersonAlytics</code> to analyze single case time series data (also knows as single subject or N-of-1 studies), small sample intensivel longitudinal design data, and ideographic clinical trial data (ICT). An ICT is a single-case or small sample longitudinal data set multiple treatment conditions (at a minimum, a control and treatment conditions).</p>
 <p>The <code>PersonAlytic</code> framework</p>
 </div>
-<div id="installing-personalyticslite" class="section level2">
-<h2>Installing <code>PersonAlyticsLite</code></h2>
+<div id="installing-personalytics" class="section level2">
+<h2>Installing <code>PersonAlytics</code></h2>
 <p>First you must install <code>R</code>, available at <code>https://cran.r-project.org/</code>. It is also suggested that you use a modern code editor such as Rstudio (<code>https://www.rstudio.com/</code>).</p>
-<p><code>PersonAlyticsLite</code> requries several packages which can be installed (or updated if you already have them) by pasting the following code<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> into your <code>R</code> console:</p>
+<p><code>PersonAlytics</code> requries several packages which can be installed (or updated if you already have them) by pasting the following code<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> into your <code>R</code> console:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">install.deps &lt;-<span class="st"> </span><span class="cf">function</span>(pkg)
 {
   new.pkg &lt;-<span class="st"> </span>pkg[<span class="op">!</span>(pkg <span class="op">%in%</span><span class="st"> </span><span class="kw">installed.packages</span>()[, <span class="st">&quot;Package&quot;</span>])]
@@ -93,7 +93,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 }
 packages &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;gamlss&quot;</span>, <span class="st">&quot;ggplot2&quot;</span>, <span class="st">&quot;multilevel&quot;</span>, <span class="st">&quot;nlme&quot;</span>, <span class="st">&quot;R6&quot;</span>)
 <span class="kw">install.deps</span>(packages)</code></pre></div>
-<p>The packages on which <code>PersonAlyticsLite</code> builds include</p>
+<p>The packages on which <code>PersonAlytics</code> builds include</p>
 <ul>
 <li><code>gamlss</code> which is used to fit mixed effects models with multiple distributions</li>
 <li><code>ggplot2</code> for plotting results (not yet implemented)</li>
@@ -101,12 +101,12 @@ packages &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st
 <li><code>nlme</code> which is used to fit mixed effects models with normal outcomes</li>
 <li><code>R6</code> an object-oriented approach to programming in R for creating <code>Palytic</code> objects, which can be thought of as a suitecase containing all your data and tools for fitting models and displaying results</li>
 </ul>
-<p>Now you’re ready to install <code>PersonAlyticsLite</code> <code>install.packages(&quot;.../path/on/your/computer/PersonAlyticsLite_0.0.1.tar.gz&quot;, repos = NULL, type = &quot;source&quot;)</code>. To obtain this file, contact the authors at <a href="https://personalytics.rti.org/" class="uri">https://personalytics.rti.org/</a>.</p>
+<p>Now you’re ready to install <code>PersonAlytics</code> <code>install.packages(&quot;.../path/on/your/computer/PersonAlytics_0.0.1.tar.gz&quot;, repos = NULL, type = &quot;source&quot;)</code>. To obtain this file, contact the authors at <a href="https://personalytics.rti.org/" class="uri">https://personalytics.rti.org/</a>.</p>
 </div>
-<div id="starting-personalyticslite" class="section level2">
-<h2>Starting <code>PersonAlyticsLite</code></h2>
-<p>Now we can load <code>PersonAlyticsLite</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PersonAlyticsLite)</code></pre></div>
+<div id="starting-personalytics" class="section level2">
+<h2>Starting <code>PersonAlytics</code></h2>
+<p>Now we can load <code>PersonAlytics</code>:</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#library(PersonAlytics)</span></code></pre></div>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#' t1 &lt;- PersonAlytic(data=OvaryICT,</span>
 <span class="co">#'                  ids=&quot;Mare&quot;,</span>
 <span class="co">#'                  dv=&quot;follicles&quot;,</span>

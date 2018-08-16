@@ -1,7 +1,6 @@
 #' High through-put options for Palytic objects.
 #'
 #' @export
-#' @import PersonAlyticsLite
 #' @import snow
 #' @import doSNOW
 #' @import foreach
@@ -84,7 +83,7 @@
 #'
 #' @examples
 #' # group model
-#' t1 <- PersonAlyticHTP(data=PersonAlyticsLite::OvaryICT,
+#' t1 <- PersonAlyticHTP(data=OvaryICT,
 #'                  ids="Mare",
 #'                  dvs="follicles",
 #'                  phase="Phase",
@@ -93,7 +92,7 @@
 #'                  ind.mods=FALSE,
 #'                  grp.mod=TRUE)
 #' # individual models (using defaults)
-#' t1 <- PersonAlyticHTP(data=PersonAlyticsLite::OvaryICT,
+#' t1 <- PersonAlyticHTP(data=OvaryICT,
 #'                  ids="Mare",
 #'                  dvs="follicles",
 #'                  phase="Phase",
@@ -146,10 +145,10 @@ PersonAlyticHTP <- function(file=NULL                ,
   # object, but we do it early on here to avoid problems after loops start.
   # This is why `clean()` has inputs that apply to PersonAlyticHTP but not to
   # PersonAlytic
-  data <- PersonAlyticsLite:::clean(data, ids, dv=NULL, time, phase, ivs,
-                                    fixed=NULL, random=NULL, formula=NULL,
-                                    correlation,
-                                    dvs, ivsl, standardize)
+  data <- clean(data, ids, dv=NULL, time, phase, ivs,
+                fixed=NULL, random=NULL, formula=NULL,
+                correlation,
+                dvs, ivsl, standardize)
 
   # subgroup the data and delete the parameter, after this point, it is only
   # used to subgroup to unique ids
@@ -160,7 +159,7 @@ PersonAlyticHTP <- function(file=NULL                ,
   # 20180728 - commented out by Stephen Tueller when debugging metabolomics
   # some DSST output was missing time and phase (but not ids). This code is
   # not yet essential and may be the culprit. PalyticObj is use by utils in
-  # PersonAlyticsLite and we may have issues with scope allowing this to be
+  # PersonAlytics and we may have issues with scope allowing this to be
   # non-null (unlikely though, b/c this is before the loops and only some
   # loops are affected).
   ###########################################################################
@@ -188,7 +187,7 @@ PersonAlyticHTP <- function(file=NULL                ,
   ## if no data are given, use a test data set
   if(is.null(data))
   {
-    data   <- PersonAlyticsLite::OvaryICT
+    data   <- OvaryICT
     dvs    <- "follicles"
     phase  <- "Phase"
     ids    <- "Mare"
