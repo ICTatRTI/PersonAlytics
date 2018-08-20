@@ -8,7 +8,8 @@ via a Palytic object}
 PersonAlytic(data = NULL, ids, dv, time, phase = NULL, ivs = NULL,
   interactions = NULL, time_power = 1, correlation = NULL,
   family = gamlss.dist::NO(), subgroup = NULL, standardize = FALSE,
-  package = "gamlss")
+  package = "gamlss", maxAR = 0, maxMA = 0, IC = c("BIC", "AIC"),
+  lrt = FALSE, alpha = 0.05, maxOrder = 0)
 }
 \arguments{
 \item{data}{A \code{\link{data.frame}} with the variables assinged to \code{ids},
@@ -31,7 +32,9 @@ sorting.}
 terms should be specified, e.g., \code{list(c('time', 'phase'), c('time', 'iv1'),
 c('iv1', 'iv2'))} where \code{'iv1'} is the name of a variable in the liste \code{ivs}.}
 
-\item{time_power}{Numeric. Power of the time variable (e.g., \code{time^time_power}).}
+\item{time_power}{Numeric. Power of the time variable (e.g., \code{time^time_power}).
+A quadratic or cubic growth model would be specified using
+\code{time_power=2} or \code{time_power=3}, respectively. See also \code{maxOrder}.}
 
 \item{correlation}{See \code{\link{corStruct}} in \code{\link{nlme}}. Must be passed as a
 character, e.g. \code{"corARMA(p=1)"}.}
@@ -46,9 +49,26 @@ Does not apply to factor variables.}
 
 \item{package}{Which package should be used? Options are \code{\link{gamlss}}
 (the default) and \code{\link{nlme}} passed as character strings, e.g., \code{"gamlss"}.}
+
+\item{maxAR}{Integer, the largest AR(p) value that should be considered in the
+automated residual correlation structure search. See \code{\link{nlme::corARMA}}.
+If \code{maxAR=>0} or \code{maxMA>0}, the automated residual correlation
+structure search will be used. Otherwise, the value for \code{correlation} will
+be used.}
+
+\item{IC}{Wich information criterion should be used for selecting among ARMA(p,q)
+models in the automated residual correlation structure search.}
+
+\item{lrt}{logical. Should likelihood ration tests (lrt) be used? If \code{FALE},
+the smallest information criterion will be used (see \code{IC}.) The should be
+false when both AR(p) and MA(q) models are considered since they are not nested
+and the lrt requires nested models.}
+
+\item{alpha}{value greater than 0 and less than 1. The Type I error rate for the lrt.}
 }
 \value{
-\code{PersonAlytic} returns an object of class \code{\link{gamlss}}.
+\code{PersonAlytic} returns an object of class \code{\link{lme}} or
+\code{\link{gamlss}}.
 }
 \description{
 A simplified user interface for initializing a Palytic object

@@ -107,25 +107,31 @@ user accesible. Populated by \code{\link{PersonAylticsPro}}.}
   used to specify generalized linear mixed effects models,
   see \code{\link{gamlss.family}}).
   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-  #'   \item{\code{getAR_order(dv, maxAR=3, maxMA=3, crit="BIC", lrt=TRUE, alpha=.05)}}{
+  \item{\code{getAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
   This method automates the task of determining the correlation structure for each case in
   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
   \code{maxAR} and \code{maxMA} set the highest autoregressive and moving
   average parameters to be tested. If the time variable is approximatetly equally spaced,
-  \code{crit} is the criterion used for determining the correlation structure for each
+  \code{IC} is the criterion used for determining the correlation structure for each
   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
-  spaced, \code{crit} as also the criterion for
+  spaced, \code{IC} as also the criterion for
   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
-  If \code{lrt=TRUE} (the default), likelihood ratios are used via the \code{\link{anova}}
-  method for \code{\link{lme}} objects. Calling \code{getAR_order} populates the
+  If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
+  method for \code{\link{lme}} objects. This is NOT reccomended unless maxMA=0 and only AR
+  models are considered since AR and MA models are not nested. Calling \code{getAR_order}
+  populates the
   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
+  \item{\code{groupAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
+  same as \code{getAR_order} when the ARMA order is desired for the full sample.}
   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
   determining  \code{time_power} for each case in \code{ids}
   (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}). For example,
   if \code{getTime_Power} returns \code{time_power=3}, then \code{time + time^2 + time^3}
   will be added to the fixed effects of the model.
   Calling \code{getTime_Power} populates the
-  \code{time_powers} field of a \code{Palytic} object. For usage, see the examples.}
+  \code{GroupTime_power} field of a \code{Palytic} object. For usage, see the examples.}
+  \item{\code{groupTime_Power(subset, maxOrder)}}{The same as \code{getTime_power} when
+  the polynomial of time is desired for the full sample.}
 }
 }
 

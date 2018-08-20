@@ -89,21 +89,21 @@
 #'   used to specify generalized linear mixed effects models,
 #'   see \code{\link{gamlss.family}}).
 #'   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-#'   \item{\code{getAR_order(dv, maxAR=3, maxMA=3, crit="BIC", lrt=FALSE, alpha=.05)}}{
+#'   \item{\code{getAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
 #'   This method automates the task of determining the correlation structure for each case in
 #'   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
 #'   \code{maxAR} and \code{maxMA} set the highest autoregressive and moving
 #'   average parameters to be tested. If the time variable is approximatetly equally spaced,
-#'   \code{crit} is the criterion used for determining the correlation structure for each
+#'   \code{IC} is the criterion used for determining the correlation structure for each
 #'   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
-#'   spaced, \code{crit} as also the criterion for
+#'   spaced, \code{IC} as also the criterion for
 #'   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
 #'   If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
 #'   method for \code{\link{lme}} objects. This is NOT reccomended unless maxMA=0 and only AR
 #'   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
 #'   populates the
 #'   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
-#'   \item{\code{groupAR_order(dv, maxAR=3, maxMA=3, crit="BIC", lrt=FALSE, alpha=.05)}}{The
+#'   \item{\code{groupAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
 #'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
@@ -1120,12 +1120,12 @@ Palytic$set("public", "gamlss",
 )
 
 # this will only be applied to one participant at a time
-# crit can take on AIC or BIC
+# IC can take on AIC or BIC
 Palytic$set("public", "getAR_order",
                function(dV         ,
                         maxAR=3    ,
                         maxMA=3    ,
-                        crit="BIC" ,
+                        IC="BIC" ,
                         lrt=FALSE  , # only valid for nested models, AR, MA are not nested
                         alpha=.05  )
                {
@@ -1139,8 +1139,8 @@ Palytic$set("public", "getAR_order",
                  #
                  if(eqSpace)
                  {
-                   if(crit=="BIC") ic = "bic"
-                   if(crit=="AIC") ic = "aic"
+                   if(IC=="BIC") ic = "bic"
+                   if(IC=="AIC") ic = "aic"
                    #frmToChar(self$fixed) # 20180816 not sure why this is here, depricate
                    AR_orders <- by(self$data[[dV]],
                                    self$data[[self$ids]],
@@ -1255,11 +1255,11 @@ Palytic$set("public", "getAR_order",
 
                        if(!lrt)
                        {
-                         if(crit=="AIC") ICs <- data.frame( unlist( lapply(corModsid, AIC) ) )
-                         if(crit=="BIC") ICs <- data.frame( unlist( lapply(corModsid, BIC) ) )
-                         else( stop( paste(crit, "is not a valid value for `crit`,",
+                         if(IC=="AIC") ICs <- data.frame( unlist( lapply(corModsid, AIC) ) )
+                         if(IC=="BIC") ICs <- data.frame( unlist( lapply(corModsid, BIC) ) )
+                         else( stop( paste(IC, "is not a valid value for `IC`,",
                                            "use AIC or BIC.")))
-                         ICs <- rbind(NULL = ifelse(crit=="AIC", AIC(nullMod),
+                         ICs <- rbind(NULL = ifelse(IC=="AIC", AIC(nullMod),
                                                     BIC(nullMod)), ICs)
                          return( row.names(ICs)[which.min(ICs[,1])] )
                        }
@@ -1278,9 +1278,9 @@ Palytic$set("public", "getAR_order",
                },
                overwrite = TRUE)
 
-# crit can take on AIC or BIC
+# IC can take on AIC or BIC
 Palytic$set("public", "GroupAR_order",
-               function(dV, maxAR=3, maxMA=3, crit="BIC", lrt=FALSE, alpha=.05,
+               function(dV, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05,
                         subgroup=NULL)
                {
 
@@ -1358,11 +1358,11 @@ Palytic$set("public", "GroupAR_order",
 
                    if(!lrt)
                    {
-                     if(crit=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
-                     if(crit=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
-                     else( stop( paste(crit, "is not a valid value for `crit`,",
+                     if(IC=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
+                     if(IC=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
+                     else( stop( paste(IC, "is not a valid value for `IC`,",
                                        "use AIC or BIC.")))
-                     ICs <- rbind("NULL" = ifelse(crit=="AIC", AIC(nullMod),
+                     ICs <- rbind("NULL" = ifelse(IC=="AIC", AIC(nullMod),
                                                   BIC(nullMod)), ICs)
                      bestCor <- c("NULL", names(corMods))[which.min(ICs[,1])]
                    }

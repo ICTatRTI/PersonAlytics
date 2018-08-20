@@ -13,7 +13,7 @@
 #' The \code{PersonAlytics} package provides the simplified user interface
 #' for implementing this model using \code{\link{gamlss}} or \code{\link{lme}}. The
 #' two primary functions of \code{PersonAlytics} are \code{\link{PersonAlytic}}, which
-#' runs a single model, and \code{\link{PersonAlyticsHTP}} which iterates over multiple
+#' runs a single model, and \code{\link{PersonAlyticHTP}} which iterates over multiple
 #' models. Note that \code{\link{PersonAlyticsHTP}} can be used to run a single model but
 #' this will go much more slowly because of the computational overhead required for
 #' parralellization.

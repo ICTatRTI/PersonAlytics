@@ -1,15 +1,15 @@
 traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""),
                       Individual	    = c(TRUE , "black", "solid", .5),
                       Avg.Observed	  = c(FALSE, "red", "solid", 2),
-                      CI.Observed	    = c(FALSE, "pink", "solid", 1),
+                      IC.Observed	    = c(FALSE, "pink", "solid", 1),
                       Avg.Fitted	    = c(FALSE, "yellow", "solid", 2),
-                      Avg.CI		      = c(FALSE, "blue", "solid", 1),
+                      Avg.IC		      = c(FALSE, "blue", "solid", 1),
                       Avg.PI		      = c(FALSE, "green", "solid", 1),
                       Fit.Ind         = c(FALSE, "black", "solid", .5),
                       Ind.Smooth		  = c(FALSE, "red", "solid", 2),
                       Fit.Smooth		  = c(TRUE, "yellow", "solid", 2),
-                      Ind.Smooth.CI	  = c(FALSE, "pink", "solid", 2),
-                      Fit.Smooth.CI	  = c(TRUE, "blue", "solid", 2),
+                      Ind.Smooth.IC	  = c(FALSE, "pink", "solid", 2),
+                      Fit.Smooth.IC	  = c(TRUE, "blue", "solid", 2),
                       time.power.plot = 1,
                       xlabel		      = "",
                       ylabel		      = "",
@@ -17,7 +17,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
                       phaselable	    = "Phase",
                       w	              = 11,
                       h		            = 8.5,
-                      CI.transparency = .50,
+                      IC.transparency = .50,
                       conf.int	      = .95,
                       boxCols			    = NULL,
                       outlier.color	  = NULL,
@@ -40,8 +40,8 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   #   get fitted data and standard errors
   cmult <- qnorm(conf.int+.5*(1-conf.int))
 
-  #   CI for each person
-  plotdat$"Model Based Avg. CI" <- data.frame(group=dat[,id],
+  #   IC for each person
+  plotdat$"Model Based Avg. IC" <- data.frame(group=dat[,id],
                                               x=dat[,time],
                                               ymin=plotdat$"Individual Model Based"$y-dat$SE*cmult,
                                               ymax=plotdat$"Individual Model Based"$y+dat$SE*cmult)
@@ -52,11 +52,11 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
                                                ymin=plotdat$"Individual Model Based"$y-dat$SE2*cmult,
                                                ymax=plotdat$"Individual Model Based"$y+dat$SE2*cmult)
 
-  #   CI mean at each time point
-  plotdat$"Model Based Avg. CI" <- aggregate(plotdat$"Model Based Avg. CI"[,3:4],
-                                             by=list(plotdat$"Model Based Avg. CI"$x), FUN=mean)
-  names(plotdat$"Model Based Avg. CI")[1] <- "x"
-  plotdat$"Model Based Avg. CI" <- data.frame(plotdat$"Model Based Avg. CI")
+  #   IC mean at each time point
+  plotdat$"Model Based Avg. IC" <- aggregate(plotdat$"Model Based Avg. IC"[,3:4],
+                                             by=list(plotdat$"Model Based Avg. IC"$x), FUN=mean)
+  names(plotdat$"Model Based Avg. IC")[1] <- "x"
+  plotdat$"Model Based Avg. IC" <- data.frame(plotdat$"Model Based Avg. IC")
 
   #   PI mean at each time point
   plotdat$"Model Based Avg.  PI" <- aggregate(plotdat$"Model Based Avg.  PI"[,3:4],
@@ -70,7 +70,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   plotdat$"Observed Avg." <- data.frame(x=plotdat$"Observed Avg."$Group.1,
                                         y=plotdat$"Observed Avg."$x)
 
-  #   Observed mean CI at each time point
+  #   Observed mean IC at each time point
   omeansd <- aggregate(plotdat$`Individual Observed`$y,
                        list(plotdat$`Individual Observed`$x), FUN=sd, na.rm=TRUE)
   names(omeansd) <- c("x", "sd")
@@ -79,7 +79,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   names(omeann) <- c("x", "n")
   omeanse <- merge(plotdat$"Observed Avg.", merge(omeansd, omeann))
   omeanse$se <- omeanse$sd/sqrt(omeanse$n)
-  plotdat$`Observed Avg. CI` <- data.frame(x=omeanse$x,
+  plotdat$`Observed Avg. IC` <- data.frame(x=omeanse$x,
                                            y=omeanse$y,
                                            ymin=omeanse$y - omeanse$se*cmult,
                                            ymax=omeanse$y + omeanse$se*cmult)
@@ -91,7 +91,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   plotdat$"Model Based Avg." <- data.frame(x=plotdat$"Model Based Avg."$x,
                                            y=plotdat$"Model Based Avg."$y)
 
-  #   Smoothed observed data & CI
+  #   Smoothed observed data & IC
   obs.gam <- gam(y ~ s(x, bs = "cs"), data=plotdat$`Individual Observed`)
   obs.gam <- predict(obs.gam, se.fit=TRUE)
   obs.gam.y  <- aggregate(obs.gam$fit, list(dat[,time]), mean, na.rm=TRUE)
@@ -103,7 +103,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
                                                ymin=obs.gam.y$x - obs.gam.se$x*cmult,
                                                ymax=obs.gam.y$x + obs.gam.se$x*cmult)
 
-  #   Smoothed Fitted data & CI (use observed se for now)
+  #   Smoothed Fitted data & IC (use observed se for now)
   fit.gam <- gam(y ~ s(x, bs = "cs"), data=plotdat$`Individual Model Based`)
   fit.gam <- predict(fit.gam, se.fit=TRUE)
   fit.gam.y  <- aggregate(fit.gam$fit, list(dat[,time]), mean, na.rm=TRUE)
@@ -130,10 +130,10 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   xlim <- range(pretty(xlim))
 
   ### adjust color transparency
-  Avg.CI[2] <- adjustcolor(Avg.CI[2], alpha.f=CI.transparency)
-  Avg.PI[2] <- adjustcolor(Avg.PI[2], alpha.f=CI.transparency)
-  Ind.Smooth.CI[2] <- adjustcolor(Ind.Smooth.CI[2], alpha.f=CI.transparency)
-  Fit.Smooth.CI[2] <- adjustcolor(Fit.Smooth.CI[2], alpha.f=CI.transparency)
+  Avg.IC[2] <- adjustcolor(Avg.IC[2], alpha.f=IC.transparency)
+  Avg.PI[2] <- adjustcolor(Avg.PI[2], alpha.f=IC.transparency)
+  Ind.Smooth.IC[2] <- adjustcolor(Ind.Smooth.IC[2], alpha.f=IC.transparency)
+  Fit.Smooth.IC[2] <- adjustcolor(Fit.Smooth.IC[2], alpha.f=IC.transparency)
 
   ### set up blank plot
   jpeg(file = plotName, width = w, height = h, units = "in", res=500)
@@ -191,14 +191,14 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
     ltys.a$`Observed` <- Avg.Observed[3]
     lwds.a$`Observed` <- Avg.Observed[4]
   }
-  if(CI.Observed[1])
+  if(IC.Observed[1])
   {
-    polygon(c(plotdat$`Observed Avg. CI`$x, plotdat$`Observed Avg. CI`$x),
-            c(plotdat$`Observed Avg. CI`$ymin, plotdat$`Observed Avg. CI`$ymax),
-            col=CI.Observed[2], lty=CI.Observed[3], lwd=CI.Observed[4], border=NA)
-    cols.a$`Observed Avg. CI` <- CI.Observed[2]
-    ltys.a$`Observed Avg. CI` <- CI.Observed[3]
-    lwds.a$`Observed Avg. CI` <- CI.Observed[4]
+    polygon(c(plotdat$`Observed Avg. IC`$x, plotdat$`Observed Avg. IC`$x),
+            c(plotdat$`Observed Avg. IC`$ymin, plotdat$`Observed Avg. IC`$ymax),
+            col=IC.Observed[2], lty=IC.Observed[3], lwd=IC.Observed[4], border=NA)
+    cols.a$`Observed Avg. IC` <- IC.Observed[2]
+    ltys.a$`Observed Avg. IC` <- IC.Observed[3]
+    lwds.a$`Observed Avg. IC` <- IC.Observed[4]
   }
   if(Avg.PI[1])
   {
@@ -209,14 +209,14 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
     ltys.a$`PI Model Based` <- Avg.PI[3]
     lwds.a$`PI Model Based` <- Avg.PI[4]
   }
-  if(Avg.CI[1])
+  if(Avg.IC[1])
   {
-    polygon(c(plotdat$`Model Based Avg. CI`$x, plotdat$`Model Based Avg. CI`$x[nrow(plotdat$`Model Based Avg. CI`):1]),
-            c(plotdat$`Model Based Avg. CI`$ymax, plotdat$`Model Based Avg. CI`$ymin[nrow(plotdat$`Model Based Avg. CI`):1]),
-            col=Avg.CI[2], lty=Avg.CI[3], lwd=Avg.CI[4], border=NA)
-    cols.a$`CI Model Based` <- Avg.CI[2]
-    ltys.a$`CI Model Based` <- Avg.CI[3]
-    lwds.a$`CI Model Based` <- Avg.CI[4]
+    polygon(c(plotdat$`Model Based Avg. IC`$x, plotdat$`Model Based Avg. IC`$x[nrow(plotdat$`Model Based Avg. IC`):1]),
+            c(plotdat$`Model Based Avg. IC`$ymax, plotdat$`Model Based Avg. IC`$ymin[nrow(plotdat$`Model Based Avg. IC`):1]),
+            col=Avg.IC[2], lty=Avg.IC[3], lwd=Avg.IC[4], border=NA)
+    cols.a$`IC Model Based` <- Avg.IC[2]
+    ltys.a$`IC Model Based` <- Avg.IC[3]
+    lwds.a$`IC Model Based` <- Avg.IC[4]
   }
   if(Avg.Fitted[1])
   {
@@ -226,14 +226,14 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
     ltys.a$`Model Based` <- Avg.Fitted[3]
     lwds.a$`Model Based` <- Avg.Fitted[4]
   }
-  if(Ind.Smooth.CI[1])
+  if(Ind.Smooth.IC[1])
   {
     polygon(c(plotdat$`Smooth Observed`$x, plotdat$`Smooth Observed`$x[nrow(plotdat$`Smooth Observed`):1]),
             c(plotdat$`Smooth Observed`$ymax, plotdat$`Smooth Observed`$ymin[nrow(plotdat$`Smooth Observed`):1]),
-            col=Ind.Smooth.CI[2], lty=Ind.Smooth.CI[3], lwd=Ind.Smooth.CI[4], border=NA)
-    cols.a$`CI Smooth Observed` <- Ind.Smooth.CI[2]
-    ltys.a$`CI Smooth Observed` <- Ind.Smooth.CI[3]
-    lwds.a$`CI Smooth Observed` <- Ind.Smooth.CI[4]
+            col=Ind.Smooth.IC[2], lty=Ind.Smooth.IC[3], lwd=Ind.Smooth.IC[4], border=NA)
+    cols.a$`IC Smooth Observed` <- Ind.Smooth.IC[2]
+    ltys.a$`IC Smooth Observed` <- Ind.Smooth.IC[3]
+    lwds.a$`IC Smooth Observed` <- Ind.Smooth.IC[4]
   }
   if(Ind.Smooth[1])
   {
@@ -243,14 +243,14 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
     ltys.a$`Smooth Observed` <- Ind.Smooth[3]
     lwds.a$`Smooth Observed` <- Ind.Smooth[4]
   }
-  if(Fit.Smooth.CI[1])
+  if(Fit.Smooth.IC[1])
   {
     polygon(c(plotdat$`Smooth Model Based`$x, plotdat$`Smooth Model Based`$x[nrow(plotdat$`Smooth Model Based`):1]),
             c(plotdat$`Smooth Model Based`$ymax, plotdat$`Smooth Model Based`$ymin[nrow(plotdat$`Smooth Model Based`):1]),
-            col=Fit.Smooth.CI[2], lty=Fit.Smooth.CI[3], lwd=Fit.Smooth.CI[4], border=NA)
-    cols.a$`CI Smooth Model Based` <- Fit.Smooth.CI[2]
-    ltys.a$`CI Smooth Model Based` <- Fit.Smooth.CI[3]
-    lwds.a$`CI Smooth Model Based` <- Fit.Smooth.CI[4]
+            col=Fit.Smooth.IC[2], lty=Fit.Smooth.IC[3], lwd=Fit.Smooth.IC[4], border=NA)
+    cols.a$`IC Smooth Model Based` <- Fit.Smooth.IC[2]
+    ltys.a$`IC Smooth Model Based` <- Fit.Smooth.IC[3]
+    lwds.a$`IC Smooth Model Based` <- Fit.Smooth.IC[4]
   }
   if(Fit.Smooth[1])
   {
@@ -330,14 +330,14 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   # appealing to our users…  So, the features described above would be retained, but the
   # centering line would representing the mean (based on the model’s predicted outcomes
   # and the median appearing as a dot), the upper and lower ends of the box representing
-  # 95% CI of the mean, and the whiskers presenting standard deviations.  I’m hoping that
+  # 95% IC of the mean, and the whiskers presenting standard deviations.  I’m hoping that
   # for this second plot, you could use existing R code and simply replace the typical
   # box-and-whiskers values with these alternatives?
   TyStats <- function(x, conf.int)
   {
     x.sd <- sd(x)
-    x.CI <- as.data.frame( t(CI(x, conf.int)) )
-    r <- c(x.CI$mean-x.sd, x.CI$lower, x.CI$mean, x.CI$upper, x.CI$mean + x.sd)
+    x.IC <- as.data.frame( t(IC(x, conf.int)) )
+    r <- c(x.IC$mean-x.sd, x.IC$lower, x.IC$mean, x.IC$upper, x.IC$mean + x.sd)
     names(r) <- c("ymin", "lower", "middle", "upper", "ymax")
     r
   }
@@ -352,7 +352,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
         scale_fill_manual(values = boxCols, name = boxlabel) + xlab("") + ylab(ylabel) +
         ggtitle(paste("Modelled Average", dv, "by Phase")) +
         labs(caption = paste("The line in the middle of the box is the mean of the fitted values.\n",
-                             "The edges of the box are at the ends of the 95% CI for the mean of the fitted values.\n",
+                             "The edges of the box are at the ends of the 95% IC for the mean of the fitted values.\n",
                              "The whiskers extend from the line in the middle of the box to +/- 1 SD of the fitted values."))+
         theme(plot.caption=element_text(hjust=0))
     )

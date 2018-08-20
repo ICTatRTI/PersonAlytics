@@ -17,7 +17,12 @@ The basic mixed effects model is \eqn{dv=time+phase+phase*time}
 with random intercepts and random slopes for time. The phase variable is optional.
 Additional independent variables (or covariates) can be included.
 The \code{PersonAlytics} package provides the simplified user interface
-for implementing this model using \code{\link{gamlss}} or \code{\link{lme}}.
+for implementing this model using \code{\link{gamlss}} or \code{\link{lme}}. The
+two primary functions of \code{PersonAlytics} are \code{\link{PersonAlytic}}, which
+runs a single model, and \code{\link{PersonAlyticHTP}} which iterates over multiple
+models. Note that \code{\link{PersonAlyticsHTP}} can be used to run a single model but
+this will go much more slowly because of the computational overhead required for
+parralellization.
 
 Key features of the \code{PersonAlytics} package include:
 
