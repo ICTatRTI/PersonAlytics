@@ -62,7 +62,13 @@ PersonAlytic <- function(data=NULL,
                          family=gamlss.dist::NO(),
                          subgroup=NULL,
                          standardize=FALSE,
-                         package='gamlss')
+                         package='gamlss',
+                         maxAR=3,
+                         maxMA=3,
+                         crit="BIC",
+                         lrt=FALSE,
+                         alhpa=.05,
+                         maxOrder=3)
 {
   # if no data are given, use a test data set
   if(is.null(data))
@@ -81,7 +87,7 @@ PersonAlytic <- function(data=NULL,
     package     <- 'gamlss'
   }
 
-  t1 <- Palytic$new(data=data,
+  t1 <- Palytic$new(data=data[subgroup,],
                     dv=dv,
                     ids=ids,
                     time=time,
@@ -91,8 +97,10 @@ PersonAlytic <- function(data=NULL,
                     time_power=time_power,
                     correlation=correlation,
                     standardize=standardize)
-  if(package=="gamlss") Grp.out <- t1$gamlss(subgroup)
-  if(package=="nlme")   Grp.out <- t1$lme(subgroup)
+  t1$GroupAR_order(dv, maxAR, maxMA, crit, lrt, alpha)
+  t1$GroupTime_Power(maxOrder)
+  if(package=="gamlss") Grp.out <- t1$gamlss()
+  if(package=="nlme")   Grp.out <- t1$lme()
 
   return(Grp.out)
 

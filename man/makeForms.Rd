@@ -6,7 +6,8 @@
 \usage{
 makeForms(ids = "Mare", dv = "follicles", time = "Time",
   phase = "Phase", ivs = "iv1", interactions = list(c("iv1", "Phase")),
-  correlation = "NULL", dropTime = FALSE, method = "REML")
+  correlation = "NULL", family = NO(), dropTime = FALSE,
+  method = "REML")
 }
 \arguments{
 \item{See}{\code{\link{Palytic}}}

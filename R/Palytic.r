@@ -89,7 +89,7 @@
 #'   used to specify generalized linear mixed effects models,
 #'   see \code{\link{gamlss.family}}).
 #'   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-#'   #'   \item{\code{getAR_order(dv, maxAR=3, maxMA=3, crit="BIC", lrt=TRUE, alpha=.05)}}{
+#'   \item{\code{getAR_order(dv, maxAR=3, maxMA=3, crit="BIC", lrt=FALSE, alpha=.05)}}{
 #'   This method automates the task of determining the correlation structure for each case in
 #'   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
 #'   \code{maxAR} and \code{maxMA} set the highest autoregressive and moving
@@ -98,16 +98,22 @@
 #'   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
 #'   spaced, \code{crit} as also the criterion for
 #'   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
-#'   If \code{lrt=TRUE} (the default), likelihood ratios are used via the \code{\link{anova}}
-#'   method for \code{\link{lme}} objects. Calling \code{getAR_order} populates the
+#'   If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
+#'   method for \code{\link{lme}} objects. This is NOT reccomended unless maxMA=0 and only AR
+#'   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
+#'   populates the
 #'   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
+#'   \item{\code{groupAR_order(dv, maxAR=3, maxMA=3, crit="BIC", lrt=FALSE, alpha=.05)}}{The
+#'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
 #'   (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}). For example,
 #'   if \code{getTime_Power} returns \code{time_power=3}, then \code{time + time^2 + time^3}
 #'   will be added to the fixed effects of the model.
 #'   Calling \code{getTime_Power} populates the
-#'   \code{time_powers} field of a \code{Palytic} object. For usage, see the examples.}
+#'   \code{GroupTime_power} field of a \code{Palytic} object. For usage, see the examples.}
+#'   \item{\code{groupTime_Power(subset, maxOrder)}}{The same as \code{getTime_power} when
+#'   the polynomial of time is desired for the full sample.}
 #' }
 #'
 #' @examples
@@ -174,8 +180,8 @@ Palytic <- R6::R6Class("Palytic",
     .method      = NULL,
     .standardize = FALSE,
     .corStructs  = NULL,
-    .time_powers  = NULL,
-    .monotone    = NULL,
+    .time_powers = NULL,
+    .ismonotone  = NULL,
     .is_clean    = FALSE,
     .warnings    = list(),
     .errors      = list(),
@@ -329,7 +335,7 @@ Palytic <- R6::R6Class("Palytic",
         private$.random       <- frms$random
         private$.formula      <- frms$formula
         private$.method       <- frms$method
-        private$.monotone <- monotone(private$.ids, private$.time, private$.data)
+        private$.ismonotone   <- monotone(private$.ids, private$.time, private$.data)
         self
       }
     },
@@ -881,7 +887,7 @@ Palytic <- R6::R6Class("Palytic",
       standardize = FALSE,
       corStructs  = NULL,
       time_powers = NULL,
-      monotone    = NULL,
+      ismonotone  = NULL,
       is_clean    = FALSE,
       warnings    = list(), # can we hide these? or just make them read only?
       errors      = list(),
@@ -949,7 +955,7 @@ Palytic <- R6::R6Class("Palytic",
       private$.standardize <- standardize
       private$.corStructs  <- corStructs
       private$.time_powers <- time_powers
-      private$.monotone    <- ismonotone
+      private$.ismonotone  <- ismonotone
       private$.is_clean    <- is_clean
       private$.warnings    <- warnings
       private$.errors      <- errors
@@ -1061,7 +1067,7 @@ Palytic$set("public", "gamlss",
               tempData <- na.omit( subset(self$data, subgroup,
                                  all.vars(self$formula)) )
 
-              wm <- 1
+              wm <- 1 # default model
               ctrl <- gamlss::gamlss.control()
               m1 <- try(gamlss::gamlss(formula = self$formula,
                                sigma.formula = sigma.formula,
@@ -1071,7 +1077,7 @@ Palytic$set("public", "gamlss",
 
               if( "try-error" %in% class(m1) )# | !eds(m1) )
               {
-                wm <- 2
+                wm <- 2 # default model with increased n.cyc
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                          sigma.formula = sigma.formula,
@@ -1082,10 +1088,11 @@ Palytic$set("public", "gamlss",
               }
               if( "try-error" %in% class(m1) )
               {
-                wm <- 3
-                newformula <- forms(data       = self$data ,
-                                    PalyticObj = self      ,
-                                    dropTime   = TRUE      )
+                wm <- 3 # drop the random slope(s)
+                newformula <- forms(data       = self$data   ,
+                                    PalyticObj = self        ,
+                                    dropTime   = TRUE        ,
+                                    family     = self$family )
                 self$formula <- newformula$formula
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
@@ -1273,7 +1280,7 @@ Palytic$set("public", "getAR_order",
 
 # crit can take on AIC or BIC
 Palytic$set("public", "GroupAR_order",
-               function(dV, maxAR=3, maxMA=3, crit="BIC", lrt=TRUE, alpha=.05,
+               function(dV, maxAR=3, maxMA=3, crit="BIC", lrt=FALSE, alpha=.05,
                         subgroup=NULL)
                {
 

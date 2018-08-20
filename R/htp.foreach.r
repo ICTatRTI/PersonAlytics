@@ -19,7 +19,8 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
   DVout <- list()
   for(dv in dims$DV)
   {
-    # initialize the null object to be copied (do NOT use $clone() as it has failed in tests)
+    # initialize the null object to be copied (do NOT use $clone() as it
+    # has failed in tests)
     t0 <- Palytic$new(data=data,
                       ids=ids,
                       dv=dvs[[dv]],
@@ -42,7 +43,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
       if(detectTO) t0$getTime_Power(maxOrder)
       #t0$time_powers
     }
-    if(dims$ID=="All Cases")
+    if(dims$ID[1]=="All Cases")
     {
       if(detectAR) t0$GroupAR_order(dvs[[dv]])
       if(detectTO) t0$GroupTime_Power(maxOrder)
@@ -146,7 +147,8 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
         wsplit <- unlist(lapply(ivvs, grepl, pattern="\\*"))
         if( any(wsplit) )
         {
-          ivvs <- unique( c(ivvs[!wsplit], unlist( strsplit(unlist(ivvs[wsplit]), "\\*") ) ) )
+          ivvs <- unique( c(ivvs[!wsplit],
+                            unlist( strsplit(unlist(ivvs[wsplit]), "\\*") ) ) )
         }
         ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
         ivv  <- unlist( lapply(data.frame(temp[,ivvs]),

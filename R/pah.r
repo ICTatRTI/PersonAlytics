@@ -29,13 +29,13 @@ pah <- function()
   t1=Palytic$new(data=OvaryICT,
                 ids="Mare",
                 dv=dvs[[1]],
-                time="TimeSin",
+                time="Time",
                 phase="Phase",
                 ivs=NULL,
                 interactions=NULL,
                 time_power=1,
                 correlation=NULL,
-                family=gamlss.dist::NO()
+                family=gamlss.dist::BEINF()
   )
 }
 
@@ -43,9 +43,6 @@ pahdefault <- function()
 {
   file=NULL
   data=OvaryICT
-  ids="Mare"
-  dvs="follicles"
-  time="TimeSin"
   phase=NULL
   ivs=NULL
   ivsl=NULL
@@ -55,7 +52,7 @@ pahdefault <- function()
   family=gamlss.dist::NO()
   subgroup=NULL
   standardize=TRUE
-  package='nlme'
+  package='gamlss'
   ind.mods=TRUE
   grp.mod=FALSE
   PalyticObj=NULL

@@ -136,7 +136,6 @@ forms <- function(data                  ,
     {
       dv  <- all.vars(fixed)[1]
       ivs <- strsplit(as.character(fixed), "~")[[3]]
-
     }
     if(!is.null(random))
     {
@@ -180,8 +179,9 @@ forms <- function(data                  ,
                         ivs          = ivs         ,
                         interactions = interactions,
                         correlation  = correlation ,
+                        family       = family      ,
                         dropTime     = dropTime    ,
-                        method       = method)
+                        method       = method      )
   fixed <- theForms$fixed
   random <- theForms$random
   formula <- theForms$formula
@@ -228,11 +228,12 @@ forms <- function(data                  ,
 #'
 makeForms <- function(ids          = "Mare"                   ,
                       dv           = "follicles"              ,
-                      time         = "Time"                ,
+                      time         = "Time"                   ,
                       phase        = "Phase"                  ,
                       ivs          = "iv1"                    ,
                       interactions = list(c("iv1", "Phase"))  ,
                       correlation  = "NULL"                   ,
+                      family       = NO()                     ,
                       dropTime     = FALSE                    ,
                       method       = "REML"                   )
 {
@@ -269,8 +270,10 @@ makeForms <- function(ids          = "Mare"                   ,
                             deparse(method),
                             ", correlation =",
                             ifelse(is.null(correlation), "NULL", correlation),
+                            ", family =",
+                            family,
                             ")")
-  )
+                      )
 
   if(!is.null(ivs) & length(ivs) > 0)
   {
@@ -334,6 +337,9 @@ decompFormula <- function(formula=NULL)
       (re(random = ~Time2 + I(Time2^2) + I(Time2^3) | ID,
           method = "REML", correlation = nlme::corARMA(p = 3, q = 3))) +
       X3.81_442.2293m.z + Batch + Session2 + Time2:Tx + Tx:I(Time2^2) + Tx:I(Time2^3)
+
+    formula <- 1 ~ TimeSin * Phase + re(random = ~1 | Mare, method = "REML",
+                                        correlation = NULL, family = )
     }
   }
 
@@ -352,7 +358,10 @@ decompFormula <- function(formula=NULL)
   if(length(f.char3)<2)
   {
     f.temp <- unlist( strsplit(f.char3, "\\+") )
-    if(! grepl('re', f.temp[1]) ) stop('Problem parsing random effects in `decompFormula()`')
+    if(! grepl('re', f.temp[1]) )
+    {
+      stop('Problem parsing random effects in `decompFormula()`')
+    }
     f.char3 <- c(paste(f.temp[2:length(f.temp)], collapse='+'),
                 f.temp[1])
   }

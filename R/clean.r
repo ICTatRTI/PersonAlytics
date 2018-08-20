@@ -27,10 +27,21 @@
 #'
 #' @keywords internal
 
-clean <- function(data, ids, dv, time, phase=NULL, ivs=NULL,
-                  fixed=NULL, random=NULL, formula=NULL, correlation=NULL,
-                  dvs=NULL, ivsl=NULL, standardize=FALSE, sortData=TRUE,
-                  alignPhase = TRUE)
+clean <- function(data		 	            ,
+                  ids		 	              ,
+                  dv		 	              ,
+                  time		 	            ,
+                  phase	        =	NULL	,
+                  ivs	          =	NULL	,
+                  fixed       	=	NULL	,
+                  random      	=	NULL	,
+                  formula	      =	NULL	,
+                  correlation 	=	NULL	,
+                  dvs	          =	NULL	,
+                  ivsl        	=	NULL	,
+                  standardize 	=	FALSE	,
+                  sortData	    =	TRUE	,
+                  alignPhase 	  =	TRUE  )
 {
   # check that variables are in the data set
   vars <- unique( c(ids, dv, time, phase, unlist(ivs), unlist(dvs), unlist(ivsl),
