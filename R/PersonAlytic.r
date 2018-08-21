@@ -46,7 +46,7 @@
 #' be used.
 #' @param IC Wich information criterion should be used for selecting among ARMA(p,q)
 #' models in the automated residual correlation structure search.
-#' @param lrt logical. Should likelihood ration tests (lrt) be used? If \code{FALE},
+#' @param lrt logical. Should likelihood ration tests (lrt) be used? If \code{FALSE},
 #' the smallest information criterion will be used (see \code{IC}.) The should be
 #' false when both AR(p) and MA(q) models are considered since they are not nested
 #' and the lrt requires nested models.
@@ -86,7 +86,7 @@ PersonAlytic <- function(data=NULL,
                          family=gamlss.dist::NO(),
                          subgroup=NULL,
                          standardize=FALSE,
-                         package='gamlss',
+                         package=c('nlme', 'gamlss'),
                          maxAR=0,
                          maxMA=0,
                          IC=c("BIC", "AIC"),

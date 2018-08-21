@@ -83,7 +83,7 @@
 #'
 #' @examples
 #' # group model
-#' t1 <- PersonAlyticHTP(data=OvaryICT,
+#' t0 <- PersonAlyticHTP(data=OvaryICT,
 #'                  ids="Mare",
 #'                  dvs="follicles",
 #'                  phase="Phase",
@@ -98,11 +98,14 @@
 #'                  phase="Phase",
 #'                  time="TimeSin",
 #'                  package='nlme')
-#' hist(t1$Phase.Std.Error, main='Distribution of Phase Effect', xlab='Phase Effect')
-#' \dontrun{
-#' # if you wish to delete the automatically created csv file, run
-#' #NOT IMPLEMENTED YET
-#' }
+#'
+#' summary(t0)
+#' summary(t1)
+
+# \dontrun{
+# # if you wish to delete the automatically created csv file, run
+# #NOT IMPLEMENTED YET
+# }
 
 PersonAlyticHTP <- function(file=NULL                ,
                             data=NULL                ,
@@ -118,7 +121,7 @@ PersonAlyticHTP <- function(file=NULL                ,
                             family=gamlss.dist::NO() ,
                             subgroup=NULL            ,
                             standardize=TRUE         ,
-                            package='gamlss'         ,
+                            package='nlme'         ,
                             ind.mods=TRUE            ,
                             grp.mod=FALSE            ,
                             PalyticObj=NULL          ,

@@ -153,7 +153,8 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
         ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
         ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
                                function(x) !all(duplicated(x)[-1L])) )
-        err_id['ivVar'] <- paste( paste('The variance of `', ivvs, '` is ',
+        err_id['ivVar'] <- paste( paste('T
+                                        he variance of `', ivvs, '` is ',
                                         ifelse(ivv, '> 0 ', '= 0 '),
                                         sep=''), collapse='; ')
 

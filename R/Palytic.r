@@ -103,7 +103,7 @@
 #'   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
 #'   populates the
 #'   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
-#'   \item{\code{groupAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
+#'   \item{\code{GroupAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
 #'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}

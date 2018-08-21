@@ -1,0 +1,19 @@
+---
+title: "PersonAlytics Software Requirement Specification Document"
+author: "Stephen Tueller"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{PersonAlytics Software Requirement Specification}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+### Purpose
+
