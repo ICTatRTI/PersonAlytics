@@ -2,7 +2,10 @@
 title: "PersonAlytics Software Requirement Specification Document"
 author: "Stephen Tueller"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    toc: true
+    number_sections: true
 vignette: >
   %\VignetteIndexEntry{PersonAlytics Software Requirement Specification}
   %\VignetteEngine{knitr::rmarkdown}
@@ -13,7 +16,25 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-## Introduction
+**SRS Revisions**
 
-### Purpose
+Date     | Description       | Revision | Editor
+---------|-------------------|----------|----------------
+20180821 | Document Creation | 0        | Stephen Tueller
 
+\newpage
+
+
+# Introduction
+
+This document descrbes the implementation details of the `PersonAlytics` `R` package which automates sereval steps of the mixed effects model fitting process for single-case, small N, and ICT data. `PersonAlytics` does not make decision reccomendations based on its output, and the user assumes all responsibility for data quality and interpretation of results.
+
+# Design Overview
+
+## Description of Problem
+
+## Technologies Used
+
+The `PersonAlytics` `R` package automates much of the mixed effects model fitting process for single-case, small N, and ICT data. Users will primarily interface with the `PersonAlytic` and `PersonAlyticHTP` functions inside of an `R` session. These functions serve as simplified wrappers for automating several modeling steps and build on the [nlme R package](https://cran.r-project.org/web/packages/nlme/index.html)(for linear mixed effects models) and the [gamlss R package](https://www.gamlss.com/)(for generalized linear mixed effects models).
+
+`R` operates on Windows, Linux, and Apple systems, and the `PersonAlytics` source that will be disrtributed to users under the RTI License is platform independent.

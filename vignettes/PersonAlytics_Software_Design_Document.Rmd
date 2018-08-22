@@ -3,9 +3,7 @@ title: "PersonAlytics Software Design Document"
 author: "Stephen Tueller"
 date: "`r Sys.Date()`"
 output: 
-  rmarkdown::html_vignette:
-    toc: true
-    number_sections: true
+  word_document
 vignette: >
   %\VignetteIndexEntry{PersonAlytics Software Design Document}
   %\VignetteEngine{knitr::rmarkdown}
@@ -16,15 +14,35 @@ vignette: >
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+**SDD Revisions**
+
+Date     | Description       | Revision | Editor
+---------|-------------------|----------|----------------
+20180820 | Document Creation | 0        | Stephen Tueller
+
+\newpage
+
 # Introduction
 
 ## Purpose
 
-This software design document (SDD) describes the architecture and system design of the PersonAlytics R package. The `PersonAlytics` package provides analytic tools for single-case, small N, and Idiographic Clinical Trials (ICT) using mixed effect models building the [nlme R package] (https://cran.r-project.org/web/packages/nlme/index.html). It is assumed that the reader
-
-* Has `R` installed on their system and can install the required dependencies
+This software design document (SDD) describes the architecture and system design of the PersonAlytics R package. The `PersonAlytics` package provides analytic tools for single-case, small N, and Idiographic Clinical Trials (ICT) using mixed effect models building the [nlme R package] (https://cran.r-project.org/web/packages/nlme/index.html) and the [gamlss R package](https://www.gamlss.com/). 
 
 ## Scope
+
+This document descrbes the implementation details of the `PersonAlytics` `R` package which automates sereval steps of the mixed effects model fitting process for single-case, small N, and ICT data. `PersonAlytics` does not make decision reccomendations based on its output, and the user assumes all responsibility for data quality and interpretation of results. 
+
+This documents assumes that the reader
+
+* Has [R](https://cran.r-project.org/) installed on their system (`R` operates on Windows, Linux, and Apple systems, and the `PersonAlytics` source that will be disrtributed to users under the RTI License is platform independent).
+
+* Has installed the required dependencies (see the "PersonAlytics Design Diagram" below).
+
+* Has `PersonAlytics` installed on their system. In `R`, type `install.packages("path/to/file/PersonAlytics_0.0.1.tar.gz", repos = NULL, type = "source")` into the console replacing `path/to/file/` with the directory in which `PersonAlytics_0.0.1.tar.gz` is saved. Note that `R` uses forward slashes even when used in a Windows environment.
+
+* Has `R` running on their system and `PersonAlytics` loaded by typing `library(PersonAlytics)` into the console. This will provide the reader with access to the `R` help file system, which is accessed by preceding a function name with a question mark. For example, typing `?PersonAlytics` into the `R` console will open the documentation overview. 
+
+* It is suggested that the reader use [Rstudio](https://www.rstudio.com/), which has a dedicated pane for help files. Example code within the help pane can be run by highlighting the text and pressing Ctrl+Enter.
 
 ## Aim
 
@@ -326,7 +344,9 @@ The `PersonAlytic` function returns an `lme` or `gamlss` object to the R console
 * [additional columns with parameters estimates, standard errors, degrees of freedom, t-values, and p-values; column labels depend on the analysis and model].
 
 
+# Model Verification
 
+# Model Validation
     
 
 

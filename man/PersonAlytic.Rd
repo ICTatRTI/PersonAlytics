@@ -8,8 +8,8 @@ via a Palytic object}
 PersonAlytic(data = NULL, ids, dv, time, phase = NULL, ivs = NULL,
   interactions = NULL, time_power = 1, correlation = NULL,
   family = gamlss.dist::NO(), subgroup = NULL, standardize = FALSE,
-  package = "gamlss", maxAR = 0, maxMA = 0, IC = c("BIC", "AIC"),
-  lrt = FALSE, alpha = 0.05, maxOrder = 0)
+  package = c("nlme", "gamlss"), maxAR = 0, maxMA = 0, IC = c("BIC",
+  "AIC"), lrt = FALSE, alpha = 0.05, maxOrder = 0)
 }
 \arguments{
 \item{data}{A \code{\link{data.frame}} with the variables assinged to \code{ids},
@@ -59,7 +59,7 @@ be used.}
 \item{IC}{Wich information criterion should be used for selecting among ARMA(p,q)
 models in the automated residual correlation structure search.}
 
-\item{lrt}{logical. Should likelihood ration tests (lrt) be used? If \code{FALE},
+\item{lrt}{logical. Should likelihood ration tests (lrt) be used? If \code{FALSE},
 the smallest information criterion will be used (see \code{IC}.) The should be
 false when both AR(p) and MA(q) models are considered since they are not nested
 and the lrt requires nested models.}

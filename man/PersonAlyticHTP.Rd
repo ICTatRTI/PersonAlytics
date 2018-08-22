@@ -7,7 +7,7 @@
 PersonAlyticHTP(file = NULL, data = NULL, ids, dvs, time, phase = NULL,
   ivs = NULL, ivsl = NULL, interactions = NULL, time_power = 1,
   correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
-  standardize = TRUE, package = "gamlss", ind.mods = TRUE,
+  standardize = TRUE, package = "nlme", ind.mods = TRUE,
   grp.mod = FALSE, PalyticObj = NULL, detectAR = TRUE, detectTO = TRUE,
   maxOrder = 3, charSub = NULL, sigma.formula = ~1,
   debugforeach = FALSE, p.method = "BY", alpha = 0.05)
@@ -113,7 +113,7 @@ Type I error corrections are implemented via [pending].
 }
 \examples{
 # group model
-t1 <- PersonAlyticHTP(data=OvaryICT,
+t0 <- PersonAlyticHTP(data=OvaryICT,
                  ids="Mare",
                  dvs="follicles",
                  phase="Phase",
@@ -128,9 +128,7 @@ t1 <- PersonAlyticHTP(data=OvaryICT,
                  phase="Phase",
                  time="TimeSin",
                  package='nlme')
-hist(t1$Phase.Std.Error, main='Distribution of Phase Effect', xlab='Phase Effect')
-\dontrun{
-# if you wish to delete the automatically created csv file, run
-#NOT IMPLEMENTED YET
-}
+
+summary(t0)
+summary(t1)
 }

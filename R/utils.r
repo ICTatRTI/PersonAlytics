@@ -270,8 +270,6 @@ makeForms <- function(ids          = "Mare"                   ,
                             deparse(method),
                             ", correlation =",
                             ifelse(is.null(correlation), "NULL", correlation),
-                            ", family =",
-                            family,
                             ")")
                       )
 
@@ -496,4 +494,16 @@ dohtp <- function()
 alf <- function(x)
 {
   attach( as.list( formals(x) ) )
+}
+
+
+#' to01 - function to convent any variable to the [0,1] range
+#' @author Stephen Tueller \email{Stueller@@rti.org
+#' @param x A numeric vector.
+#' @param na.rm Logical, should missing data be excluded when calculating min/max
+#' @references Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54.
+#' @export
+to01 <- function(x, na.rm=TRUE)
+{
+  (x - min(x, na.rm=na.rm))/(max(x, na.rm=na.rm)-min(x, na.rm=na.rm))
 }

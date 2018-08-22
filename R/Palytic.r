@@ -1094,6 +1094,7 @@ Palytic$set("public", "gamlss",
                                     dropTime   = TRUE        ,
                                     family     = self$family )
                 self$formula <- newformula$formula
+                self$family  <- newformula$family
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                data    = tempData,
@@ -1103,10 +1104,9 @@ Palytic$set("public", "gamlss",
               }
               if("gamlss" %in% class(m1))
               {
-                m1$call$formula <- self$formula
-                m1$family <- self$family
-                m1$call$sigma.formula <- self$sigma.formula
-                m1$call$family <- self$family
+                m1$call$formula         <- self$formula
+                m1$call$sigma.formula   <- sigma.formula
+                m1$call$family          <- self$family
                 m1$call$whichPalyticMod <- paste('Palytic gamlss model #', wm)
                 return(m1)
               }
