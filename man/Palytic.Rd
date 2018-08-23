@@ -175,7 +175,7 @@ t2$formula
 t1 <- Palytic$new(data = OvaryICT, ids='Mare',
                   dv='follicles', time='Time', phase='Phase')
 t1$getTime_Power()
-t1$time_powesr
+t1$time_powers
 # getAR_order works on one case at a time
 t1$getAR_order(t1$dv)
 t1$corStructs

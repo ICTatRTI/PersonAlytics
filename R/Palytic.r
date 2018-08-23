@@ -171,7 +171,7 @@ Palytic <- R6::R6Class("Palytic",
     .phase       = NULL,
     .ivs         = NULL,
     .interactions= NULL,
-    .time_power  = 1,
+    .time_power  = NULL,
     .correlation = NULL,
     .family      = NULL,
     .fixed       = NULL,
@@ -877,7 +877,7 @@ Palytic <- R6::R6Class("Palytic",
       phase       = NULL,
       ivs         = NULL,
       interactions= NULL,
-      time_power  = 1,
+      time_power  = NULL,
       correlation = NULL,
       family      = gamlss.dist::NO(),
       fixed       = NULL,
@@ -1148,7 +1148,7 @@ Palytic$set("public", "getAR_order",
                    AR_orders <- by(self$data[[dV]],
                                    self$data[[self$ids]],
                                    FUN = function(x) forecast::auto.arima(x,
-                                                                          ic=ic)$arma[c(1,3)])
+                                                     ic=ic)$arma[c(1,3)])
                    AR_orders <- lapply(AR_orders, function(x)as.data.frame(t(x)))
                    AR_orders <- plyr::rbind.fill(AR_orders)
                    AR_orders <- data.frame(ids=as.numeric(row.names(AR_orders)),
@@ -1176,7 +1176,8 @@ Palytic$set("public", "getAR_order",
                    # cannot :: the %dopar% operator
                    require(foreach)
                    # parralelization
-                   funcs <- c("mean") # c(".eds") -- not importing from PersonAlytic correctly
+                   # c(".eds") -- not importing from PersonAlytic correctly
+                   funcs <- c("mean")
                    cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK")
                    snow::clusterExport(cl, funcs)
                    doSNOW::registerDoSNOW(cl)
@@ -1210,9 +1211,10 @@ Palytic$set("public", "getAR_order",
                          }
                        }
                        names(corModsid) <- unlist( lapply(corModsid,
-                                                          function(x) x$call$correlation) )
-
-                       if(lrt) # consider depricating, tests are invalid, models are not nested
+                                                   function(x) x$call$correlation) )
+                       # consider depricating, tests are invalid, models are not
+                       # nested
+                       if(lrt)
                        {
                          lrts <- lapply( lapply( corModsid,
                                                  function(x) anova(x, nullMod)),
@@ -1272,7 +1274,7 @@ Palytic$set("public", "getAR_order",
                        return( "NULL" )
                      }
                    } # end of dopar
-                   #parallel::stopCluster(cl)
+                   parallel::stopCluster(cl)
 
                    self$corStructs <- data.frame(ids=uid,
                                                  arma=as.character( unlist(bestCors)) )
@@ -1286,7 +1288,6 @@ Palytic$set("public", "GroupAR_order",
                function(dV, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05,
                         subgroup=NULL)
                {
-
                  corMods <- list(); cc <- 1
                  self$correlation <- "NULL"
                  nullMod <- self$lme(subgroup)

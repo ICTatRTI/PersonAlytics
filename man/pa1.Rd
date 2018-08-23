@@ -4,7 +4,10 @@
 \alias{pa1}
 \title{pa1}
 \usage{
-pa1(...)
+pa1(file, data, ids, dvs, time, phase, ivs, target_ivs, interactions,
+  time_power, correlation, family, subgroup, standardize, package, ind.mods,
+  PalyticObj, detectAR, PQ, IC, detectTO, charSub, sigma.formula, p.method,
+  alpha)
 }
 \description{
 pa1

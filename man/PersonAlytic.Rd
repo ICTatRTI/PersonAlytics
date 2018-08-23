@@ -6,12 +6,12 @@
 mixed effects models with high throughput options.}
 \usage{
 PersonAlytic(file = NULL, data = NULL, ids, dvs, time, phase = NULL,
-  ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 1,
+  ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 3,
   correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
-  standardize = TRUE, package = "nlme", ind.mods = FALSE,
-  PalyticObj = NULL, detectAR = TRUE, IC = c("BIC", "AIC"),
-  detectTO = TRUE, charSub = NULL, sigma.formula = ~1, p.method = "BY",
-  alpha = 0.05, ...)
+  standardize = TRUE, package = "nlme", ind.mods = TRUE,
+  PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3), IC = c("BIC",
+  "AIC"), detectTO = TRUE, charSub = NULL, sigma.formula = ~1,
+  p.method = "BY", alpha = 0.05, alignPhase = TRUE, ...)
 }
 \arguments{
 \item{file}{The file name (or full path with `/` instead of `\`) where output should
@@ -59,15 +59,8 @@ If \code{detectTO=TRUE}, this is the largest value tested for \code{detectTO}.}
 
 \item{correlation}{See \code{\link{corStruct}} in \code{\link{nlme}}.
 Must be passed as a character, e.g. \code{"corARMA(p=1)"}.
-If \code{detectAR=TRUE} automatic selection of the residual covariance structure
-is invoked, and \code{correlation} must be specified as a pair of numbers to be
-passed to \code{\link{nlme::corARMA}}. The general form is
-\code{correlation=c(p,q)} where \code{p} is the autoregressive (AR) parameter and
-\code{q} is the moving average (MA) parameter. The default
-\code{correlation=c(3,3)} will always be used when \code{detectAR=TRUE}.
-In general, \code{correlation=c(P,Q)} initializes a search among
-\code{p=1,...,P} and \code{p=1,...,Q}. If \code{correlation=c(P,Q)} and
-\code{detectAR=FALSE}, \code{detectAR} will be changed to \code{TRUE}.}
+If \code{detectAR=TRUE}, \code{correlation} will be ignored, see \code{PQ}
+and \code{detectAR}.}
 
 \item{family}{See \code{\link{gamlss.family}}. The default is normal. A list
 of the same length as \code{length(dv)} can be supplied. For example if
@@ -105,7 +98,19 @@ search), and user specified models via \code{formula}.}
 autocorrelation structure be automatically selected from among
 \code{ARMA(p,q)} models? See \code{correlation}. Since these models are not
 nested, model selection is done using information information criterion
-(see \code{IC}).
+(see \code{IC}).}
+
+\item{PQ}{Numeric vector of length 2, e.g., \code{PQ=c(3,3)}.
+If \code{detectAR=TRUE}, automatic selection of the residual covariance
+structure is invoked initializing a search among
+\code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
+from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
+are passed to \code{\link{nlme::corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
+testing (see \code{detectAR}). If \code{detectAR=TRUE}, \code{correlation}
+will be ignored.}
+
+\item{IC}{Either the Akaike Information Criterion (\code{IC="AIC"}) or
+the Bayesian Information Criterion (\code{IC="BIC"}, the default).
 
 If the \code{time} variable is equally spaced, this is
 done using the function \code{\link{forecast}}. If the \code{time} variable
@@ -115,9 +120,6 @@ estimators.
 
 Residual autocorrelation structure is done separately for each case in
 \code{ids} if \code{ind.mods=TRUE}.}
-
-\item{IC}{Either the Akaike Information Criterion (\code{IC="AIC"}) or
-the Bayesian Information Criterion (\code{IC="BIC"}, the default).}
 
 \item{detectTO}{Logical, defaults to \code{TRUE}. Should the \code{time_power} value
 be automatically selected? Values from 1 to \code{time_power} will be tested. For
@@ -154,6 +156,17 @@ are made and reported in separate output saved to the working directory.}
 
 \item{alpha}{Numeric value in the (0,1) interval. The Type I error rate for
 adjusting p-values.}
+
+\item{alignPhase}{Logical. Should the time variable be realigned at the phase?
+If \code{TRUE} (the default), the time for first observation in the second phase
+becomes 0 and times prior to the secord phase are negative. For example, if the
+time variable is \code{c(0,1,2,3,4,5)} and the phase variable is
+\code{c(0,0,0,1,1,1)}, phase alignment yields a time variable of
+\code{c{-3,-2,-1,0,1,2}}. This is useful when the timing of the transition
+between the first and second phases varies by individual, especially for
+graphing. This approach does not generalize to three or more phases, and
+alignment only happens at the first phase transition. If there are three or
+more phases, the later phase will not be aligned.}
 }
 \description{
 A simplified user interface for longitudinal linear mixed
@@ -181,21 +194,32 @@ Type I error corrections are implemented using the options available in
 \code{\link{p.adjust}}.
 }
 \examples{
-# group model
+# full sample model
 t0 <- PersonAlytic(data=OvaryICT,
                  ids="Mare",
                  dvs="follicles",
                  phase="Phase",
-                 time="TimeSin",
+                 time="Time",
                  package='nlme',
                  ind.mods=FALSE)
+
 # individual models (using defaults)
 t1 <- PersonAlytic(data=OvaryICT,
                  ids="Mare",
                  dvs="follicles",
                  phase="Phase",
-                 time="TimeSin",
+                 time="Time",
                  package='nlme')
+
+# gamlss with two distributions - features not implemented
+#OvaryICT$follicles01 <- to01(OvaryICT$follicles)
+#t1 <- PersonAlytic(data=OvaryICT,
+#                 ids="Mare",
+#                 dvs=list("follicles", "follicles01"),
+#                 phase="Phase",
+#                 time="Time",
+#                 family=c(NO(), BEINF()),
+#                 package='gamlss')
 
 summary(t0)
 summary(t1)

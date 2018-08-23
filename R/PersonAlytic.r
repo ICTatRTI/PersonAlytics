@@ -76,15 +76,8 @@
 #'
 #' @param correlation See \code{\link{corStruct}} in \code{\link{nlme}}.
 #' Must be passed as a character, e.g. \code{"corARMA(p=1)"}.
-#' If \code{detectAR=TRUE} automatic selection of the residual covariance structure
-#' is invoked, and \code{correlation} must be specified as a pair of numbers to be
-#' passed to \code{\link{nlme::corARMA}}. The general form is
-#' \code{correlation=c(p,q)} where \code{p} is the autoregressive (AR) parameter and
-#' \code{q} is the moving average (MA) parameter. The default
-#' \code{correlation=c(3,3)} will always be used when \code{detectAR=TRUE}.
-#' In general, \code{correlation=c(P,Q)} initializes a search among
-#' \code{p=1,...,P} and \code{p=1,...,Q}. If \code{correlation=c(P,Q)} and
-#' \code{detectAR=FALSE}, \code{detectAR} will be changed to \code{TRUE}.
+#' If \code{detectAR=TRUE}, \code{correlation} will be ignored, see \code{PQ}
+#' and \code{detectAR}.
 #'
 #' @param family See \code{\link{gamlss.family}}. The default is normal. A list
 #' of the same length as \code{length(dv)} can be supplied. For example if
@@ -124,6 +117,18 @@
 #' nested, model selection is done using information information criterion
 #' (see \code{IC}).
 #'
+#' @param PQ Numeric vector of length 2, e.g., \code{PQ=c(3,3)}.
+#' If \code{detectAR=TRUE}, automatic selection of the residual covariance
+#' structure is invoked initializing a search among
+#' \code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
+#' from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
+#' are passed to \code{\link{nlme::corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
+#' testing (see \code{detectAR}). If \code{detectAR=TRUE}, \code{correlation}
+#' will be ignored.
+#'
+#' @param IC Either the Akaike Information Criterion (\code{IC="AIC"}) or
+#' the Bayesian Information Criterion (\code{IC="BIC"}, the default).
+#'
 #' If the \code{time} variable is equally spaced, this is
 #' done using the function \code{\link{forecast}}. If the \code{time} variable
 #' is notequally spaced, this is done using comparisons of
@@ -132,9 +137,6 @@
 #'
 #' Residual autocorrelation structure is done separately for each case in
 #' \code{ids} if \code{ind.mods=TRUE}.
-#'
-#' @param IC Either the Akaike Information Criterion (\code{IC="AIC"}) or
-#' the Bayesian Information Criterion (\code{IC="BIC"}, the default).
 #'
 #' @param detectTO Logical, defaults to \code{TRUE}. Should the \code{time_power} value
 #' be automatically selected? Values from 1 to \code{time_power} will be tested. For
@@ -172,22 +174,44 @@
 #' @param alpha Numeric value in the (0,1) interval. The Type I error rate for
 #' adjusting p-values.
 #'
+#' @param alignPhase Logical. Should the time variable be realigned at the phase?
+#' If \code{TRUE} (the default), the time for first observation in the second phase
+#' becomes 0 and times prior to the secord phase are negative. For example, if the
+#' time variable is \code{c(0,1,2,3,4,5)} and the phase variable is
+#' \code{c(0,0,0,1,1,1)}, phase alignment yields a time variable of
+#' \code{c{-3,-2,-1,0,1,2}}. This is useful when the timing of the transition
+#' between the first and second phases varies by individual, especially for
+#' graphing. This approach does not generalize to three or more phases, and
+#' alignment only happens at the first phase transition. If there are three or
+#' more phases, the later phase will not be aligned.
+#'
 #' @examples
-#' # group model
+#' # full sample model
 #' t0 <- PersonAlytic(data=OvaryICT,
 #'                  ids="Mare",
 #'                  dvs="follicles",
 #'                  phase="Phase",
-#'                  time="TimeSin",
+#'                  time="Time",
 #'                  package='nlme',
 #'                  ind.mods=FALSE)
+#'
 #' # individual models (using defaults)
 #' t1 <- PersonAlytic(data=OvaryICT,
 #'                  ids="Mare",
 #'                  dvs="follicles",
 #'                  phase="Phase",
-#'                  time="TimeSin",
+#'                  time="Time",
 #'                  package='nlme')
+#'
+#' # gamlss with two distributions - features not implemented
+#' #OvaryICT$follicles01 <- to01(OvaryICT$follicles)
+#' #t1 <- PersonAlytic(data=OvaryICT,
+#' #                 ids="Mare",
+#' #                 dvs=list("follicles", "follicles01"),
+#' #                 phase="Phase",
+#' #                 time="Time",
+#' #                 family=c(NO(), BEINF()),
+#' #                 package='gamlss')
 #'
 #' summary(t0)
 #' summary(t1)
@@ -206,40 +230,119 @@ PersonAlytic <- function(file=NULL                ,
                          ivs=NULL                 ,
                          target_ivs=NULL          ,
                          interactions=NULL        ,
-                         time_power=1             ,
+                         time_power=3             ,
                          correlation=NULL         ,
                          family=gamlss.dist::NO() ,
                          subgroup=NULL            ,
                          standardize=TRUE         ,
                          package='nlme'           ,
-                         ind.mods=FALSE           ,
+                         ind.mods=TRUE            ,
                          PalyticObj=NULL          ,
                          detectAR=TRUE            ,
+                         PQ=c(3,3)                ,
                          IC=c("BIC", "AIC")       ,
                          detectTO=TRUE            ,
                          charSub=NULL             ,
                          sigma.formula=~1         ,
                          p.method = "BY"          ,
                          alpha = .05              ,
+                         alignPhase = TRUE        ,
                          ...)
 {
-  if(detectAR==TRUE) correlation <- c(3,3)
-  if(is.numeric(correlation)) detectAR <- TRUE
+  if(length(IC)>1) IC <- IC[1]
+  maxOrder <- time_power
+  time_power <- 1
 
-  if(ind.mods==FALSE & length(dvs==1) & length(target_ivs)<=1)
+  if(ind.mods==FALSE & length(dvs)==1 & length(target_ivs)<=1)
   {
-    pa1(...)
+    pa1(file           ,
+        data           ,
+        ids            ,
+        dvs            ,
+        time           ,
+        phase          ,
+        ivs            ,
+        target_ivs     ,
+        interactions   ,
+        time_power     ,
+        maxOrder       ,
+        correlation    ,
+        family         ,
+        subgroup       ,
+        standardize    ,
+        package        ,
+        ind.mods       ,
+        PalyticObj     ,
+        detectAR       ,
+        PQ             ,
+        IC             ,
+        detectTO       ,
+        charSub        ,
+        sigma.formula  ,
+        p.method       ,
+        alpha          )
   }
-  if(ind.mods==TRUE | length(dvs>1) & length(target_ivs)>1)
+  if(ind.mods==TRUE | length(dvs)>1 & length(target_ivs)>1)
   {
-    paHTP(...)
+    paHTP(file           ,
+          data           ,
+          ids            ,
+          dvs            ,
+          time           ,
+          phase          ,
+          ivs            ,
+          target_ivs     ,
+          interactions   ,
+          time_power     ,
+          maxOrder       ,
+          correlation    ,
+          family         ,
+          subgroup       ,
+          standardize    ,
+          package        ,
+          ind.mods       ,
+          PalyticObj     ,
+          detectAR       ,
+          PQ             ,
+          IC             ,
+          detectTO       ,
+          charSub        ,
+          sigma.formula  ,
+          p.method       ,
+          alpha          )
   }
 }
 
 #' paHTP
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #' @export
-paHTP <- function(...)
+paHTP <- function(file           ,
+                  data           ,
+                  ids            ,
+                  dvs            ,
+                  time           ,
+                  phase          ,
+                  ivs            ,
+                  target_ivs     ,
+                  interactions   ,
+                  time_power     ,
+                  maxOrder       ,
+                  correlation    ,
+                  family         ,
+                  subgroup       ,
+                  standardize    ,
+                  package        ,
+                  ind.mods       ,
+                  PalyticObj     ,
+                  detectAR       ,
+                  PQ             ,
+                  IC             ,
+                  detectTO       ,
+                  charSub        ,
+                  sigma.formula  ,
+                  p.method       ,
+                  alpha          ,
+                  debugforeach = FALSE)
 {
   #
   if(is.null(file))
@@ -316,20 +419,24 @@ paHTP <- function(...)
   #
   if( ind.mods )
   {
-    DVout <- htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
-                         interactions, time_power, correlation,
-                         family = family, standardize, package,
-                         detectAR, detectTO, maxOrder, sigma.formula, debugforeach)
+    DVout <- htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs,
+                         target_ivs, interactions, time_power, correlation,
+                         family, standardize, package,
+                         detectAR, PQ, IC,
+                         detectTO, maxOrder = time_power,
+                         sigma.formula, debugforeach)
   }
   if( !ind.mods )
   {
     grp.dims <- dims
     grp.dims$ID <- "All Cases"
 
-    DVout <- htp.foreach(data, grp.dims, dvs, phase, ids, uids, time, ivs, target_ivs,
-                         interactions, time_power, correlation,
-                         family = family, standardize, package,
-                         detectAR, detectTO, maxOrder, sigma.formula, debugforeach)
+    DVout <- htp.foreach(data, grp.dims, dvs, phase, ids, uids, time, ivs,
+                         target_ivs, interactions, time_power, correlation,
+                         family, standardize, package,
+                         detectAR, PQ, IC,
+                         detectTO, maxOrder = time_power,
+                         sigma.formula, debugforeach)
 
   }
 
@@ -378,20 +485,46 @@ paHTP <- function(...)
 #' pa1
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #' @export
-pa1 <- function(...)
+pa1 <- function(file           ,
+                data           ,
+                ids            ,
+                dvs            ,
+                time           ,
+                phase          ,
+                ivs            ,
+                target_ivs     ,
+                interactions   ,
+                time_power     ,
+                maxOrder       ,
+                correlation    ,
+                family         ,
+                subgroup       ,
+                standardize    ,
+                package        ,
+                ind.mods       ,
+                PalyticObj     ,
+                detectAR       ,
+                PQ             ,
+                IC             ,
+                detectTO       ,
+                charSub        ,
+                sigma.formula  ,
+                p.method       ,
+                alpha          )
 {
   # if no data are given, use a test data set
   if(is.null(data))
   {
     data   <- OvaryICT
-    dv     <- "follicles"
+    dvs    <- "follicles"
     ids    <- "Mare"
     time   <- "Time"
     phase  <- "Phase"
     ivs    <- NULL
     interactions<- NULL
     time_power  <- 1
-    correlation <- c(3,3)
+    correlation <- NULL
+    PQ      <- c(3,3)
     subgroup    <- NULL
     standardize <- FALSE
     package     <- 'nlme'
@@ -403,7 +536,7 @@ pa1 <- function(...)
   if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(data))
 
   t1 <- Palytic$new(data=data[subgroup,]      ,
-                    dv=dv                     ,
+                    dv=dvs                    ,
                     ids=ids                   ,
                     time=time                 ,
                     phase=phase               ,
@@ -413,9 +546,16 @@ pa1 <- function(...)
                     correlation=correlation   ,
                     standardize=standardize   )
 
-  if(detectAR) t1$GroupAR_order(dv, correlation[1], correlation[2], IC, lrt, alpha)
+  if(detectAR) t1$GroupAR_order(dV    = dvs    ,
+                                maxAR = PQ[1]  ,
+                                maxMA = PQ[2]  ,
+                                IC    = IC[1]  )
+  # t1$correlation
+  # t1$formula
 
-  if(maxOrder>0) t1$GroupTime_Power(maxOrder)
+  if(detectTO) t1$GroupTime_Power(maxOrder)
+  # t1$time_power
+  # t1$formula
 
   if(package=="gamlss") Grp.out <- t1$gamlss()
   if(package=="nlme")   Grp.out <- t1$lme()

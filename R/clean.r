@@ -2,17 +2,20 @@
 #'
 #' @param data See \code{\link{PersonAlytic}}.
 #' @param ids See \code{\link{PersonAlytic}}.
-#' @param dv See \code{\link{PersonAlytic}}.
+#' @param dv See \code{\link{Palytic}}.
 #' @param time See \code{\link{PersonAlytic}}.
 #' @param phase See \code{\link{PersonAlytic}}.
-#' @param ivs Used by \code{PersonAlyticPro}.
-#' @param dvs Used by \code{PersonAlyticPro}.
-#' @param target_ivs Used by \code{PersonAlyticPro}.
+#' @param ivs See \code{PersonAlytic}.
 #' @param fixed See \code{\link{Palytic}}.
 #' @param random See \code{\link{Palytic}}.
 #' @param formula See \code{\link{Palytic}}.
+#' @param correlation See \code{\link{PersonAlytic}}.
+#' @param family See \code{\link{PersonAlytic}}.
+#' @param dvs See \code{\link{PersonAlytic}}.
+#' @param target_ivs See \code{PersonAlytic}.
 #' @param standardize Logical. Should all variables be standardized? Only applies
-#' to \code{dv}, \code{ivs}, and \code{target_ivs}.
+#' to \code{dvs}, \code{ivs}, and \code{target_ivs}.
+#' @param alignPhase See \code{\link{PersonAlytic}}.
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
@@ -45,7 +48,7 @@ clean <- function(data		 	            ,
                   alignPhase 	  =	TRUE  )
 {
   # check that variables are in the data set
-  vars <- unique( c(ids, dv, time, phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
+  vars <- unique( c(ids, dv, time[[1]], phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- vars[which(vars!='1')]
   wvars <- which( ! vars %in% names(data) )
@@ -106,7 +109,10 @@ clean <- function(data		 	            ,
     {
       for(i in 1:length(target_ivs))
       {
-        if(!is.factor(data[[target_ivs[[i]]]])) data[[target_ivs[[i]]]] <- scale( data[[target_ivs[[i]]]] )
+        if(!is.factor(data[[target_ivs[[i]]]]))
+        {
+          data[[target_ivs[[i]]]] <- scale( data[[target_ivs[[i]]]] )
+        }
       }
     }
   }
@@ -137,7 +143,7 @@ clean <- function(data		 	            ,
   # this doesn't work for trigonometric functions of time
   if(sortData)
   {
-    data <- data[order(data[[ids]], data[[time]]),]
+    data <- data[order(data[[ids]], data[[time[[1]]]]),]
   }
   # data <- data[order(data[[ids]]), ] # see issue #12 on github
 
@@ -263,7 +269,6 @@ alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
     hist(dat[,time])
     par(mfrow=c(1,1))
   }
-
 
   return(dat)
 }

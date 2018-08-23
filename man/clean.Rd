@@ -14,13 +14,13 @@ clean(data, ids, dv, time, phase = NULL, ivs = NULL, fixed = NULL,
 
 \item{ids}{See \code{\link{PersonAlytic}}.}
 
-\item{dv}{See \code{\link{PersonAlytic}}.}
+\item{dv}{See \code{\link{Palytic}}.}
 
 \item{time}{See \code{\link{PersonAlytic}}.}
 
 \item{phase}{See \code{\link{PersonAlytic}}.}
 
-\item{ivs}{Used by \code{PersonAlyticPro}.}
+\item{ivs}{See \code{PersonAlytic}.}
 
 \item{fixed}{See \code{\link{Palytic}}.}
 
@@ -28,12 +28,18 @@ clean(data, ids, dv, time, phase = NULL, ivs = NULL, fixed = NULL,
 
 \item{formula}{See \code{\link{Palytic}}.}
 
-\item{dvs}{Used by \code{PersonAlyticPro}.}
+\item{correlation}{See \code{\link{PersonAlytic}}.}
 
-\item{target_ivs}{Used by \code{PersonAlyticPro}.}
+\item{family}{See \code{\link{PersonAlytic}}.}
+
+\item{dvs}{See \code{\link{PersonAlytic}}.}
+
+\item{target_ivs}{See \code{PersonAlytic}.}
 
 \item{standardize}{Logical. Should all variables be standardized? Only applies
-to \code{dv}, \code{ivs}, and \code{target_ivs}.}
+to \code{dvs}, \code{ivs}, and \code{target_ivs}.}
+
+\item{alignPhase}{See \code{\link{PersonAlytic}}.}
 }
 \description{
 clean, a function to check data and inputs.

@@ -52,7 +52,7 @@ eds <- function(x)
 monotone <- function(ids, time, data)
 {
   .m <- function(x) all( diff(x) >= 0 )
-  monotonic <- by(data[[time]], INDICES = data[[ids]], FUN = .m)
+  monotonic <- by(data[[time[[1]]]], INDICES = data[[ids]], FUN = .m)
   monotonic <- unlist( as.list(monotonic) )
   data.frame(ids=ids, monotonic=monotonic)
 }

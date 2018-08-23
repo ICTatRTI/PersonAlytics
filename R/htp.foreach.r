@@ -8,7 +8,8 @@
 htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
                 interactions=NULL, time_power=1, correlation=NULL,
                 family = gamlss.dist::NO(), standardize=TRUE, package='gamlss',
-                detectAR = TRUE, detectTO = TRUE, maxOrder=3, sigma.formula=~1,
+                detectAR = TRUE, PQ = c(3,3), IC = "BIC",
+                detectTO = TRUE, maxOrder=3, sigma.formula=~1,
                 debugforeach = FALSE)
 {
   library(foreach)
@@ -36,8 +37,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
 
     if(dims$ID[1]!="All Cases")
     {
-      if(detectAR)  t0$getAR_order(dvs[[dv]], t0$correlation[1], t0$correlation[2],
-								   IC[1])
+      if(detectAR)  t0$getAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
       if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
                                               arma=rep("NULL", length(dims$ID)))
 
@@ -46,8 +46,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
     }
     if(dims$ID[1]=="All Cases")
     {
-      if(detectAR) t0$GroupAR_order(dvs[[dv]], t0$correlation[1], t0$correlation[2],
-								   IC[1])
+      if(detectAR) t0$GroupAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
       if(detectTO) t0$GroupTime_Power(maxOrder)
     }
 
