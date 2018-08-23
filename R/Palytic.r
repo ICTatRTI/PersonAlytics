@@ -917,7 +917,7 @@ Palytic <- R6::R6Class("Palytic",
 
       data <- clean(data, ids, dv, time, phase, ivs,
                     fixed, random, formula, correlation,
-                    dvs=NULL, ivsl=NULL, standardize)
+                    dvs=NULL, target_ivs=NULL, standardize)
 
       frms <- forms(data,
                     PalyticObj=NULL,

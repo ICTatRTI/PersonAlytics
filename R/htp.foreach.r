@@ -5,7 +5,7 @@
 # the current state of using Palytic is to create one object for
 # loops across individuals, but overwrite the the Palytic object
 # for loops across dvs/ivs
-htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
+htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
                 interactions=NULL, time_power=1, correlation=NULL,
                 family = gamlss.dist::NO(), standardize=TRUE, package='gamlss',
                 detectAR = TRUE, detectTO = TRUE, maxOrder=3, sigma.formula=~1,
@@ -63,7 +63,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
     IVout <- foreach(iv = dims$IV, .packages = pkgs) %dopar%
     {
       t1 <- t0
-      ivs.temp <- unlist(c(ivs, ivsl[iv]))
+      ivs.temp <- unlist(c(ivs, target_ivs[iv]))
       if( is.null(ivs.temp) )
       {
         t1$ivs <- ivs.temp
@@ -81,7 +81,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
       {
         if(debugforeach){
           cat('starting id = ', id, '\n\n',
-              file = paste('htp', dvs[dv], ivsl[iv], 'log', sep='.'),
+              file = paste('htp', dvs[dv], target_ivs[iv], 'log', sep='.'),
               append = TRUE)
         }
 
@@ -116,7 +116,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
         err_id['time']         <- t1$time
         err_id['phase']        <- t1$phase
         err_id['ivs']          <- toString( t1$ivs          )
-        #err_id['ivsl']         <- toString( t1$ivsl         )
+        #err_id['target_ivs']         <- toString( t1$target_ivs         )
         err_id['interactions'] <- toString( t1$interactions )
         err_id['time_power']   <- t1$time_power
 
@@ -179,7 +179,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
           if(debugforeach)
           {
             cat('correllation for id = ', id, ' is ', t1$correlation, '\n\n',
-              file = paste('htp', dvs[dv], ivsl[iv], 'log', sep='.'),
+              file = paste('htp', dvs[dv], target_ivs[iv], 'log', sep='.'),
               append = TRUE)
           }
         }
@@ -191,7 +191,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
 
           if(debugforeach){
             cat('modid for id = ', id, ' is a ', class(modid), '\n\n',
-              file = paste('htp', dvs[dv], ivsl[iv], 'log', sep='.'),
+              file = paste('htp', dvs[dv], target_ivs[iv], 'log', sep='.'),
               append = TRUE)
           }
 
@@ -296,12 +296,12 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
       }
 
       # this function is fragile, we need it to adapt to any number of fixed ivs
-      # and use a common label for each ivsl, potentially as a factor!
+      # and use a common label for each target_ivs, potentially as a factor!
       rcn <- function(x)
       {
         if(is.matrix(x))
         {
-          row.names(x)[which( row.names(x) == ivsl[[iv]] )] <- 'TargetPredictor'
+          row.names(x)[which( row.names(x) == target_ivs[[iv]] )] <- 'TargetPredictor'
           xn <- apply(expand.grid(colnames(x), row.names(x)), 1,
                       function(x) paste(x[2], x[1], sep=" "))
         }
@@ -332,7 +332,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
       }
       IDoutSumm <- data.frame(#ids        = row.names(IDmsg),
                               #"ivs"       = cl2(paste(t1$ivs, collapse=', ')),
-                             "target_iv" = cl2(unlist(ivsl)[iv]),
+                             "target_iv" = cl2(unlist(target_ivs)[iv]),
                              fixed       = cln(t1$fixed),
                              random      = cln(t1$random),
                              correlation = ifelse(all(dims$ID=="All Cases"),

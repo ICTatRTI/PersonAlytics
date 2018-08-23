@@ -7,12 +7,12 @@
 #' @param phase See \code{\link{PersonAlytic}}.
 #' @param ivs Used by \code{PersonAlyticPro}.
 #' @param dvs Used by \code{PersonAlyticPro}.
-#' @param ivsl Used by \code{PersonAlyticPro}.
+#' @param target_ivs Used by \code{PersonAlyticPro}.
 #' @param fixed See \code{\link{Palytic}}.
 #' @param random See \code{\link{Palytic}}.
 #' @param formula See \code{\link{Palytic}}.
 #' @param standardize Logical. Should all variables be standardized? Only applies
-#' to \code{dv}, \code{ivs}, and \code{ivsl}.
+#' to \code{dv}, \code{ivs}, and \code{target_ivs}.
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
@@ -38,13 +38,13 @@ clean <- function(data		 	            ,
                   formula	      =	NULL	,
                   correlation 	=	NULL	,
                   dvs	          =	NULL	,
-                  ivsl        	=	NULL	,
+                  target_ivs        	=	NULL	,
                   standardize 	=	FALSE	,
                   sortData	    =	TRUE	,
                   alignPhase 	  =	TRUE  )
 {
   # check that variables are in the data set
-  vars <- unique( c(ids, dv, time, phase, unlist(ivs), unlist(dvs), unlist(ivsl),
+  vars <- unique( c(ids, dv, time, phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- vars[which(vars!='1')]
   wvars <- which( ! vars %in% names(data) )
@@ -96,11 +96,11 @@ clean <- function(data		 	            ,
         if(!is.factor(data[[ivs[[i]]]])) data[[ivs[[i]]]] <- scale( data[[ivs[[i]]]] )
       }
     }
-    if( !is.null(ivsl) & length(ivsl) > 0 )
+    if( !is.null(target_ivs) & length(target_ivs) > 0 )
     {
-      for(i in 1:length(ivsl))
+      for(i in 1:length(target_ivs))
       {
-        if(!is.factor(data[[ivsl[[i]]]])) data[[ivsl[[i]]]] <- scale( data[[ivsl[[i]]]] )
+        if(!is.factor(data[[target_ivs[[i]]]])) data[[target_ivs[[i]]]] <- scale( data[[target_ivs[[i]]]] )
       }
     }
   }

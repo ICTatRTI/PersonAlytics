@@ -18,17 +18,17 @@
 #' @param data See \code{\link{PersonAlytic}}.
 #' @param ids See \code{\link{PersonAlytic}}.
 #' @param dvs A list of one or more character dependent variable names in \code{data}.
-#' The linear mixed effects model \code{dvs[d] ~ phase + time + phase*time + ivsl[c] + ivs}
+#' The linear mixed effects model \code{dvs[d] ~ phase + time + phase*time + target_ivs[c] + ivs}
 #' with random effects \code{~ time | ids[i]} will be fit to the data using
 #' \code{\link{gamlss}}. The iterators \code{[d]}, \code{[d]}, and \code{[d]}
 #' indicates the model will be fit for each combination of dependent variable in \code{dvs},
-#' independent variable in \code{ivsl}, and each unique ID in \code{ids}
+#' independent variable in \code{target_ivs}, and each unique ID in \code{ids}
 #' (overridden using \code{ind.mods=FALSE}) controlling for indepented variables in
 #' \code{ivs}. For more options submit a \code{PalyticObj}.
 #' @param time See \code{\link{PersonAlytic}}.
 #' @param phase See \code{\link{PersonAlytic}}.
 #' @param ivs See \code{\link{PersonAlytic}}, noting that the variables in \code{ivs}
-#' cannot also be in \code{ivsl}.
+#' cannot also be in \code{target_ivs}.
 #' @param ivls Independent variables that are iterated over one at a time. Effects for
 #' these variables are labeled as 'target predictor' in the output.
 #' @param interactions See \code{\link{PersonAlytic}}.
@@ -46,7 +46,7 @@
 #' across all IDs? If both \code{ind.mods} and \code{grp.mod} are \code{FALSE},
 #' \code{grp.mod} will be changed to \code{TRUE}.
 #' @param PalyticObj See \code{\link{Palytic}}. If \code{PalyticObj} is submitted
-#' then only \code{dvs}, \code{ivsl}, \code{ind.mods}, and \code{grp.mod} will be
+#' then only \code{dvs}, \code{target_ivs}, \code{ind.mods}, and \code{grp.mod} will be
 #' used. This allows users access to additional options including generalized linear
 #' mixed effects models via the \code{family} option, user specified \code{correlation}
 #' structures (in non-\code{NULL} this will override the automated correlation structure
@@ -67,7 +67,7 @@
 #' I(time^2)+...+I(time^maxOrder)}.
 #' @param charSub list of paired character strings for character substitution.
 #' If the names of the target predictors
-#' in \code{ivsl} had to be edited to make valid variable names, this parameter allows
+#' in \code{target_ivs} had to be edited to make valid variable names, this parameter allows
 #' users put the illegal characters back in. For example, if the original variable name
 #' was "17.00_832.2375m/z", a letter would need to prefix the variable name and the
 #' "/" would need to be replaced with another character, e.g., "X17.00_832.2375m.z".
@@ -114,14 +114,14 @@ PersonAlyticHTP <- function(file=NULL                ,
                             time                     ,
                             phase=NULL               ,
                             ivs=NULL                 ,
-                            ivsl=NULL                ,
+                            target_ivs=NULL          ,
                             interactions=NULL        ,
                             time_power=1             ,
                             correlation=NULL         ,
                             family=gamlss.dist::NO() ,
                             subgroup=NULL            ,
                             standardize=TRUE         ,
-                            package='nlme'         ,
+                            package='nlme'           ,
                             ind.mods=TRUE            ,
                             grp.mod=FALSE            ,
                             PalyticObj=NULL          ,
@@ -151,7 +151,7 @@ PersonAlyticHTP <- function(file=NULL                ,
   data <- clean(data, ids, dv=NULL, time, phase, ivs,
                 fixed=NULL, random=NULL, formula=NULL,
                 correlation,
-                dvs, ivsl, standardize)
+                dvs, target_ivs, standardize)
 
   # subgroup the data and delete the parameter, after this point, it is only
   # used to subgroup to unique ids
@@ -180,11 +180,11 @@ PersonAlyticHTP <- function(file=NULL                ,
   #  time=NULL
   #}
 
-  # check whether any variables in ivs are in ivsl -
+  # check whether any variables in ivs are in target_ivs -
   # in the future, split them out automatically
-  if(any(ivs %in% ivsl) | any(ivsl %in% ivs))
+  if(any(ivs %in% target_ivs) | any(target_ivs %in% ivs))
   {
-    stop('ivsl and ivs cannot share any variables.')
+    stop('target_ivs and ivs cannot share any variables.')
   }
 
   ## if no data are given, use a test data set
@@ -202,7 +202,7 @@ PersonAlyticHTP <- function(file=NULL                ,
 
   # dimensions for loops
   ID <- uids
-  IV <- 1:length(ivsl); if(is.null(ivsl)) IV <- 1
+  IV <- 1:length(target_ivs); if(is.null(target_ivs)) IV <- 1
   DV <- 1:length(dvs)
   dims <- list(ID=ID, IV=IV, DV=DV)
 
@@ -217,7 +217,7 @@ PersonAlyticHTP <- function(file=NULL                ,
   #
   if( ind.mods )
   {
-    DVout <- htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
+    DVout <- htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
                          interactions, time_power, correlation,
                          family = family, standardize, package,
                          detectAR, detectTO, maxOrder, sigma.formula, debugforeach)
@@ -227,7 +227,7 @@ PersonAlyticHTP <- function(file=NULL                ,
     grp.dims <- dims
     grp.dims$ID <- "All Cases"
 
-    DVout <- htp.foreach(data, grp.dims, dvs, phase, ids, uids, time, ivs, ivsl,
+    DVout <- htp.foreach(data, grp.dims, dvs, phase, ids, uids, time, ivs, target_ivs,
                          interactions, time_power, correlation,
                          family = family, standardize, package,
                          detectAR, detectTO, maxOrder, sigma.formula, debugforeach)
@@ -266,7 +266,7 @@ PersonAlyticHTP <- function(file=NULL                ,
   DVout <- do.call(data.frame, lapply(DVout, nnull))
   write.csv(DVout, file=file, row.names=FALSE)
 
-  if(!is.null(p.method) & length(ivsl) > 1) DVout <- psuite(DVout,
+  if(!is.null(p.method) & length(target_ivs) > 1) DVout <- psuite(DVout,
                                                             rawdata=data,
                                                             method=p.method,
                                                             alpha=alpha)

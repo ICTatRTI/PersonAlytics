@@ -7,7 +7,7 @@ pah <- function()
   phase="Phase"
   time="TimeSin"
   ivs=NULL
-  ivsl=NULL
+  target_ivs=NULL
   interactions=NULL
   time_power=1
   correlation=NULL
@@ -45,7 +45,7 @@ pahdefault <- function()
   data=OvaryICT
   phase=NULL
   ivs=NULL
-  ivsl=NULL
+  target_ivs=NULL
   interactions=NULL
   time_power=1
   correlation=NULL
