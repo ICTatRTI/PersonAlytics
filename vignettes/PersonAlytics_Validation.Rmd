@@ -17,3 +17,18 @@ library(nlme)
 
 ## Introduction
 and to validate, where possible, PersonAlytics output against SAS (not all models available in PersonAlytics can be fit in SAS)
+
+#### Single Subject Test
+
+```{r, warning=FALSE}
+t1palytic.mare1 <- t1palytic$lme(t1$data$Mare==1)
+summary(t1palytic.mare1)$tTable
+```
+
+### Single Subject Test
+
+
+```{r, warning=FALSE}
+t1palytic.mare1 <- t1palytic$lme(t1$data$Mare==1)
+summary(t1palytic.mare1)$tTable
+```

@@ -114,7 +114,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
         err_id['time']         <- t1$time
         err_id['phase']        <- t1$phase
         err_id['ivs']          <- toString( t1$ivs          )
-        err_id['ivsl']         <- toString( t1$ivsl         )
+        #err_id['ivsl']         <- toString( t1$ivsl         )
         err_id['interactions'] <- toString( t1$interactions )
         err_id['time_power']   <- t1$time_power
 
@@ -329,7 +329,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
         else return(x)
       }
       IDoutSumm <- data.frame(#ids        = row.names(IDmsg),
-                              "ivs"       = cl2(paste(t1$ivs, collapse=', ')),
+                              #"ivs"       = cl2(paste(t1$ivs, collapse=', ')),
                              "target_iv" = cl2(unlist(ivsl)[iv]),
                              fixed       = cln(t1$fixed),
                              random      = cln(t1$random),
