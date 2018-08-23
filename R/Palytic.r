@@ -1061,18 +1061,21 @@ Palytic$set("public", "lme",
 #   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
 # -- this will be done in Palytic augmentations in .Palytic
 Palytic$set("public", "gamlss",
-            function(subgroup=NULL, sigma.formula = ~1)
+            function(subgroup=NULL, sigma.formula = ~1, family=NULL)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
               tempData <- na.omit( subset(self$data, subgroup,
                                  all.vars(self$formula)) )
+
+              currentFamily <- self$family
+              if(!is.null(family)) currentFamily <- family
 
               wm <- 1 # default model
               ctrl <- gamlss::gamlss.control()
               m1 <- try(gamlss::gamlss(formula = self$formula,
                                sigma.formula = sigma.formula,
                                data    = tempData,
-                               family  = self$family),
+                               family  = currentFamily),
                       silent = self$try_silent)
 
               if( "try-error" %in% class(m1) )# | !eds(m1) )
@@ -1082,7 +1085,7 @@ Palytic$set("public", "gamlss",
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                          sigma.formula = sigma.formula,
                                          data    = tempData,
-                                         family  = self$family,
+                                         family  = currentFamily,
                                          control = ctrl)),
                           silent = self$try_silent)
               }
@@ -1092,13 +1095,13 @@ Palytic$set("public", "gamlss",
                 newformula <- forms(data       = self$data   ,
                                     PalyticObj = self        ,
                                     dropTime   = TRUE        ,
-                                    family     = self$family )
+                                    family     = currentFamily )
                 self$formula <- newformula$formula
-                self$family  <- newformula$family
+                #self$family  <- newformula$family
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                data    = tempData,
-                                               family  = self$family,
+                                               family  = currentFamily,
                                                control = ctrl)),
                           silent = self$try_silent)
               }
@@ -1106,7 +1109,7 @@ Palytic$set("public", "gamlss",
               {
                 m1$call$formula         <- self$formula
                 m1$call$sigma.formula   <- sigma.formula
-                m1$call$family          <- self$family
+                m1$call$family          <- currentFamily
                 m1$call$whichPalyticMod <- paste('Palytic gamlss model #', wm)
                 return(m1)
               }
