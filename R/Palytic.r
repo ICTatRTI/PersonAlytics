@@ -156,7 +156,7 @@
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare',
 #'                   dv='follicles', time='Time', phase='Phase')
 #' t1$getTime_Power()
-#' t1$time_powesr
+#' t1$time_powers
 #' # getAR_order works on one case at a time
 #' t1$getAR_order(t1$dv)
 #' t1$corStructs
@@ -916,7 +916,7 @@ Palytic <- R6::R6Class("Palytic",
       }
 
       data <- clean(data, ids, dv, time, phase, ivs,
-                    fixed, random, formula, correlation,
+                    fixed, random, formula, correlation, family,
                     dvs=NULL, target_ivs=NULL, standardize)
 
       frms <- forms(data,

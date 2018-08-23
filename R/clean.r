@@ -37,8 +37,9 @@ clean <- function(data		 	            ,
                   random      	=	NULL	,
                   formula	      =	NULL	,
                   correlation 	=	NULL	,
+                  family        = NULL  ,
                   dvs	          =	NULL	,
-                  target_ivs        	=	NULL	,
+                  target_ivs    =	NULL	,
                   standardize 	=	FALSE	,
                   sortData	    =	TRUE	,
                   alignPhase 	  =	TRUE  )
@@ -84,7 +85,12 @@ clean <- function(data		 	            ,
   # standardize the data
   if(standardize)
   {
-    if( !is.null(dv)  ) data[[dv]] <- scale(data[[dv]])
+    # only standardize dv if it is normal
+    if( !is.null(dv) &
+        (is.null(family) | as.character(family)[1]=="c(\"NO\", \"Normal\")") )
+    {
+      data[[dv]] <- scale(data[[dv]])
+    }
     if( !is.null(dvs) & length(dvs) > 0 )
     {
       for(i in 1:length(dvs)) data[[dvs[[i]]]] <- scale( data[[dvs[[i]]]] )

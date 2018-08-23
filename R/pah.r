@@ -16,16 +16,15 @@ pah <- function()
   standardize=TRUE
   package='gamlss'
   ind.mods=TRUE
-  grp.mod=FALSE
   PalyticObj=NULL
   detectAR=TRUE
   detectTO=TRUE
-  maxOrder=3
   dv=NULL
   fixed=NULL
   random=NULL
   formula=NULL
   charSub=NULL
+  method="REML"
   t1=Palytic$new(data=OvaryICT,
                 ids="Mare",
                 dv=dvs[[1]],
@@ -54,11 +53,9 @@ pahdefault <- function()
   standardize=TRUE
   package='gamlss'
   ind.mods=TRUE
-  grp.mod=FALSE
   PalyticObj=NULL
   detectAR=TRUE
   detectTO=TRUE
-  maxOrder=3
   charSub=NULL
   sigma.formula=~1
   debugforeach = FALSE

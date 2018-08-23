@@ -2,8 +2,8 @@
 % Please edit documentation in R/utils.r
 \name{iscorStruct}
 \alias{iscorStruct}
-\title{isCorStruct - function to test whether a string resolves into a valid correlation
-structure}
+\title{isCorStruct - function to test whether a string resolves into a valid
+correlation structure}
 \usage{
 iscorStruct(x)
 }

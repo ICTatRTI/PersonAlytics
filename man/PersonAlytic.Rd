@@ -2,92 +2,201 @@
 % Please edit documentation in R/PersonAlytic.r
 \name{PersonAlytic}
 \alias{PersonAlytic}
-\title{Personalytic, a simplified user interface for a linear mixed effects model
-via a Palytic object}
+\title{Personalytic, a simplified user interface for linear and generalized linear
+mixed effects models with high throughput options.}
 \usage{
-PersonAlytic(data = NULL, ids, dv, time, phase = NULL, ivs = NULL,
-  interactions = NULL, time_power = 1, correlation = NULL,
-  family = gamlss.dist::NO(), subgroup = NULL, standardize = FALSE,
-  package = c("nlme", "gamlss"), maxAR = 0, maxMA = 0, IC = c("BIC",
-  "AIC"), lrt = FALSE, alpha = 0.05, maxOrder = 0)
+PersonAlytic(file = NULL, data = NULL, ids, dvs, time, phase = NULL,
+  ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 1,
+  correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
+  standardize = TRUE, package = "nlme", ind.mods = FALSE,
+  PalyticObj = NULL, detectAR = TRUE, IC = c("BIC", "AIC"),
+  detectTO = TRUE, charSub = NULL, sigma.formula = ~1, p.method = "BY",
+  alpha = 0.05, ...)
 }
 \arguments{
+\item{file}{The file name (or full path with `/` instead of `\`) where output should
+be saved. If left \code{NULL}, the date and time will prefix
+`PersonAlyticHTP_Output.csv`.}
+
 \item{data}{A \code{\link{data.frame}} with the variables assinged to \code{ids},
 \code{dv}, \code{time}, and optionally, \code{phase} and \code{ivs}. If left as
 \code{NULL}, an example will run using the Ovary data from the \code{\link{nlme}}
 package, see \code{\link{OvaryITC}}.}
 
-\item{ids}{Character. Name of the ID variable. The ID variable must be numeric to ensure accurate
-sorting.}
+\item{ids}{Character. Name of the ID variable. The ID variable must be numeric.}
 
-\item{dv}{Character. Name of dependent variable.}
+\item{dvs}{A list of one or more character dependent variable names in \code{data}.
+The linear mixed effects model
+\code{dvs[d] ~ phase + time + phase*time + target_ivs[c] + ivs}
+with random effects \code{~ time | ids[i]} will be fit to the data.
+The iterators \code{[d]}, \code{[c]}, and \code{[i]}
+indicate that the model will be fit for each combination of
+dependent variable in \code{dvs},
+independent variable in \code{target_ivs}, and
+each unique ID in \code{ids} (which can be overridden using \code{ind.mods=FALSE})
+controlling for one or more independent variables in \code{ivs}.}
 
 \item{time}{Character. Name of the time variable.}
 
-\item{phase}{Charcter. Name of the phase variable.}
+\item{phase}{Charcter. Name of the phase or treatment variable. For model fitting,
+\code{phase} is treated the same as any variable names in \code{ivs} or
+\code{target_ivs} but is used for visualizing treatment effects.}
 
-\item{ivs}{Character list of covariates, e.g., \code{list('iv2', 'iv2')}.}
+\item{ivs}{Character list of covariates, e.g., \code{list('iv2', 'iv2')}.
+Note that the variables in \code{ivs} cannot also be in \code{target_ivs}.}
 
-\item{interactions}{List of vector pairs of variable names for which interaction
-terms should be specified, e.g., \code{list(c('time', 'phase'), c('time', 'iv1'),
-c('iv1', 'iv2'))} where \code{'iv1'} is the name of a variable in the liste \code{ivs}.}
+\item{target_ivs}{Independent variables that are iterated over one at a time
+(see \code{dv} for details).
+Effects for these variables are labeled as 'target predictor' in the output.}
+
+\item{interactions}{List of vector pairs of variable names for interactions
+to include in the model, e.g., \code{list(c('iv1','phase'), c('iv1','iv2'))}.}
 
 \item{time_power}{Numeric. Power of the time variable (e.g., \code{time^time_power}).
 A quadratic or cubic growth model would be specified using
-\code{time_power=2} or \code{time_power=3}, respectively. See also \code{maxOrder}.}
+\code{time_power=2} or \code{time_power=3}, respectively.
+If \code{detectTO=TRUE}, this is the largest value tested for \code{detectTO}.}
 
-\item{correlation}{See \code{\link{corStruct}} in \code{\link{nlme}}. Must be passed as a
-character, e.g. \code{"corARMA(p=1)"}.}
+\item{correlation}{See \code{\link{corStruct}} in \code{\link{nlme}}.
+Must be passed as a character, e.g. \code{"corARMA(p=1)"}.
+If \code{detectAR=TRUE} automatic selection of the residual covariance structure
+is invoked, and \code{correlation} must be specified as a pair of numbers to be
+passed to \code{\link{nlme::corARMA}}. The general form is
+\code{correlation=c(p,q)} where \code{p} is the autoregressive (AR) parameter and
+\code{q} is the moving average (MA) parameter. The default
+\code{correlation=c(3,3)} will always be used when \code{detectAR=TRUE}.
+In general, \code{correlation=c(P,Q)} initializes a search among
+\code{p=1,...,P} and \code{p=1,...,Q}. If \code{correlation=c(P,Q)} and
+\code{detectAR=FALSE}, \code{detectAR} will be changed to \code{TRUE}.}
 
-\item{family}{See \code{\link{gamlss.family}}. The default is normal.}
+\item{family}{See \code{\link{gamlss.family}}. The default is normal. A list
+of the same length as \code{length(dv)} can be supplied. For example if
+\code{dv=list('normaly', 'binaryy', 'betay')}, then family could be
+\code{family=list(NO(), BI(), BEINF())}. If \code{length(dv)>1} and
+\code{length(family)==1}, the distribution will be applied to all outcomes.}
 
 \item{subgroup}{Logical vector where \code{length(subgroup)==nrow(data)} indicating
-which subset of the data should be used for analysis.}
+which subset of the data should be used for analysis. For example, if a model
+should only be fit to females, \code{subgroup=gender=='female'}.}
 
-\item{standardize}{Should the dependent and independent variables be standardized?
-Does not apply to factor variables.}
+\item{standardize}{Logical. Should the dependent and independent variables
+be standardized (i.e., rescaled to have 0 mean and unit variance; see
+\code{\link{scale}})? Does not apply to factor variables. The default is \code{TRUE}
+which makes parameter estimate magnitudes comparable across individuals, outcomes in
+\code{dvs}, and covariates in \code{target_ivs}. For dependent variables in
+\code{dvs}, standardization is only applied for normal outcomes, see \code{family}.}
 
-\item{package}{Which package should be used? Options are \code{\link{gamlss}}
-(the default) and \code{\link{nlme}} passed as character strings, e.g., \code{"gamlss"}.}
+\item{package}{Which package should be used? Options are
+\code{\link{nlme}} (the default) and \code{\link{gamlss}}
+It is passed as character strings, e.g., \code{"gamlss"}. The \code{family}
+parameter is ignored if \code{package="nlme"}.}
 
-\item{maxAR}{Integer, the largest AR(p) value that should be considered in the
-automated residual correlation structure search. See \code{\link{nlme::corARMA}}.
-If \code{maxAR=>0} or \code{maxMA>0}, the automated residual correlation
-structure search will be used. Otherwise, the value for \code{correlation} will
-be used.}
+\item{ind.mods}{Logical, defaults to \code{FALSE}. Should individual models be
+fit for each ID?}
 
-\item{IC}{Wich information criterion should be used for selecting among ARMA(p,q)
-models in the automated residual correlation structure search.}
+\item{PalyticObj}{See \code{\link{Palytic}}. If \code{PalyticObj} is submitted
+then only \code{dvs}, \code{target_ivs}, and \code{ind.mods} will be
+used. This allows users access to additional options including generalized linear
+mixed effects models via the \code{family} option, user specified \code{correlation}
+structures (in non-\code{NULL} this will override the automated correlation structure
+search), and user specified models via \code{formula}.}
 
-\item{lrt}{logical. Should likelihood ration tests (lrt) be used? If \code{FALSE},
-the smallest information criterion will be used (see \code{IC}.) The should be
-false when both AR(p) and MA(q) models are considered since they are not nested
-and the lrt requires nested models.}
+\item{detectAR}{Logical, defaults to \code{TRUE}. Should the residual
+autocorrelation structure be automatically selected from among
+\code{ARMA(p,q)} models? See \code{correlation}. Since these models are not
+nested, model selection is done using information information criterion
+(see \code{IC}).
 
-\item{alpha}{value greater than 0 and less than 1. The Type I error rate for the lrt.}
-}
-\value{
-\code{PersonAlytic} returns an object of class \code{\link{lme}} or
-\code{\link{gamlss}}.
+If the \code{time} variable is equally spaced, this is
+done using the function \code{\link{forecast}}. If the \code{time} variable
+is notequally spaced, this is done using comparisons of
+mixed effects models using \code{\link{lme}} fit using maximum likelihood
+estimators.
+
+Residual autocorrelation structure is done separately for each case in
+\code{ids} if \code{ind.mods=TRUE}.}
+
+\item{IC}{Either the Akaike Information Criterion (\code{IC="AIC"}) or
+the Bayesian Information Criterion (\code{IC="BIC"}, the default).}
+
+\item{detectTO}{Logical, defaults to \code{TRUE}. Should the \code{time_power} value
+be automatically selected? Values from 1 to \code{time_power} will be tested. For
+example, if \code{time_power=3} (implying a cubic growth model), the models
+compared include \code{time}, \code{time + I(time^2)}, and
+\code{time + I(time^2)+I(time^3)}. Since these models are nested, the best
+fitting model is selected using likelihood ratio tests with mixed effects
+models fit using maximum likelihood estimators in \code{\link{lme}}.
+
+This is done separately for each case in \code{ids} if \code{ind.mods=TRUE}.}
+
+\item{charSub}{list of paired character strings for character substitution
+in the output. If the names of the target predictors
+in \code{target_ivs} had to be edited to make valid variable names, this
+parameter allows users put the illegal characters back in. For example,
+if the original variable name was "17.00_832.2375m/z", a letter would need to
+prefix the variable name and the
+"/" would need to be replaced with another character, e.g., "X17.00_832.2375m.z".
+To get the row names of the output back to original varibale name, use
+\code{charSub=list(c("X", ""), c("m.z", "m/z"))}. Note that inputs to charSub
+must be in double quotes and are case sensitive. All duplicates will be substituted.
+For example, if the variable name was "X1X23.x" and \code{charSub=list(c("X", ""))},
+the resulting row label for this variable would be "123.x".}
+
+\item{sigma.formula}{A formula for the variance under \code{\link{gamlss}}.
+Curently static: it will not change dynamically over iterations nor will it be
+updated by \code{time_power} or \code{detectTO}. If model fitting using this
+option fails, another attempt will be made after reseting it to its defaul,
+i.e., \code{~1}.}
+
+\item{p.method}{See \code{\link{p.adjust.methods}}. When \code{ind.mods=TRUE},
+\code{length(dvs)>1}, or \code{length(target_ivs)>1}, p-value adjustments
+are made and reported in separate output saved to the working directory.}
+
+\item{alpha}{Numeric value in the (0,1) interval. The Type I error rate for
+adjusting p-values.}
 }
 \description{
-A simplified user interface for initializing a Palytic object
-and fitting a linear mixed effects model via \code{gamlss}.
+A simplified user interface for longitudinal linear mixed
+effects models using
+\code{\link{nlme}} and generalized linear mixed effects models using
+\code{\link{gamlss}}.
+The basic mixed effects model is \eqn{dv=time+phase+phase*time}
+with random intercepts and random slopes for time. The phase variable is optional.
+Additional independent variables (or covariates) can be included.
+
+High throughput capabalities are invoked When the model
+is to be fit to multiple indidivuals, multiple dependent variables, iterated
+over multiple target independent variables, or any combination of these three.
+
+The residual correlation structure is automatically selected up to \code{ARMA(p,q)}
+where \code{p} and \code{q} are selected by the user. Selection is done by comparing
+fit indices, and either the \code{BIC} or \code{AIC} can be used.
+
+The functional form of the relationship between time and the dependent variable
+is automatically selected up to \code{time^time_power} where \code{time_power} is
+selected by the user. Selection is done using maximum likelihood based likelihood
+ratio tests (LRT).
+
+Type I error corrections are implemented using the options available in
+\code{\link{p.adjust}}.
 }
 \examples{
-#
+# group model
+t0 <- PersonAlytic(data=OvaryICT,
+                 ids="Mare",
+                 dvs="follicles",
+                 phase="Phase",
+                 time="TimeSin",
+                 package='nlme',
+                 ind.mods=FALSE)
+# individual models (using defaults)
 t1 <- PersonAlytic(data=OvaryICT,
                  ids="Mare",
-                 dv="follicles",
+                 dvs="follicles",
                  phase="Phase",
-                 time="Time")
+                 time="TimeSin",
+                 package='nlme')
 
-# for more examples, see the user's guide:
-\dontrun{
-vignette('PersonAlytics_Users_Guide', package='PersonAlytics')
-}
-
-}
-\author{
-Stephen Tueller \email{stueller@rti.org}
+summary(t0)
+summary(t1)
 }

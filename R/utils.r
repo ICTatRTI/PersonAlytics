@@ -57,8 +57,8 @@ monotone <- function(ids, time, data)
   data.frame(ids=ids, monotonic=monotonic)
 }
 
-#' isCorStruct - function to test whether a string resolves into a valid correlation
-#' structure
+#' isCorStruct - function to test whether a string resolves into a valid
+#' correlation structure
 #'
 #' @description Note that \code{NULL} is a valiad \code{corStruct}
 #'
@@ -66,19 +66,41 @@ monotone <- function(ids, time, data)
 #' @param x Any character string
 #'
 #' @keywords internal
+#'
+#' @example
+#' iscorStruct(NULL)
+#' iscorStruct("NULL")
+#' iscorStruct("corARMA(3,3)")
+#' iscorStruct(c(2,2))
 iscorStruct <- function(x)
 {
-  if( ! class(x) %in% c('NULL', 'character') )
+  if( ! class(x) %in% c('NULL', 'character') &
+      ( length(x)!=2 & !is.numeric(x) )
+    )
   {
-    stop('`x` must be a character string')
+    stop('`correlation` must be one of\n\n',
+         '- A quoted character string of an `nlme` `corStruct`, see `?corStruct`\n',
+         '- `"NULL"` or `NULL` to get the default for `lme`\n',
+         '- A numeric vector of length 2, `correlation` and `detectAR` in `?PersonAlytic`')
   }
-  if(! is.null(x) )
+  if( is.numeric(x) )
+  {
+    if( sum(x) == 0 )
+    {
+      stop('At least one of `P` or `Q` in `correlation=c(P,Q)` must be > 0. ',
+           '\n\nIf you wish to specify a specific `ARMA(p,q)` model, use ',
+           '`correlation="corARMA(p,q)" \ninstead of `correlation=c(P,Q)` which ',
+           'initializes an automatice search among\n`p=1,...,P` and ',
+           '`q=1,...,Q`.')
+    }
+  }
+  if( ! is.null(x) & is.character(x) )
   {
     if(x!="NULL")
     {
       if(! 'corStruct' %in% class( eval( parse( text = x ) ) ) )
       {
-        stop('`x` is not a valid `corStruct`')
+        stop('`correlation` is not a valid `corStruct`')
       }
     }
   }

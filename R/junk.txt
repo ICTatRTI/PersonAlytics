@@ -1,0 +1,103 @@
+#' Personalytic, a simplified user interface for a linear mixed effects model
+#' via a Palytic object
+#'
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#'
+#' @export
+#' @importFrom gamlss re
+#'
+#' @description A simplified user interface for initializing a Palytic object
+#' and fitting a linear mixed effects model via \code{gamlss}.
+#'
+
+
+
+#' @param maxAR Integer, the largest AR(p) value that should be considered in the
+#' automated residual correlation structure search. See \code{\link{nlme::corARMA}}.
+#' If \code{maxAR=>0} or \code{maxMA>0}, the automated residual correlation
+#' structure search will be used. Otherwise, the value for \code{correlation} will
+#' be used.
+#' @parame maxMA Integer, the largest MA(q) value that should be considered in the
+#' automated residual correlation structure search. See \code{\link{nlme::corARMA}}.
+#' If \code{maxAR=>0} or \code{maxMA>0}, the automated residual correlation
+#' structure search will be used. Otherwise, the value for \code{correlation} will
+#' be used.
+#' @param IC Wich information criterion should be used for selecting among ARMA(p,q)
+#' models in the automated residual correlation structure search.
+#' @param lrt logical. Should likelihood ration tests (lrt) be used? If \code{FALSE},
+#' the smallest information criterion will be used (see \code{IC}.) The should be
+#' false when both AR(p) and MA(q) models are considered since they are not nested
+#' and the lrt requires nested models.
+#' @param alpha value greater than 0 and less than 1. The Type I error rate for the lrt.
+#' @maxOrder integer. The highest order of \code{time_power} for automatically
+#' detecting the functional form of the relationship between time and the outcome.
+#' If \code{maxOrder>0}, the automated search is conducted using likelihood ratio
+#' tests, otherwise the specified value for \code{time_power} is used.
+#'
+#' @return \code{PersonAlytic} returns an object of class \code{\link{lme}} or
+#' \code{\link{gamlss}}.
+#'
+#'
+#' @examples
+#' #
+#' t1 <- PersonAlytic(data=OvaryICT,
+#'                  ids="Mare",
+#'                  dv="follicles",
+#'                  phase="Phase",
+#'                  time="Time")
+#'
+#' # for more examples, see the user's guide:
+#' \dontrun{
+#' vignette('PersonAlytics_Users_Guide', package='PersonAlytics')
+#' }
+#'
+
+############## OLD PersonAlyticHTP inputs, replaced with...
+file=NULL                ,
+                  data=NULL                ,
+                  ids                      ,
+                  dvs                      ,
+                  time                     ,
+                  phase=NULL               ,
+                  ivs=NULL                 ,
+                  target_ivs=NULL          ,
+                  interactions=NULL        ,
+                  time_power=1             ,
+                  correlation=NULL         ,
+                  family=gamlss.dist::NO() ,
+                  subgroup=NULL            ,
+                  standardize=TRUE         ,
+                  package='nlme'           ,
+                  ind.mods=TRUE            ,
+                  grp.mod=FALSE            ,
+                  PalyticObj=NULL          ,
+                  detectAR=TRUE            ,
+                  detectTO=TRUE            ,
+                  maxOrder=3               ,
+                  charSub=NULL             ,
+                  sigma.formula=~1         ,
+                  debugforeach = FALSE     ,
+                  p.method = "BY"          ,
+                  alpha = .05 
+
+
+#### OLD PersonAlytic INPUTS
+data=NULL,
+                         ids,
+                         dv,
+                         time,
+                         phase=NULL,
+                         ivs=NULL,
+                         interactions=NULL,
+                         time_power=1,
+                         correlation=NULL,
+                         family=gamlss.dist::NO(),
+                         subgroup=NULL,
+                         standardize=FALSE,
+                         package=c('nlme', 'gamlss'),
+                         maxAR=0,
+                         maxMA=0,
+                         IC=c("BIC", "AIC"),
+                         lrt=FALSE,
+                         alpha=.05,
+                         maxOrder=0				  

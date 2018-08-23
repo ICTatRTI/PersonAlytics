@@ -36,7 +36,8 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
 
     if(dims$ID[1]!="All Cases")
     {
-      if(detectAR)  t0$getAR_order(dvs[[dv]])
+      if(detectAR)  t0$getAR_order(dvs[[dv]], t0$correlation[1], t0$correlation[2],
+								   IC[1])
       if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
                                               arma=rep("NULL", length(dims$ID)))
 
@@ -45,7 +46,8 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
     }
     if(dims$ID[1]=="All Cases")
     {
-      if(detectAR) t0$GroupAR_order(dvs[[dv]])
+      if(detectAR) t0$GroupAR_order(dvs[[dv]], t0$correlation[1], t0$correlation[2],
+								   IC[1])
       if(detectTO) t0$GroupTime_Power(maxOrder)
     }
 

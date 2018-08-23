@@ -29,7 +29,7 @@
 #' @param phase See \code{\link{PersonAlytic}}.
 #' @param ivs See \code{\link{PersonAlytic}}, noting that the variables in \code{ivs}
 #' cannot also be in \code{target_ivs}.
-#' @param ivls Independent variables that are iterated over one at a time. Effects for
+#' @param target_ivs Independent variables that are iterated over one at a time. Effects for
 #' these variables are labeled as 'target predictor' in the output.
 #' @param interactions See \code{\link{PersonAlytic}}.
 #' @param time_power See \code{\link{PersonAlytic}}. Ignored if \code{detectAR=TRUE}
@@ -38,15 +38,12 @@
 #' @param subgroup See \code{\link{PersonAlytic}}.
 #' @param standardize See \code{\link{PersonAlytic}}. The default is \code{TRUE}
 #' which makes parameter estimate magnitudes comparable across individuals, outcomes in
-#' \code{dvs}, and covariates in \code{ivls}.
+#' \code{dvs}, and covariates in \code{target_ivs}.
 #' @param package See \code{\link{PersonAlytic}}.
 #' @param ind.mods Logical, defaults to \code{TRUE}. Should individual models be
 #' fit for each ID?
-#' @param grp.mod Logical, defaults to \code{FALSE}. Should a group level model be fit
-#' across all IDs? If both \code{ind.mods} and \code{grp.mod} are \code{FALSE},
-#' \code{grp.mod} will be changed to \code{TRUE}.
 #' @param PalyticObj See \code{\link{Palytic}}. If \code{PalyticObj} is submitted
-#' then only \code{dvs}, \code{target_ivs}, \code{ind.mods}, and \code{grp.mod} will be
+#' then only \code{dvs}, \code{target_ivs}, and \code{ind.mods} will be
 #' used. This allows users access to additional options including generalized linear
 #' mixed effects models via the \code{family} option, user specified \code{correlation}
 #' structures (in non-\code{NULL} this will override the automated correlation structure
@@ -89,8 +86,7 @@
 #'                  phase="Phase",
 #'                  time="TimeSin",
 #'                  package='nlme',
-#'                  ind.mods=FALSE,
-#'                  grp.mod=TRUE)
+#'                  ind.mods=FALSE)
 #' # individual models (using defaults)
 #' t1 <- PersonAlyticHTP(data=OvaryICT,
 #'                  ids="Mare",
@@ -123,7 +119,6 @@ PersonAlyticHTP <- function(file=NULL                ,
                             standardize=TRUE         ,
                             package='nlme'           ,
                             ind.mods=TRUE            ,
-                            grp.mod=FALSE            ,
                             PalyticObj=NULL          ,
                             detectAR=TRUE            ,
                             detectTO=TRUE            ,
@@ -134,143 +129,5 @@ PersonAlyticHTP <- function(file=NULL                ,
                             p.method = "BY"          ,
                             alpha = .05               )
 {
-  #
-  if(is.null(file))
-  {
-    file <- gsub(":", ".", paste(Sys.time(), 'PersonAlyticHTP_Output.csv'))
-  }
 
-  # check that dvs, ivls are lists, if not, force
-  if( ! "list" %in% class(dvs) ) dvs <- as.list(dvs)
-  if( ! "list" %in% class(ivs) ) ivs <- as.list(ivs)
-
-  # check that inputs conform. this is also done when creating a Palytic
-  # object, but we do it early on here to avoid problems after loops start.
-  # This is why `clean()` has inputs that apply to PersonAlyticHTP but not to
-  # PersonAlytic
-  data <- clean(data, ids, dv=NULL, time, phase, ivs,
-                fixed=NULL, random=NULL, formula=NULL,
-                correlation,
-                dvs, target_ivs, standardize)
-
-  # subgroup the data and delete the parameter, after this point, it is only
-  # used to subgroup to unique ids
-  if( is.null(subgroup)) subgroup <- rep(TRUE, nrow(data))
-  if(!is.null(data)) data <- data[subgroup,]; rm(subgroup)
-
-  ###########################################################################
-  # 20180728 - commented out by Stephen Tueller when debugging metabolomics
-  # some DSST output was missing time and phase (but not ids). This code is
-  # not yet essential and may be the culprit. PalyticObj is use by utils in
-  # PersonAlytics and we may have issues with scope allowing this to be
-  # non-null (unlikely though, b/c this is before the loops and only some
-  # loops are affected).
-  ###########################################################################
-  # if a PalyticObj is given, overwrite other objects, avoid if possible,
-  # but we want to leave ids, dvs, phase, time required unless PalyticObj is
-  # provided
-  #if(!is.null(PalyticObj))
-  #{
-  #  if(! class(PalyticObj) %in% 'Palytic')
-  #  {
-  #    stop('PalyticObj is not a Palytic object. See ?Palytic')
-  #  }
-  #  ids=NULL
-  #  phase=NULL
-  #  time=NULL
-  #}
-
-  # check whether any variables in ivs are in target_ivs -
-  # in the future, split them out automatically
-  if(any(ivs %in% target_ivs) | any(target_ivs %in% ivs))
-  {
-    stop('target_ivs and ivs cannot share any variables.')
-  }
-
-  ## if no data are given, use a test data set
-  if(is.null(data))
-  {
-    data   <- OvaryICT
-    dvs    <- "follicles"
-    phase  <- "Phase"
-    ids    <- "Mare"
-    time   <- "TimeSin"
-  }
-
-  # unique ids
-  uids <- sort(as.numeric(unique(data[[ids]])))
-
-  # dimensions for loops
-  ID <- uids
-  IV <- 1:length(target_ivs); if(is.null(target_ivs)) IV <- 1
-  DV <- 1:length(dvs)
-  dims <- list(ID=ID, IV=IV, DV=DV)
-
-  #
-  if( ind.mods & grp.mod )
-  {
-    warning('Group and individual models must be run separately, ',
-            'the current run will use `grp.mod`=TRUE and `ind.mods=FALSE`. ',
-            'To get individual models use `grp.mod=FALSE`` and `ind.mods=TRUE`.')
-  }
-
-  #
-  if( ind.mods )
-  {
-    DVout <- htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
-                         interactions, time_power, correlation,
-                         family = family, standardize, package,
-                         detectAR, detectTO, maxOrder, sigma.formula, debugforeach)
-  }
-  if( grp.mod )
-  {
-    grp.dims <- dims
-    grp.dims$ID <- "All Cases"
-
-    DVout <- htp.foreach(data, grp.dims, dvs, phase, ids, uids, time, ivs, target_ivs,
-                         interactions, time_power, correlation,
-                         family = family, standardize, package,
-                         detectAR, detectTO, maxOrder, sigma.formula, debugforeach)
-
-  }
-
-  # clean up variable names
-  if(!is.null(charSub))
-  {
-    DVout$target_iv <- as.character(DVout$target_iv)
-    for(i in 1:length(charSub))
-    {
-      DVout$target_iv <- gsub(charSub[[i]][1], charSub[[i]][2], DVout$target_iv)
-    }
-  }
-
-  # some columns are actually lists, fix that
-  nnull <- function(x)
-  {
-    if(is.list(x))
-    {
-      if( any(as.character(x)=="NULL") )
-      {
-        return( unlist(as.character(x)) )
-      }
-      if(!any(as.character(x)=="NULL") )
-      {
-        return( unlist(x) )
-      }
-    }
-    if(!is.list(x))
-    {
-      return( unlist(x) )
-    }
-  }
-  DVout <- do.call(data.frame, lapply(DVout, nnull))
-  write.csv(DVout, file=file, row.names=FALSE)
-
-  if(!is.null(p.method) & length(target_ivs) > 1) DVout <- psuite(DVout,
-                                                            rawdata=data,
-                                                            method=p.method,
-                                                            alpha=alpha)
-
-
-  return(DVout)
 }

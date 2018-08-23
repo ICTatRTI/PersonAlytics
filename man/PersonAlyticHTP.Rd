@@ -5,12 +5,12 @@
 \title{High through-put options for Palytic objects.}
 \usage{
 PersonAlyticHTP(file = NULL, data = NULL, ids, dvs, time, phase = NULL,
-  ivs = NULL, ivsl = NULL, interactions = NULL, time_power = 1,
+  ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 1,
   correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
   standardize = TRUE, package = "nlme", ind.mods = TRUE,
-  grp.mod = FALSE, PalyticObj = NULL, detectAR = TRUE, detectTO = TRUE,
-  maxOrder = 3, charSub = NULL, sigma.formula = ~1,
-  debugforeach = FALSE, p.method = "BY", alpha = 0.05)
+  PalyticObj = NULL, detectAR = TRUE, detectTO = TRUE, maxOrder = 3,
+  charSub = NULL, sigma.formula = ~1, debugforeach = FALSE,
+  p.method = "BY", alpha = 0.05)
 }
 \arguments{
 \item{file}{The file name (or full path with `/` instead of `\`) where output should
@@ -21,11 +21,11 @@ be saved. If left \code{NULL}, the date and time will prefix `PersonAlyticHTP_Ou
 \item{ids}{See \code{\link{PersonAlytic}}.}
 
 \item{dvs}{A list of one or more character dependent variable names in \code{data}.
-The linear mixed effects model \code{dvs[d] ~ phase + time + phase*time + ivsl[c] + ivs}
+The linear mixed effects model \code{dvs[d] ~ phase + time + phase*time + target_ivs[c] + ivs}
 with random effects \code{~ time | ids[i]} will be fit to the data using
 \code{\link{gamlss}}. The iterators \code{[d]}, \code{[d]}, and \code{[d]}
 indicates the model will be fit for each combination of dependent variable in \code{dvs},
-independent variable in \code{ivsl}, and each unique ID in \code{ids}
+independent variable in \code{target_ivs}, and each unique ID in \code{ids}
 (overridden using \code{ind.mods=FALSE}) controlling for indepented variables in
 \code{ivs}. For more options submit a \code{PalyticObj}.}
 
@@ -34,7 +34,10 @@ independent variable in \code{ivsl}, and each unique ID in \code{ids}
 \item{phase}{See \code{\link{PersonAlytic}}.}
 
 \item{ivs}{See \code{\link{PersonAlytic}}, noting that the variables in \code{ivs}
-cannot also be in \code{ivsl}.}
+cannot also be in \code{target_ivs}.}
+
+\item{target_ivs}{Independent variables that are iterated over one at a time. Effects for
+these variables are labeled as 'target predictor' in the output.}
 
 \item{interactions}{See \code{\link{PersonAlytic}}.}
 
@@ -48,19 +51,15 @@ cannot also be in \code{ivsl}.}
 
 \item{standardize}{See \code{\link{PersonAlytic}}. The default is \code{TRUE}
 which makes parameter estimate magnitudes comparable across individuals, outcomes in
-\code{dvs}, and covariates in \code{ivls}.}
+\code{dvs}, and covariates in \code{target_ivs}.}
 
 \item{package}{See \code{\link{PersonAlytic}}.}
 
 \item{ind.mods}{Logical, defaults to \code{TRUE}. Should individual models be
 fit for each ID?}
 
-\item{grp.mod}{Logical, defaults to \code{FALSE}. Should a group level model be fit
-across all IDs? If both \code{ind.mods} and \code{grp.mod} are \code{FALSE},
-\code{grp.mod} will be changed to \code{TRUE}.}
-
 \item{PalyticObj}{See \code{\link{Palytic}}. If \code{PalyticObj} is submitted
-then only \code{dvs}, \code{ivsl}, \code{ind.mods}, and \code{grp.mod} will be
+then only \code{dvs}, \code{target_ivs}, and \code{ind.mods} will be
 used. This allows users access to additional options including generalized linear
 mixed effects models via the \code{family} option, user specified \code{correlation}
 structures (in non-\code{NULL} this will override the automated correlation structure
@@ -85,7 +84,7 @@ I(time^2)+...+I(time^maxOrder)}.}
 
 \item{charSub}{list of paired character strings for character substitution.
 If the names of the target predictors
-in \code{ivsl} had to be edited to make valid variable names, this parameter allows
+in \code{target_ivs} had to be edited to make valid variable names, this parameter allows
 users put the illegal characters back in. For example, if the original variable name
 was "17.00_832.2375m/z", a letter would need to prefix the variable name and the
 "/" would need to be replaced with another character, e.g., "X17.00_832.2375m.z".
@@ -99,9 +98,6 @@ the resulting row label for this variable would be "123.x".}
 It will not change dynamically over iterations nor will it be updated by \code{time_power}
 or \code{detectTO}. If model fitting using this option fails, another attempt will be
 made after reseting it to its defaul, i.e., \code{~1}.}
-
-\item{ivls}{Independent variables that are iterated over one at a time. Effects for
-these variables are labeled as 'target predictor' in the output.}
 }
 \description{
 A user interface for creating a Palytic object
@@ -119,8 +115,7 @@ t0 <- PersonAlyticHTP(data=OvaryICT,
                  phase="Phase",
                  time="TimeSin",
                  package='nlme',
-                 ind.mods=FALSE,
-                 grp.mod=TRUE)
+                 ind.mods=FALSE)
 # individual models (using defaults)
 t1 <- PersonAlyticHTP(data=OvaryICT,
                  ids="Mare",

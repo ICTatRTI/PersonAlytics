@@ -12,7 +12,7 @@
 
 <meta name="author" content="Stephen Tueller" />
 
-<meta name="date" content="2018-08-21" />
+<meta name="date" content="2018-08-23" />
 
 <title>PersonAlytics Software Design Document</title>
 
@@ -32,56 +32,50 @@
 
 <h1 class="title toc-ignore">PersonAlytics Software Design Document</h1>
 <h4 class="author"><em>Stephen Tueller</em></h4>
-<h4 class="date"><em>2018-08-21</em></h4>
+<h4 class="date"><em>2018-08-23</em></h4>
 
 
-<div id="TOC">
-<ul>
-<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a><ul>
-<li><a href="#purpose"><span class="toc-section-number">1.1</span> Purpose</a></li>
-<li><a href="#scope"><span class="toc-section-number">1.2</span> Scope</a></li>
-<li><a href="#aim"><span class="toc-section-number">1.3</span> Aim</a></li>
-<li><a href="#intended-audience"><span class="toc-section-number">1.4</span> Intended Audience</a></li>
-<li><a href="#people"><span class="toc-section-number">1.5</span> People</a></li>
-<li><a href="#clients"><span class="toc-section-number">1.6</span> Clients</a></li>
-<li><a href="#team"><span class="toc-section-number">1.7</span> Team</a></li>
-<li><a href="#external-reviewers"><span class="toc-section-number">1.8</span> External Reviewers</a></li>
-<li><a href="#definitions-and-acronyms"><span class="toc-section-number">1.9</span> Definitions and Acronyms</a></li>
-</ul></li>
-<li><a href="#system-overview"><span class="toc-section-number">2</span> System Overview</a></li>
-<li><a href="#system-architecture"><span class="toc-section-number">3</span> System Architecture</a><ul>
-<li><a href="#architectural-design"><span class="toc-section-number">3.1</span> Architectural Design</a><ul>
-<li><a href="#personalytic"><span class="toc-section-number">3.1.1</span> <code>PersonAlytic()</code></a></li>
-<li><a href="#palytic-class-generator"><span class="toc-section-number">3.1.2</span> <code>Palytic</code> Class Generator</a></li>
-<li><a href="#personalytichtp"><span class="toc-section-number">3.1.3</span> <code>PersonAlyticHTP()</code></a></li>
-<li><a href="#htp.foreach"><span class="toc-section-number">3.1.4</span> <code>htp.foreach()</code></a></li>
-</ul></li>
-<li><a href="#design-rationale"><span class="toc-section-number">3.2</span> Design Rationale</a></li>
-</ul></li>
-<li><a href="#data-design"><span class="toc-section-number">4</span> Data Design</a><ul>
-<li><a href="#data-description"><span class="toc-section-number">4.1</span> Data Description</a></li>
-<li><a href="#output-data"><span class="toc-section-number">4.2</span> Output Data</a></li>
-</ul></li>
-</ul>
-</div>
+
+<p><strong>SDD Revisions</strong></p>
+<table>
+<thead>
+<tr class="header">
+<th>Date</th>
+<th>Description</th>
+<th>Revision</th>
+<th>Editor</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>20180820</td>
+<td>Document Creation</td>
+<td>0</td>
+<td>Stephen Tueller</td>
+</tr>
+</tbody>
+</table>
 
 <div id="introduction" class="section level1">
-<h1><span class="header-section-number">1</span> Introduction</h1>
+<h1>Introduction</h1>
 <div id="purpose" class="section level2">
-<h2><span class="header-section-number">1.1</span> Purpose</h2>
-<p>This software design document (SDD) describes the architecture and system design of the PersonAlytics R package. The <code>PersonAlytics</code> package provides analytic tools for single-case, small N, and Idiographic Clinical Trials (ICT) using mixed effect models building the [nlme R package] (<a href="https://cran.r-project.org/web/packages/nlme/index.html" class="uri">https://cran.r-project.org/web/packages/nlme/index.html</a>). It is assumed that the reader</p>
-<ul>
-<li><p>Has <code>R</code> installed on their system (<code>R</code> operates on Windows, Linux, and Apple systems).</p></li>
-<li><p>Has installed the required dependencies (see the “PersonAlytics Design Diagram” below).</p></li>
-<li><p>Has <code>PersonAlytics</code> installed on their system. In <code>R</code>, type <code>install.packages(&quot;path/to/file/PersonAlytics_0.0.1.tar.gz&quot;, repos = NULL, type = &quot;source&quot;)</code> into the console replacing <code>path/to/file/</code> with the directory in which <code>PersonAlytics_0.0.1.tar.gz</code> is saved. Note that <code>R</code> uses forward slashes even when used in a Windows environment.</p></li>
-<li><p>Has <code>R</code> running on their system and <code>PersonAlytics</code> loaded by typing <code>library(PersonAlytics)</code> into the console. This will provide the reader with access to the <code>R</code> documentation system, which is accessed by preceding a function name with a question mark. For example, typing <code>?PersonAlytics</code> in <code>R</code> will open the</p></li>
-</ul>
+<h2>Purpose</h2>
+<p>This software design document (SDD) describes the architecture and system design of the PersonAlytics R package. The <code>PersonAlytics</code> package provides analytic tools for single-case, small N, and Idiographic Clinical Trials (ICT) using mixed effect models building the [nlme R package] (<a href="https://cran.r-project.org/web/packages/nlme/index.html" class="uri">https://cran.r-project.org/web/packages/nlme/index.html</a>) and the <a href="https://www.gamlss.com/">gamlss R package</a>.</p>
 </div>
 <div id="scope" class="section level2">
-<h2><span class="header-section-number">1.2</span> Scope</h2>
+<h2>Scope</h2>
+<p>This document descrbes the implementation details of the <code>PersonAlytics</code> <code>R</code> package which automates sereval steps of the mixed effects model fitting process for single-case, small N, and ICT data. <code>PersonAlytics</code> does not make decision reccomendations based on its output, and the user assumes all responsibility for data quality and interpretation of results.</p>
+<p>This documents assumes that the reader</p>
+<ul>
+<li><p>Has <a href="https://cran.r-project.org/">R</a> installed on their system (<code>R</code> operates on Windows, Linux, and Apple systems, and the <code>PersonAlytics</code> source that will be disrtributed to users under the RTI License is platform independent).</p></li>
+<li><p>Has installed the required dependencies (see the “PersonAlytics Design Diagram” below).</p></li>
+<li><p>Has <code>PersonAlytics</code> installed on their system. In <code>R</code>, type <code>install.packages(&quot;path/to/file/PersonAlytics_0.0.1.tar.gz&quot;, repos = NULL, type = &quot;source&quot;)</code> into the console replacing <code>path/to/file/</code> with the directory in which <code>PersonAlytics_0.0.1.tar.gz</code> is saved. Note that <code>R</code> uses forward slashes even when used in a Windows environment.</p></li>
+<li><p>Has <code>R</code> running on their system and <code>PersonAlytics</code> loaded by typing <code>library(PersonAlytics)</code> into the console. This will provide the reader with access to the <code>R</code> help file system, which is accessed by preceding a function name with a question mark. For example, typing <code>?PersonAlytics</code> into the <code>R</code> console will open the documentation overview.</p></li>
+<li><p>It is suggested that the reader use <a href="https://www.rstudio.com/">Rstudio</a>, which has a dedicated pane for help files. Example code within the help pane can be run by highlighting the text and pressing Ctrl+Enter.</p></li>
+</ul>
 </div>
 <div id="aim" class="section level2">
-<h2><span class="header-section-number">1.3</span> Aim</h2>
+<h2>Aim</h2>
 <p>The design description defined in this document serves the following purposes:</p>
 <ul>
 <li><p>To describe the required dependencies in <code>R</code>.</p></li>
@@ -97,7 +91,7 @@
 </ul>
 </div>
 <div id="intended-audience" class="section level2">
-<h2><span class="header-section-number">1.4</span> Intended Audience</h2>
+<h2>Intended Audience</h2>
 <p>The intendend audience for this document is</p>
 <ul>
 <li><p>The RTI development and testing team</p></li>
@@ -105,22 +99,22 @@
 </ul>
 </div>
 <div id="people" class="section level2">
-<h2><span class="header-section-number">1.5</span> People</h2>
+<h2>People</h2>
 </div>
 <div id="clients" class="section level2">
-<h2><span class="header-section-number">1.6</span> Clients</h2>
+<h2>Clients</h2>
 <p><code>PersonAlytics</code> is being produced by RTI to for project clients who will be users of the software, but who are not directly driving the production of <code>PersonAylitics'. Funding to develop</code>PersonAlytics` is being pursued, and those clients will be listed here as the project matures.</p>
 </div>
 <div id="team" class="section level2">
-<h2><span class="header-section-number">1.7</span> Team</h2>
+<h2>Team</h2>
 <p><code>PersonAlytics</code> was conceptualized by Ty Ridenour (<a href="mailto:tridenour@rti.org">tridenour@rti.org</a>), developed by Stephen Tueller (<a href="mailto:stueller@rti.org">stueller@rti.org</a>), and tested by Derek Ramirez (<a href="mailto:dramirez@rti.org">dramirez@rti.org</a>) and Corina Owens (<a href="mailto:cowens@rti.org">cowens@rti.org</a>).</p>
 </div>
 <div id="external-reviewers" class="section level2">
-<h2><span class="header-section-number">1.8</span> External Reviewers</h2>
+<h2>External Reviewers</h2>
 <p>BlueDoor</p>
 </div>
 <div id="definitions-and-acronyms" class="section level2">
-<h2><span class="header-section-number">1.9</span> Definitions and Acronyms</h2>
+<h2>Definitions and Acronyms</h2>
 <p>In what follows, we distinguish between two types of data. “Data” refers to a rectangular dataframe that the user imports into <code>R</code>. “inputs” refers to options that the user passes to the functions they interact with directly, namely <code>PersonAlytic</code> and <code>PersonAlyticHTP</code>.</p>
 <table>
 <thead>
@@ -171,14 +165,14 @@
 </div>
 </div>
 <div id="system-overview" class="section level1">
-<h1><span class="header-section-number">2</span> System Overview</h1>
+<h1>System Overview</h1>
 <p>The system overview is given in details of the help file for the <code>PersonAyltics</code> package, type <code>?PersonAyltics</code> in R after installing the required dependencies, installing <code>PersonAylytics</code>, and loading the package using <code>library(PersonAylytics)</code>.</p>
 <p><strong>more background here by Ty</strong></p>
 </div>
 <div id="system-architecture" class="section level1">
-<h1><span class="header-section-number">3</span> System Architecture</h1>
+<h1>System Architecture</h1>
 <div id="architectural-design" class="section level2">
-<h2><span class="header-section-number">3.1</span> Architectural Design</h2>
+<h2>Architectural Design</h2>
 <p>The PersonAlytics Design Diagram shows how user data, R, and PersonAlytics interact on the user’s system. In the diagram,</p>
 <ul>
 <li><p>Cylinders represent data</p></li>
@@ -205,7 +199,7 @@
 <p class="caption">PersonAlytics Design Diagram</p>
 </div>
 <div id="personalytic" class="section level3">
-<h3><span class="header-section-number">3.1.1</span> <code>PersonAlytic()</code></h3>
+<h3><code>PersonAlytic()</code></h3>
 <p><strong>Purpose:</strong> Primary user interface for running one model with one outcome for one subset of the data.</p>
 <p><strong>Inputs:</strong> See <em>Usage</em> and <em>Arugments</em> in <code>?PersonAlytic</code> in <code>R</code>.</p>
 <p><strong>Outputs:</strong> See <em>Value</em> in <code>?PersonAlytic</code> in <code>R</code>.</p>
@@ -219,7 +213,7 @@
 </ul>
 </div>
 <div id="palytic-class-generator" class="section level3">
-<h3><span class="header-section-number">3.1.2</span> <code>Palytic</code> Class Generator</h3>
+<h3><code>Palytic</code> Class Generator</h3>
 <p><strong>Purpose:</strong> Store and validate data and user inputs</p>
 <p><strong>Inputs:</strong> See <em>Usage</em> and <em>Arugments</em> in <code>?Palytic</code> in <code>R</code>.</p>
 <p><strong>Outputs:</strong> Outputs are saved back to the <code>Palytic</code> object which are extracted by <code>Palytic</code> methods or the <code>PersonAlytic()</code>, <code>PersonAlyticHTP()</code>, or <code>htp.foreach()</code> functions.</p>
@@ -265,7 +259,7 @@
 </ul>
 </div>
 <div id="personalytichtp" class="section level3">
-<h3><span class="header-section-number">3.1.3</span> <code>PersonAlyticHTP()</code></h3>
+<h3><code>PersonAlyticHTP()</code></h3>
 <p><strong>Purpose:</strong> Primary user interface for running models iterating across multiple outcomes (dependent variables), target independent variables, or individuals.</p>
 <p><strong>Inputs:</strong> See <em>Fields</em> in <code>?PersonAlyticHTP</code> in <code>R</code>.</p>
 <p><strong>Outputs:</strong> See <em>Value</em> in <code>?PersonAlyticHTP</code> in <code>R</code>.</p>
@@ -281,7 +275,7 @@
 </ul>
 </div>
 <div id="htp.foreach" class="section level3">
-<h3><span class="header-section-number">3.1.4</span> <code>htp.foreach()</code></h3>
+<h3><code>htp.foreach()</code></h3>
 <p><strong>Purpose:</strong> Function for running models iterating across multiple outcomes (dependent variables), target independent variables, or individuals.</p>
 <p><strong>Inputs:</strong> See <em>Fields</em> in <code>?PersonAlyticHTP</code> in <code>R</code>.</p>
 <p><strong>Outputs:</strong> See <em>Value</em> in <code>?PersonAlyticHTP</code> in <code>R</code>.</p>
@@ -309,19 +303,19 @@
 </div>
 </div>
 <div id="design-rationale" class="section level2">
-<h2><span class="header-section-number">3.2</span> Design Rationale</h2>
+<h2>Design Rationale</h2>
 <p>Combining functional programming and OOP was intentional. Many intendend users of <code>PersonAlytics</code> will be <code>R</code> novices and most basic advice on using <code>R</code> is design on showing users how to interact with functions. Hence the user interfacing functions <code>PersonAlytic()</code> and <code>PersonAlyticHTP()</code> are design to follow this expectation. Although all single analyses can be run using <code>PersonAlyticHTP()</code>, it invokes computational overhead for parralellizing R which is avoided using <code>PersonAlytic()</code>.</p>
 <p>The underlying <code>Palytic</code> class was designed in the <code>R6</code> OOP framework which is ideal for combining user inputs, data and input validation, active bindings, and methods in an extensible framework.</p>
 </div>
 </div>
 <div id="data-design" class="section level1">
-<h1><span class="header-section-number">4</span> Data Design</h1>
+<h1>Data Design</h1>
 <div id="data-description" class="section level2">
-<h2><span class="header-section-number">4.1</span> Data Description</h2>
+<h2>Data Description</h2>
 <p>Users import rectangular research data into R and provide their inputs to <code>PersonAlytic</code> or <code>PersonAlyticHTP</code>.</p>
 </div>
 <div id="output-data" class="section level2">
-<h2><span class="header-section-number">4.2</span> Output Data</h2>
+<h2>Output Data</h2>
 <p>The <code>PersonAlytic</code> function returns an <code>lme</code> or <code>gamlss</code> object to the R console. The <code>PersonAlyticHTP</code> function saves a <code>csv</code> file where each row represents a unique combination of dependent variable, target indepent variable, and individuals. The file has the following columns:</p>
 <ul>
 <li><p>dv: The name of the dependent variable.</p></li>
@@ -344,6 +338,12 @@
 <li><p>[additional columns with parameters estimates, standard errors, degrees of freedom, t-values, and p-values; column labels depend on the analysis and model].</p></li>
 </ul>
 </div>
+</div>
+<div id="model-verification" class="section level1">
+<h1>Model Verification</h1>
+</div>
+<div id="model-validation" class="section level1">
+<h1>Model Validation</h1>
 </div>
 
 
