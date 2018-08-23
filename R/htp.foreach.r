@@ -111,6 +111,8 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
         err_id['ids']          <- ids
         err_id['ids']          <- t1$ids
         err_id['dvs']          <- t1$dvs
+        err_id['family']       <- t1$family
+        err_id['package']      <- t1$package
         err_id['time']         <- t1$time
         err_id['phase']        <- t1$phase
         err_id['ivs']          <- toString( t1$ivs          )
