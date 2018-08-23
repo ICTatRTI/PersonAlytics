@@ -3,7 +3,7 @@ title: "PersonAlytics Software Design Document"
 author: "Stephen Tueller"
 date: "`r Sys.Date()`"
 output: 
-  word_document
+  rmarkdown::html_vignette
 vignette: >
   %\VignetteIndexEntry{PersonAlytics Software Design Document}
   %\VignetteEngine{knitr::rmarkdown}
