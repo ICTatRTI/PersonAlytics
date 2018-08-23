@@ -72,6 +72,6 @@ capture.output(t1simple.summary <- summary(t1simple), file='NUL')
 ## ---- warning=FALSE------------------------------------------------------
 t1palytic <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase')
-capture.output(t1palytic.summary <- summary(t1palytic$gamlss()), file='NUL')
-all.equal(t1simple.summary, t1palytic.summary)
+t1palytic.summary <- summary(t1palytic$lme())
+all.equal(t1simple.summary$tTable, t1palytic.summary$tTable)
 

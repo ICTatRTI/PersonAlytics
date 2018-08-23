@@ -12,7 +12,7 @@
 
 <meta name="author" content="Stephen Tueller" />
 
-<meta name="date" content="2018-08-21" />
+<meta name="date" content="2018-08-22" />
 
 <title>Verification Tests for PersonAlytics</title>
 
@@ -70,7 +70,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 <h1 class="title toc-ignore">Verification Tests for PersonAlytics</h1>
 <h4 class="author"><em>Stephen Tueller</em></h4>
-<h4 class="date"><em>2018-08-21</em></h4>
+<h4 class="date"><em>2018-08-22</em></h4>
 
 
 
@@ -92,7 +92,7 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(t1<span class="op">$</span>formula, <span class="kw">formula</span>(<span class="kw">paste</span>(<span class="st">&quot;follicles ~ Time * Phase +&quot;</span>,
                                        <span class="st">&quot;re(random = ~Time | Mare,&quot;</span>,
                                         <span class="st">&quot;method = 'REML', correlation = NULL)&quot;</span>)))</code></pre></div>
-<pre><code>## [1] &quot;formulas differ in contents&quot;</code></pre>
+<pre><code>## [1] TRUE</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">all.equal</span>(t1<span class="op">$</span>correlation, <span class="ot">NULL</span>)</code></pre></div>
 <pre><code>## [1] TRUE</code></pre>
 
@@ -144,8 +144,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <pre><code>## NULL</code></pre>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">t1<span class="op">$</span>formula</code></pre></div>
 <pre><code>## follicles ~ Time * Phase + re(random = ~Time | Mare, method = &quot;REML&quot;, 
-##     correlation = NULL, family = c(&quot;NO&quot;, &quot;Normal&quot;))
-## &lt;environment: 0x000000002e547e28&gt;</code></pre>
+##     correlation = NULL)
+## &lt;environment: 0x000000002fc42938&gt;</code></pre>
 <p>Update the residual correlation structure and test whether it is specified correctly in the <code>correlation</code> slot of the <code>Palytic</code> object (used by <code>lme</code>):</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  t1<span class="op">$</span>correlation &lt;-<span class="st"> &quot;corARMA(p=1, q=0)&quot;</span>
   <span class="kw">all.equal</span>(t1<span class="op">$</span>correlation, <span class="st">&quot;nlme::corARMA(p=1, q=0)&quot;</span>)</code></pre></div>
@@ -153,9 +153,8 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Check whether the <code>formula</code> slot (used by <code>gamlss</code>) has been updated with the new correlation ARMA(1,0) structure:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">  t1<span class="op">$</span>formula</code></pre></div>
 <pre><code>## follicles ~ Time * Phase + re(random = ~Time | Mare, method = &quot;REML&quot;, 
-##     correlation = nlme::corARMA(p = 1, q = 0), family = c(&quot;NO&quot;, 
-##         &quot;Normal&quot;))
-## &lt;environment: 0x000000002f4b8a40&gt;</code></pre>
+##     correlation = nlme::corARMA(p = 1, q = 0))
+## &lt;environment: 0x0000000030040568&gt;</code></pre>
 </div>
 <div id="the-personalytic-interface" class="section level4">
 <h4>The <code>PersonAlytic</code> Interface</h4>
@@ -169,19 +168,9 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 <p>Compare to results from a direct use of <code>Palytic</code></p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">t1palytic &lt;-<span class="st"> </span>Palytic<span class="op">$</span><span class="kw">new</span>(<span class="dt">data =</span> OvaryICT, <span class="dt">ids=</span><span class="st">'Mare'</span>, <span class="dt">dv=</span><span class="st">'follicles'</span>,
                     <span class="dt">time=</span><span class="st">'Time'</span>, <span class="dt">phase=</span><span class="st">'Phase'</span>)
-<span class="kw">capture.output</span>(t1palytic.summary &lt;-<span class="st"> </span><span class="kw">summary</span>(t1palytic<span class="op">$</span><span class="kw">gamlss</span>()), <span class="dt">file=</span><span class="st">'NUL'</span>)
-<span class="kw">all.equal</span>(t1simple.summary, t1palytic.summary)</code></pre></div>
-<pre><code>##  [1] &quot;Modes: list, numeric&quot;                                                
-##  [2] &quot;Lengths: 22, 20&quot;                                                     
-##  [3] &quot;names for target but not for current&quot;                                
-##  [4] &quot;Attributes: &lt; Names: 2 string mismatches &gt;&quot;                          
-##  [5] &quot;Attributes: &lt; Length mismatch: comparison on first 2 components &gt;&quot;   
-##  [6] &quot;Attributes: &lt; Component 1: Modes: character, numeric &gt;&quot;              
-##  [7] &quot;Attributes: &lt; Component 1: target is character, current is numeric &gt;&quot;
-##  [8] &quot;Attributes: &lt; Component 2: Modes: character, list &gt;&quot;                 
-##  [9] &quot;Attributes: &lt; Component 2: Lengths: 1, 2 &gt;&quot;                          
-## [10] &quot;Attributes: &lt; Component 2: target is character, current is list &gt;&quot;   
-## [11] &quot;current is not list-like&quot;</code></pre>
+t1palytic.summary &lt;-<span class="st"> </span><span class="kw">summary</span>(t1palytic<span class="op">$</span><span class="kw">lme</span>())
+<span class="kw">all.equal</span>(t1simple.summary<span class="op">$</span>tTable, t1palytic.summary<span class="op">$</span>tTable)</code></pre></div>
+<pre><code>## [1] TRUE</code></pre>
 </div>
 </div>
 

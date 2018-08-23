@@ -12,6 +12,8 @@ Depends:
     forecast (>= 8.3),
     foreach (>= 1.4.4),
     gamlss (>= 5.0-2),
+    gridExtra (>= 2.3),
+    ggplot2 (>= 2.2.1),
 	  multilevel (>= 2.6),
     nlme (>= 3.1-131),
     plyr (>= 1.8.4),

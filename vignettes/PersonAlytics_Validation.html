@@ -12,7 +12,7 @@
 
 <meta name="author" content="Stephen Tueller" />
 
-<meta name="date" content="2018-08-21" />
+<meta name="date" content="2018-08-22" />
 
 <title>PersonAlytics Validation Against SAS</title>
 
@@ -32,14 +32,52 @@
 
 <h1 class="title toc-ignore">PersonAlytics Validation Against SAS</h1>
 <h4 class="author"><em>Stephen Tueller</em></h4>
-<h4 class="date"><em>2018-08-21</em></h4>
+<h4 class="date"><em>2018-08-22</em></h4>
 
 
 
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>and to validate, where possible, PersonAlytics output against SAS (not all models available in PersonAlytics can be fit in SAS)</p>
-</div>
+<!--
+
+## Introduction
+and to validate, where possible, PersonAlytics output against SAS (not all models available in PersonAlytics can be fit in SAS)
+
+#### Single Subject Test
+
+
+```r
+t1palytic <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                    time='Time', phase='Phase')
+t1palytic.mare1 <- t1palytic$lme(t1palytic$data$Mare==1)
+summary(t1palytic.mare1)$tTable
+```
+
+```
+##                 Value Std.Error DF   t-value    p-value
+## (Intercept)  2.600000  1.809329 25  1.436997 0.16311718
+## Time        -6.600000  4.538258 25 -1.454303 0.15830319
+## Phase        4.800000  1.829193 25  2.624108 0.01459846
+## Time:Phase   9.597801  4.832937 25  1.985915 0.05811239
+```
+
+### Single Subject Test
+
+
+
+```r
+t1palytic.mare1 <- t1palytic$lme(t1palytic$data$Mare==1)
+summary(t1palytic.mare1)$tTable
+```
+
+```
+##                 Value Std.Error DF   t-value    p-value
+## (Intercept)  2.600000  1.809329 25  1.436997 0.16311718
+## Time        -6.600000  4.538258 25 -1.454303 0.15830319
+## Phase        4.800000  1.829193 25  2.624108 0.01459846
+## Time:Phase   9.597801  4.832937 25  1.985915 0.05811239
+```
+
+
+-->
 
 
 

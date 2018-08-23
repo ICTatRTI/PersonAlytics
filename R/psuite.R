@@ -5,6 +5,8 @@
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
 #' @export
+#' @import gridExtra
+#' @import ggplot2
 #'
 #' @usage Palytic(DVout, method)
 #'
