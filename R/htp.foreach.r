@@ -80,6 +80,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
       IDout <- list()
       for(id in dims$ID)
       {
+        print(id)
         if(debugforeach){
           cat('starting id = ', id, '\n\n',
               file = paste('htp', dvs[dv], target_ivs[iv], 'log', sep='.'),
@@ -112,7 +113,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
         err_id['ids']          <- ids
         err_id['ids']          <- t1$ids
         err_id['dvs']          <- t1$dvs
-        err_id['family']       <- t1$family
+        err_id['family']       <- t1$family[[1]][2]
         err_id['package']      <- t1$package
         err_id['time']         <- t1$time
         err_id['phase']        <- t1$phase
@@ -348,7 +349,6 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
       return( IDoutSumm )
       rm( t1 )
     } # end of for each IVout
-    parallel::stopCluster(cl)
 
     # populate DVout
     ncols <- unlist( lapply(IVout, function(x) dim(x)[2]) )
@@ -359,5 +359,6 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
   row.names(outmat) <- NULL
   return( outmat )
 
+  parallel::stopCluster(cl)
 }
 

@@ -11,7 +11,7 @@ Ovary data from nlme modified for ideographic clinical trial analysis
 # A simple mixed effects models using PersonAlytic and lme
 t1 <- PersonAlytic(data=OvaryICT,
                  ids="Mare",
-                 dv="follicles",
+                 dvs="follicles",
                  phase="Phase",
                  time="Time",
                  package="nlme")

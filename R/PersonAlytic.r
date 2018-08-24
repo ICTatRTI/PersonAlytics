@@ -290,7 +290,7 @@
 #'
 #' # gamlss with two distributions - features not implemented
 #' #OvaryICT$follicles01 <- to01(OvaryICT$follicles)
-#' #t1 <- PersonAlytic(data=OvaryICT,
+#' #t3 <- PersonAlytic(data=OvaryICT,
 #' #                 ids="Mare",
 #' #                 dvs=list("follicles", "follicles01"),
 #' #                 phase="Phase",
@@ -509,6 +509,7 @@ pa1 <- function(e=parent.frame())
     p.method        <- "BY"
     alpha           <- .05
     alignPhase      <- TRUE
+    debugforeach    <- FALSE
   }
 
   if(is.null(e$output))

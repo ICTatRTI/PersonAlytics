@@ -78,7 +78,8 @@ clean <- function(data		 	            ,
   # check variance - note that this also must be done for each ids in loops,
   # but follow curelator analyses and return per-person errors in output rather
   # than stopping analyses
-  novar <- lapply(data[,unlist(vars[2:length(vars)])], function(x) all(duplicated(x)[-1L]) )
+  novar <- lapply(data[,unlist(vars[2:length(vars)])],
+                  function(x) all(duplicated(x)[-1L]) )
   novar <- unlist(novar)
   if( any(novar) )
   {

@@ -547,7 +547,7 @@ Palytic <- R6::R6Class("Palytic",
             }
             if( x == "NULL" )
             {
-              return(x)
+              return(NULL)
             }
           }
           if( is.null(x)  )
@@ -1013,7 +1013,7 @@ Palytic$set("public", "lme",
               {
                 wm <- 3
                 ctrl <- nlme::lmeControl(opt="optim")
-                self$correlation <- NULL
+                self$correlation <- "NULL" # not updating
                 m1 <- try(nlme::lme(fixed=self$fixed,
                                     data=na.omit(tempData),
                                     random=self$random,
@@ -1030,7 +1030,7 @@ Palytic$set("public", "lme",
                 newformula <- forms(data       = self$data ,
                                     PalyticObj = self      ,
                                     dropTime   = TRUE      )
-                self$formula <- newformula$formula
+                self$random <- newformula$random
                 self$correlation <- NULL
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
@@ -1292,7 +1292,7 @@ Palytic$set("public", "getAR_order",
                },
                overwrite = TRUE)
 
-# IC can take on AIC or BIC
+# IC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",
                function(dV, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05,
                         subgroup=NULL)
@@ -1306,6 +1306,7 @@ Palytic$set("public", "GroupAR_order",
                    {
                      for(q in 1:maxMA)
                      {
+                       t0 <- self$clone()
                        # will this automatically update the fixed effects? it doesn't
                        # need to for nlme which takes `correlation` directly, but would
                        # need to be updated for gamlss; hence, lme for now (faster too)
@@ -1313,8 +1314,8 @@ Palytic$set("public", "GroupAR_order",
                                         q=", q, ")", sep="")
                        cortemp <- gsub('\n', '', cortemp)
                        cortemp <- gsub(' ', '', cortemp)
-                       self$correlation <- cortemp
-                       corMods[[cc]]  <- self$lme(subgroup)
+                       t0$correlation <- cortemp
+                       corMods[[cc]]  <- t0$lme(subgroup)
                        if( any(corMods[[cc]]=="Model did not converge") )
                        {
                          corMods[[cc]] <- NULL
@@ -1355,7 +1356,8 @@ Palytic$set("public", "GroupAR_order",
                          # minimum p-value is a bad criterion,
                          # serving only as a placeholder for
                          # a recursive search
-                         bestCor <- as.character( names(compmods)[which.min(newlrts$p.value)] )
+                         bestCor <- as.character( names(compmods)[
+                           which.min(newlrts$p.value)] )
                        }
                        else bestCor <- nmnnm
                      }
