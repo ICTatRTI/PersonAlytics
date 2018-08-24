@@ -4,10 +4,7 @@
 \alias{paHTP}
 \title{paHTP}
 \usage{
-paHTP(file, data, ids, dvs, time, phase, ivs, target_ivs, interactions,
-  time_power, correlation, family, subgroup, standardize, package, ind.mods,
-  PalyticObj, detectAR, PQ, IC, detectTO, charSub, sigma.formula, p.method,
-  alpha, debugforeach = FALSE)
+paHTP(e = parent.frame())
 }
 \description{
 paHTP
@@ -15,3 +12,4 @@ paHTP
 \author{
 Stephen Tueller \email{stueller@rti.org}
 }
+\keyword{internal}

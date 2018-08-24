@@ -40,7 +40,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
       if(detectAR)  t0$getAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
       if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
                                               arma=rep("NULL", length(dims$ID)))
-
+      #t0$corStructs
       if(detectTO) t0$getTime_Power(maxOrder)
       #t0$time_powers
     }

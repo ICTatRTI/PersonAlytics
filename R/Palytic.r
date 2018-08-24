@@ -538,12 +538,19 @@ Palytic <- R6::R6Class("Palytic",
       {
         fixcor <- function(x)
         {
-          if(!is.null(x) & x != "NULL" )
+          if(!is.null(x))
           {
-            x <- unlist( strsplit(x, "::") )
-            return( paste("nlme", x[length(x)], sep="::" ) )
+            if( x != "NULL" )
+            {
+              x <- unlist( strsplit(x, "::") )
+              return( paste("nlme", x[length(x)], sep="::" ) )
+            }
+            if( x == "NULL" )
+            {
+              return(x)
+            }
           }
-          if(is.null(x) | x == "NULL" )
+          if( is.null(x)  )
           {
             return(x)
           }
@@ -1006,10 +1013,11 @@ Palytic$set("public", "lme",
               {
                 wm <- 3
                 ctrl <- nlme::lmeControl(opt="optim")
+                self$correlation <- NULL
                 m1 <- try(nlme::lme(fixed=self$fixed,
                                     data=na.omit(tempData),
                                     random=self$random,
-                                    correlation=NULL,
+                                    correlation=self$correlation,
                                     method=self$method,
                                     control=ctrl,
                                     keep.data=FALSE),
@@ -1023,11 +1031,12 @@ Palytic$set("public", "lme",
                                     PalyticObj = self      ,
                                     dropTime   = TRUE      )
                 self$formula <- newformula$formula
+                self$correlation <- NULL
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
                                     data=na.omit(tempData),
                                     random=self$random,
-                                    correlation=NULL,
+                                    correlation=self$correlation,
                                     method=self$method,
                                     control=ctrl,
                                     keep.data=FALSE),
@@ -1040,7 +1049,7 @@ Palytic$set("public", "lme",
                 # this renders it non-updatable, needs cor instead
                 m1$call$correlation <- self$correlation
                 m1$call$method <- self$method
-                #m1$call$control <- ctrl
+                m1$call$control <- ctrl
                 m1$call$whichPalyticMod <- paste('Palytic lme model #', wm)
                 return(m1)
               }

@@ -142,6 +142,7 @@ NULL
 #' @name OvaryICT
 #' @docType data
 #' @author Stephen Tueller \email{stueller@@rti.org}
+#' @export
 #'
 #' The Ovary data set from the nlme package, modified as shown in the example.
 #'
@@ -157,15 +158,22 @@ NULL
 #' (statistics and computing).
 #'
 #' @examples
-#' # this example
+#' # A simple mixed effects models using PersonAlytic and lme
 #' t1 <- PersonAlytic(data=OvaryICT,
 #'                  ids="Mare",
 #'                  dv="follicles",
 #'                  phase="Phase",
-#'                  time="Time")
+#'                  time="Time",
+#'                  package="nlme")
 #' summary(t1)
-#' # is equivalent to
-#' t2 <- PersonAlytic()
+#' # Verify the PersonAlytic results to a direct call to lme
+#' ctrl <- lmeControl(opt="optim")
+#' t2 <- lme(follicles ~ Time * Phase + I(Time^2) * Phase,
+#'           data = OvaryICT,
+#'           random = ~Time + I(Time^2) | Mare,
+#'           correlation = NULL,
+#'           method = "REML",
+#'           control = ctrl )
 #' summary(t2)
 #' # check
 #' identical(t1,t2)

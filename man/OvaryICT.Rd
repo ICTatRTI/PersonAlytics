@@ -8,15 +8,22 @@
 Ovary data from nlme modified for ideographic clinical trial analysis
 }
 \examples{
-# this example
+# A simple mixed effects models using PersonAlytic and lme
 t1 <- PersonAlytic(data=OvaryICT,
                  ids="Mare",
                  dv="follicles",
                  phase="Phase",
-                 time="Time")
+                 time="Time",
+                 package="nlme")
 summary(t1)
-# is equivalent to
-t2 <- PersonAlytic()
+# Verify the PersonAlytic results to a direct call to lme
+ctrl <- lmeControl(opt="optim")
+t2 <- lme(follicles ~ Time * Phase + I(Time^2) * Phase,
+          data = OvaryICT,
+          random = ~Time + I(Time^2) | Mare,
+          correlation = NULL,
+          method = "REML",
+          control = ctrl )
 summary(t2)
 # check
 identical(t1,t2)
@@ -42,14 +49,4 @@ Pinero, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}
-
-The Ovary data set from the nlme package, modified as shown in the example.
-
-\itemize{
-  \item Mare. The mare ID.
-  \item Time. The time variable.
-  \item follicles. See \code{\link{Ovary}}.
-  \item Phase. A faux phase variable created at \code{Time > .5}.
-  \item Time. Equal to \code{sin(2*pi*Ovary$Time)}. See Pinheiro & Bates (2000).
-}
 }

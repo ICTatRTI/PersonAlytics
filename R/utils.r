@@ -67,7 +67,7 @@ monotone <- function(ids, time, data)
 #'
 #' @keywords internal
 #'
-#' @example
+#' @examples
 #' iscorStruct(NULL)
 #' iscorStruct("NULL")
 #' iscorStruct("corARMA(3,3)")
@@ -520,7 +520,7 @@ alf <- function(x)
 
 
 #' to01 - function to convent any variable to the [0,1] range
-#' @author Stephen Tueller \email{Stueller@@rti.org
+#' @author Stephen Tueller \email{Stueller@@rti.org}
 #' @param x A numeric vector.
 #' @param na.rm Logical, should missing data be excluded when calculating min/max
 #' @references Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54.

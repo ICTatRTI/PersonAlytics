@@ -13,6 +13,12 @@ iscorStruct(x)
 \description{
 Note that \code{NULL} is a valiad \code{corStruct}
 }
+\examples{
+iscorStruct(NULL)
+iscorStruct("NULL")
+iscorStruct("corARMA(3,3)")
+iscorStruct(c(2,2))
+}
 \author{
 Stephen Tueller \email{stueller@rti.org}
 }
