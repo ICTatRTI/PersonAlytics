@@ -187,7 +187,7 @@ forms <- function(data                  ,
   }
 
   # update time using time_power, only if the I() function is not already in time
-  if(!is.null(time) & !any(time == "1"))
+  if(!is.null(time_power) & !any(time == "1"))
   {
     if( length( unlist(strsplit(time, "I\\("))) == 1 )
     {
