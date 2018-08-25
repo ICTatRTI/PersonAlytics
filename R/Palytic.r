@@ -1180,6 +1180,7 @@ Palytic$set("public", "getAR_order",
                      lrt=FALSE  , # only valid for nested models, AR, MA are not nested
                      alpha=.05  )
             {
+              self$method <- "ML"
               # check whether time is (approximately) equally spaced, use the
               # first participant for now; the method is the standard deviation
               # of the 1st order difference score
@@ -1335,6 +1336,7 @@ Palytic$set("public", "GroupAR_order",
             function(P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05,
                      subgroup=NULL)
             {
+              self$method <- "ML"
               corMods <- list(); cc <- 1
               self$correlation <- "NULL"
               nullMod <- self$lme(subgroup)
@@ -1432,6 +1434,7 @@ Palytic$set("public", "GroupAR_order",
 Palytic$set("public", "getTime_Power",
             function(maxOrder=3)
             {
+              self$method <- "ML"
               uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
               time_powers <- list()
               temp <- Palytic$new(self$data, self$ids, self$dv,
@@ -1463,6 +1466,7 @@ Palytic$set("public", "getTime_Power",
 Palytic$set("public", "GroupTime_Power",
             function(maxOrder=3)
             {
+              self$method <- "ML"
               time_powers <- list()
               temp <- Palytic$new(self$data, self$ids, self$dv,
                                   self$time)
