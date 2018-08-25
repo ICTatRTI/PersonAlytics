@@ -530,14 +530,17 @@ pa1 <- function(e=parent.frame())
                     standardize=e$standardize   ,
                     alignPhase=e$alignPhase     )
 
+  # always check time order first, that way the time order carries over to
+  # the AR, which should be residuals on the fullest model
+
+  if(e$detectTO) t1$GroupTime_Power(e$maxOrder)
+  # t1$time_power
+  # t1$formula
+
   if(e$detectAR) t1$GroupAR_order(P = e$PQ[1]  ,
                                   Q = e$PQ[2]  ,
                                   IC    = e$IC[1]  )
   # t1$correlation
-  # t1$formula
-
-  if(e$detectTO) t1$GroupTime_Power(e$maxOrder)
-  # t1$time_power
   # t1$formula
 
   if(e$package=="gamlss") Grp.out <- t1$gamlss()

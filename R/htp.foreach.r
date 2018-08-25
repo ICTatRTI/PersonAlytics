@@ -37,19 +37,20 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
 
     if(dims$ID[1]!="All Cases")
     {
+      if(detectTO) t0$getTime_Power(maxOrder)
+      #t0$time_powers
+
       if(detectAR)  t0$getAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
       if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
                                               arma=rep("NULL", length(dims$ID)))
       #t0$corStructs
-      if(detectTO) t0$getTime_Power(maxOrder)
-      #t0$time_powers
+
     }
     if(dims$ID[1]=="All Cases")
     {
-      if(detectAR) t0$GroupAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
       if(detectTO) t0$GroupTime_Power(maxOrder)
+      if(detectAR) t0$GroupAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
     }
-
 
     # parralelization
     funcs <- c("mean") # c(".eds") -- not importing from PersonAlytic correctly
