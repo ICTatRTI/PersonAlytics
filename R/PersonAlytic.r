@@ -495,19 +495,19 @@ pa1 <- function(e=parent.frame())
     correlation     <- NULL
     family          <- gamlss.dist::NO()
     subgroup        <- NULL
-    standardize     <- TRUE
+    standardize     <- FALSE
     package         <- 'nlme'
     individual_mods <- FALSE
     PalyticObj      <- NULL
-    detectAR        <- TRUE
+    detectAR        <- FALSE
     PQ              <- c(3,3)
     IC              <- c("BIC", "AIC")
-    detectTO        <- TRUE
+    detectTO        <- FALSE
     charSub         <- NULL
     sigma.formula   <- ~1
     p.method        <- "BY"
     alpha           <- .05
-    alignPhase      <- TRUE
+    alignPhase      <- FALSE
     debugforeach    <- FALSE
     maxOrder        <- 3
     e               <- parent.frame()

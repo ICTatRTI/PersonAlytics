@@ -1053,8 +1053,7 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=cor,
                                     method=self$method,
-                                    control=ctrl,
-                                    keep.data=FALSE),
+                                    control=ctrl),
                           silent = TRUE)
               }
               # try without correlation structure
@@ -1068,8 +1067,7 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
-                                    control=ctrl,
-                                    keep.data=FALSE),
+                                    control=ctrl),
                           silent = TRUE)
               }
               # try without random slopes or correlation structure
@@ -1087,8 +1085,7 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
-                                    control=ctrl,
-                                    keep.data=FALSE),
+                                    control=ctrl),
                           silent = TRUE)
               }
               if( "lme" %in% class(m1) )
@@ -1343,25 +1340,28 @@ Palytic$set("public", "GroupAR_order",
               nullMod <- self$lme(subgroup)
               if( "lme" %in% class(nullMod) )
               {
-                for(p in 1:P)
+                for(p in 0:P)
                 {
-                  for(q in 1:Q)
+                  for(q in 0:Q)
                   {
-                    cortemp <- paste("nlme::corARMA(p=", p, ",
-                                     q=", q, ")", sep="")
-                    cortemp <- gsub('\n', '', cortemp)
-                    cortemp <- gsub(' ', '', cortemp)
-                    self$correlation <- cortemp
-                    corMods[[cc]]  <- self$lme(subgroup)
-                    if( any(corMods[[cc]]=="Model did not converge") )
+                    if(p>0 | q>0)
                     {
-                      corMods[[cc]] <- NULL
+                      cortemp <- paste("nlme::corARMA(p=", p, ",
+                                     q=", q, ")", sep="")
+                      cortemp <- gsub('\n', '', cortemp)
+                      cortemp <- gsub(' ', '', cortemp)
+                      self$correlation <- cortemp
+                      corMods[[cc]]  <- self$lme(subgroup)
+                      if( any(corMods[[cc]]=="Model did not converge") )
+                      {
+                        corMods[[cc]] <- NULL
+                      }
+                      else cc = cc + 1
                     }
-                    else cc = cc + 1
                   }
                 }
                 names(corMods) <- unlist( lapply(corMods,
-                                                 function(x) x$call$correlation) )
+                                                 function(x) x$PalyticSummary$correlation) )
 
                 if(lrt)
                 {
