@@ -266,7 +266,7 @@
 #'                  dvs="follicles",
 #'                  phase="Phase",
 #'                  time="Time",
-#'                  package='nlme')
+#'                  package="nlme")
 #'
 #' # individual models
 #' t1 <- PersonAlytic(output='Test1',
@@ -275,7 +275,7 @@
 #'                  dvs="follicles",
 #'                  phase="Phase",
 #'                  time="Time",
-#'                  package='nlme',
+#'                  package="nlme",
 #'                  individual_mods=TRUE)
 #'
 #' summary(t0)
@@ -510,6 +510,7 @@ pa1 <- function(e=parent.frame())
     alignPhase      <- TRUE
     debugforeach    <- FALSE
     maxOrder        <- 3
+    e               <- parent.frame()
   }
 
   if(is.null(e$output))
@@ -540,7 +541,7 @@ pa1 <- function(e=parent.frame())
 
   if(e$detectAR) t1$GroupAR_order(P = e$PQ[1]  ,
                                   Q = e$PQ[2]  ,
-                                  IC    = e$IC[1]  )
+                                  IC= e$IC[1]  )
   # t1$correlation
   # t1$formula
 

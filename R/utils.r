@@ -161,7 +161,7 @@ forms <- function(data                  ,
     }
     if(!is.null(random))
     {
-      random.t <- unlist( strsplit(as.character(random), "\\|") )
+      random.t <- gsub(" ", "", unlist( strsplit(as.character(random), "\\|") ) )
       time     <- random.t[2]
       ids      <- random.t[3]
     }
@@ -182,7 +182,7 @@ forms <- function(data                  ,
   }
 
   # update time using time_power, only if the I() function is not already in time
-  if(!is.null(time))
+  if(!is.null(time) & time[[1]] != "1")
   {
     if( length( unlist(strsplit(time, "I\\("))) == 1 )
     {
@@ -204,8 +204,8 @@ forms <- function(data                  ,
                         family       = family      ,
                         dropTime     = dropTime    ,
                         method       = method      )
-  fixed <- theForms$fixed
-  random <- theForms$random
+  fixed   <- theForms$fixed
+  random  <- theForms$random
   formula <- theForms$formula
 
   # check that the variables are in the data
@@ -213,10 +213,13 @@ forms <- function(data                  ,
   vars <- unique( c(ids, dv, time, phase, ivs.test,
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, '\\*|\\+'), unlist))) )
-  vars <- vars[which(vars!="1")]
   wi <- which( substr(vars, 1, 2) == "I(" )
   vars[wi] <- unlist(strsplit(gsub("\\I|\\(|\\)", "", vars[wi]), "\\^"))[1]
+  vars <- vars[which(vars!="1")]
+  vars <- vars[!is.na(vars)]
+
   wvars <- which( ! vars %in% names(data) )
+
   if( length(wvars) > 0 )
   {
     stop( paste('\n`', vars[wvars], '` is not in the data\n'))

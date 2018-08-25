@@ -275,7 +275,7 @@ t0 <- PersonAlytic(output='Test0',
                  dvs="follicles",
                  phase="Phase",
                  time="Time",
-                 package='nlme')
+                 package="nlme")
 
 # individual models
 t1 <- PersonAlytic(output='Test1',
@@ -284,7 +284,7 @@ t1 <- PersonAlytic(output='Test1',
                  dvs="follicles",
                  phase="Phase",
                  time="Time",
-                 package='nlme',
+                 package="nlme",
                  individual_mods=TRUE)
 
 summary(t0)
