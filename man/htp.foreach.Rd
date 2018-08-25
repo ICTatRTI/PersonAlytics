@@ -4,7 +4,7 @@
 \alias{htp.foreach}
 \title{high throughput}
 \usage{
-htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs, ivsl,
+htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
   interactions = NULL, time_power = 1, correlation = NULL,
   family = gamlss.dist::NO(), standardize = TRUE, package = "gamlss",
   detectAR = TRUE, detectTO = TRUE, maxOrder = 3, sigma.formula = ~1,

@@ -6,7 +6,8 @@
 \usage{
 clean(data, ids, dv, time, phase = NULL, ivs = NULL, fixed = NULL,
   random = NULL, formula = NULL, correlation = NULL, dvs = NULL,
-  ivsl = NULL, standardize = FALSE, sortData = TRUE, alignPhase = TRUE)
+  target_ivs = NULL, standardize = FALSE, sortData = TRUE,
+  alignPhase = TRUE)
 }
 \arguments{
 \item{data}{See \code{\link{PersonAlytic}}.}
@@ -29,10 +30,10 @@ clean(data, ids, dv, time, phase = NULL, ivs = NULL, fixed = NULL,
 
 \item{dvs}{Used by \code{PersonAlyticPro}.}
 
-\item{ivsl}{Used by \code{PersonAlyticPro}.}
+\item{target_ivs}{Used by \code{PersonAlyticPro}.}
 
 \item{standardize}{Logical. Should all variables be standardized? Only applies
-to \code{dv}, \code{ivs}, and \code{ivsl}.}
+to \code{dv}, \code{ivs}, and \code{target_ivs}.}
 }
 \description{
 clean, a function to check data and inputs.
