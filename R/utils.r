@@ -529,3 +529,15 @@ to01 <- function(x, na.rm=TRUE)
 {
   (x - min(x, na.rm=na.rm))/(max(x, na.rm=na.rm)-min(x, na.rm=na.rm))
 }
+
+#' subdat - function to take a subset of data with column select
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @param subgroup Logical vector.
+#' @param data data.frame.
+#' @param formula a formula.
+#' @keywords internal
+subdat <- function(data, subgroup, formula)
+{
+  if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(data))
+  na.omit( subset(data, subgroup, all.vars(formula)) )
+}

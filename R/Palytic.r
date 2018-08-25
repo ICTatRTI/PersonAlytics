@@ -807,7 +807,7 @@ Palytic <- R6::R6Class("Palytic",
 
     standardize = function(value)
     {
-      if( missing(value) ) private$standardize
+      if( missing(value) ) private$.standardize
       else
       {
         if(! is.logical( value ) )
@@ -850,7 +850,7 @@ Palytic <- R6::R6Class("Palytic",
 
     alignPhase = function(value)
     {
-      if( missing(value) ) private$.monotone
+      if( missing(value) ) private$.alignPhase
       else
       {
         private$.alignPhase <- value
@@ -1024,9 +1024,8 @@ selfsumm <- function(x)
 Palytic$set("public", "lme",
             function(subgroup=NULL)
             {
-              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
-              tempData <- subset(self$data, subgroup,
-                                 all.vars(self$formula))
+              tempData <- subdat(self$data, subgroup, all.vars(self$formula))
+
               # github issue #1
               cor <- eval(parse(text = ifelse(!is.null(self$correlation),
                                               self$correlation,
@@ -1102,7 +1101,7 @@ Palytic$set("public", "lme",
                 # for the actual convergence error message
               }
             },
-            overwrite = TRUE
+            overwrite = FALSE
 )
 
 
@@ -1113,9 +1112,7 @@ Palytic$set("public", "lme",
 Palytic$set("public", "gamlss",
             function(subgroup=NULL, sigma.formula = ~1, family=NULL)
             {
-              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
-              tempData <- na.omit( subset(self$data, subgroup,
-                                 all.vars(self$formula)) )
+              tempData <- subdat(self$data, subgroup, all.vars(self$formula))
 
               # allow for family to be changed on the fly
               currentFamily <- self$family
@@ -1168,7 +1165,7 @@ Palytic$set("public", "gamlss",
               }
 
             },
-            overwrite = TRUE
+            overwrite = FALSE
 )
 
 # this will only be applied to one participant at a time
@@ -1328,7 +1325,7 @@ Palytic$set("public", "getAR_order",
                  } #oef !eqspace
                  #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
                },
-               overwrite = TRUE)
+               overwrite = FALSE)
 
 # IC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",
@@ -1336,7 +1333,7 @@ Palytic$set("public", "GroupAR_order",
                         subgroup=NULL)
                {
                  corMods <- list(); cc <- 1
-                 self$correlation <- "NULL"
+                 self$correlation <- NULL
                  nullMod <- self$lme(subgroup)
                  if( "lme" %in% class(nullMod) )
                  {
@@ -1344,16 +1341,13 @@ Palytic$set("public", "GroupAR_order",
                    {
                      for(q in 1:Q)
                      {
-                       #t0 <- self #self$clone() # some wierd inheretance is going on
-                       # will this automatically update the fixed effects? it doesn't
-                       # need to for nlme which takes `correlation` directly, but would
-                       # need to be updated for gamlss; hence, lme for now (faster too)
                        cortemp <- paste("nlme::corARMA(p=", p, ",
                                         q=", q, ")", sep="")
                        cortemp <- gsub('\n', '', cortemp)
                        cortemp <- gsub(' ', '', cortemp)
-                       self$correlation <- cortemp
-                       corMods[[cc]]  <- self$lme(subgroup)
+                       cortemp <- eval(parse(text = cortemp))
+
+                       corMods[[cc]] <- self$lme(subset)
                        if( any(corMods[[cc]]=="Model did not converge") )
                        {
                          corMods[[cc]] <- NULL
@@ -1362,7 +1356,7 @@ Palytic$set("public", "GroupAR_order",
                      }
                    }
                    names(corMods) <- unlist( lapply(corMods,
-                                                    function(x) x$call$correlation) )
+                                     function(x) x$PalyticSummary$correlation) )
 
                    if(lrt)
                    {
@@ -1427,7 +1421,7 @@ Palytic$set("public", "GroupAR_order",
 
                  self$corStructs <- bestCor
                },
-               overwrite = TRUE)
+               overwrite = FALSE)
 
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "getTime_Power",
@@ -1458,13 +1452,12 @@ Palytic$set("public", "getTime_Power",
                  }
                  self$time_powers <- data.frame(ids=uid, time_power=unlist(time_powers))
                },
-               overwrite = TRUE)
+               overwrite = FALSE)
 
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "GroupTime_Power",
                function(maxOrder=3)
                {
-                 uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
                  time_powers <- list()
                  temp <- Palytic$new(self$data, self$ids, self$dv,
                                         self$time)
@@ -1483,6 +1476,6 @@ Palytic$set("public", "GroupTime_Power",
                  aics <- unlist(aics)
                  self$time_power <- which.min( aics )
                },
-               overwrite = TRUE)
+               overwrite = FALSE)
 
 
