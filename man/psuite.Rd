@@ -8,7 +8,7 @@
 Palytic(DVout, method)
 }
 \arguments{
-\item{DVout}{A data frame created by \code{\link{PersonAlyticHTP}}.}
+\item{DVout}{A data frame created by \code{\link{PersonAlytic}}.}
 
 \item{method}{One of \code{\link{p.adjust.methods}}.}
 

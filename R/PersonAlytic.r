@@ -368,12 +368,11 @@ paHTP <- function(e=parent.frame())
 
   # check that inputs conform. this is also done when creating a Palytic
   # object, but we do it early on here to avoid problems after loops start.
-  # This is why `clean()` has inputs that apply to PersonAlyticHTP but not to
-  # PersonAlytic
   e$data <- PersonAlytics:::clean(e$data, e$ids, dv=NULL, e$time, e$phase, e$ivs,
                                   fixed=NULL, random=NULL, formula=NULL,
                                   e$correlation, e$family,
-                                  e$dvs, e$target_ivs, e$standardize)
+                                  e$dvs, e$target_ivs, e$standardize,
+                                  e$alignPhase)
 
   # subgroup the data and delete the parameter, after this point, it is only
   # used to subgroup to unique ids
@@ -528,7 +527,8 @@ pa1 <- function(e=parent.frame())
                     interactions=e$interactions ,
                     time_power=e$time_power     ,
                     correlation=e$correlation   ,
-                    standardize=e$standardize   )
+                    standardize=e$standardize   ,
+                    alignPhase=e$alignPhase     )
 
   if(e$detectAR) t1$GroupAR_order(dV    = e$dvs    ,
                                   maxAR = e$PQ[1]  ,

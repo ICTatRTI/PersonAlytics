@@ -1,0 +1,37 @@
+> summary(t1)
+Linear mixed-effects model fit by REML
+ Data: na.omit(tempData) 
+       AIC      BIC    logLik
+  637.7096 685.9451 -305.8548
+
+Random effects:
+ Formula: ~Time + I(Time^2) | Mare
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev    Corr         
+(Intercept) 0.7158240 (Intr) Time  
+Time        0.8167165  0.271       
+I(Time^2)   1.2122430 -0.629  0.336
+Residual    0.5917744              
+
+Fixed effects: follicles ~ Time * Phase + I(Time^2) * Phase 
+                     Value Std.Error  DF   t-value p-value
+(Intercept)       0.263722 0.2702265 292  0.975929  0.3299
+Time              4.702126 1.0438228 292  4.504717  0.0000
+Phase             0.163627 0.2057581 292  0.795242  0.4271
+I(Time^2)         6.639078 1.3874364 292  4.785140  0.0000
+Time:Phase       -1.772807 1.4102255 292 -1.257109  0.2097
+Phase:I(Time^2) -14.681481 2.0702994 292 -7.091477  0.0000
+ Correlation: 
+                (Intr) Time   Phase  I(T^2) Tm:Phs
+Time             0.575                            
+Phase           -0.475 -0.688                     
+I(Time^2)        0.328  0.932 -0.604              
+Time:Phase      -0.388 -0.699  0.157 -0.675       
+Phase:I(Time^2) -0.309 -0.611  0.726 -0.624 -0.059
+
+Standardized Within-Group Residuals:
+        Min          Q1         Med          Q3         Max 
+-2.60392662 -0.61018877 -0.03862912  0.58122147  2.82632822 
+
+Number of Observations: 308
+Number of Groups: 11 

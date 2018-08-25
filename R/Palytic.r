@@ -181,6 +181,7 @@ Palytic <- R6::R6Class("Palytic",
     .standardize = FALSE,
     .corStructs  = NULL,
     .time_powers = NULL,
+    .alignPhase  = FALSE,
     .ismonotone  = NULL,
     .is_clean    = FALSE,
     .warnings    = list(),
@@ -847,6 +848,16 @@ Palytic <- R6::R6Class("Palytic",
       }
     },
 
+    alignPhase = function(value)
+    {
+      if( missing(value) ) private$.monotone
+      else
+      {
+        private$.alignPhase <- value
+        self
+      }
+    },
+
     is_clean = function(value)
     {
       if( missing(value) ) private$.is_clean
@@ -895,6 +906,7 @@ Palytic <- R6::R6Class("Palytic",
       corStructs  = NULL,
       time_powers = NULL,
       ismonotone  = NULL,
+      alignPhase  = FALSE,
       is_clean    = FALSE,
       warnings    = list(), # can we hide these? or just make them read only?
       errors      = list(),
@@ -924,7 +936,8 @@ Palytic <- R6::R6Class("Palytic",
 
       data <- clean(data, ids, dv, time, phase, ivs,
                     fixed, random, formula, correlation, family,
-                    dvs=NULL, target_ivs=NULL, standardize)
+                    dvs=NULL, target_ivs=NULL, standardize,
+                    sortData=TRUE, alignPhase)
 
       frms <- forms(data,
                     PalyticObj=NULL,
@@ -963,6 +976,7 @@ Palytic <- R6::R6Class("Palytic",
       private$.corStructs  <- corStructs
       private$.time_powers <- time_powers
       private$.ismonotone  <- ismonotone
+      private$.alignPhase  <- alignPhase
       private$.is_clean    <- is_clean
       private$.warnings    <- warnings
       private$.errors      <- errors
@@ -975,6 +989,38 @@ Palytic <- R6::R6Class("Palytic",
 )
 
 # add methods
+Palytic$set("public", "summary",
+            function()
+            {
+
+            })
+
+selfsumm <- function(x)
+{
+  list(      data         = x$data         ,
+             ids          = x$ids          ,
+             dv           = x$dv           ,
+             time         = x$time         ,
+             phase        = x$phase        ,
+             ivs          = x$ivs          ,
+             interactions = x$interactions ,
+             time_power   = x$time_power   ,
+             correlation  = x$correlation  ,
+             family       = x$family       ,
+             fixed        = x$fixed        ,
+             random       = x$random       ,
+             formula      = x$formula      ,
+             method       = x$method       ,
+             standardize  = x$standardize  ,
+             corStructs   = x$corStructs   ,
+             time_powers  = x$time_powers  ,
+             ismonotone   = x$ismonotone   ,
+             is_clean     = x$is_clean     ,
+             warnings     = x$warnings     ,
+             errors       = x$errors       ,
+             try_silent   = x$try_silent   )
+}
+
 Palytic$set("public", "lme",
             function(subgroup=NULL)
             {
@@ -1044,13 +1090,8 @@ Palytic$set("public", "lme",
               }
               if( "lme" %in% class(m1) )
               {
-                m1$call$fixed  <- self$fixed
-                m1$call$random <- self$random
-                # this renders it non-updatable, needs cor instead
-                m1$call$correlation <- self$correlation
-                m1$call$method <- self$method
-                m1$call$control <- ctrl
-                m1$call$whichPalyticMod <- paste('Palytic lme model #', wm)
+                m1$PalyticSummary  <- selfsumm(self)
+                m1$whichPalyticMod <- paste('Palytic lme model #', wm)
                 return(m1)
               }
               else
@@ -1076,6 +1117,7 @@ Palytic$set("public", "gamlss",
               tempData <- na.omit( subset(self$data, subgroup,
                                  all.vars(self$formula)) )
 
+              # allow for family to be changed on the fly
               currentFamily <- self$family
               if(!is.null(family)) currentFamily <- family
 
@@ -1116,10 +1158,8 @@ Palytic$set("public", "gamlss",
               }
               if("gamlss" %in% class(m1))
               {
-                m1$call$formula         <- self$formula
-                m1$call$sigma.formula   <- sigma.formula
-                m1$call$family          <- currentFamily
-                m1$call$whichPalyticMod <- paste('Palytic gamlss model #', wm)
+                m1$PalyticSummary  <- selfsumm(self)
+                m1$whichPalyticMod <- paste('Palytic gamlss model #', wm)
                 return(m1)
               }
               if("try-error" %in% class(m1))

@@ -1,0 +1,37 @@
+> summary(t2)
+Linear mixed-effects model fit by REML
+ Data: OvaryICT 
+       AIC      BIC    logLik
+  1613.639 1661.875 -793.8197
+
+Random effects:
+ Formula: ~Time + I(Time^2) | Mare
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev   Corr         
+(Intercept) 2.443617 (Intr) Time  
+Time        6.729512  0.306       
+I(Time^2)   5.766597 -0.516 -0.813
+Residual    2.982766              
+
+Fixed effects: follicles ~ Time * Phase + I(Time^2) * Phase 
+                    Value Std.Error  DF   t-value p-value
+(Intercept)      10.38988  0.804056 292 12.921836  0.0000
+Time            -13.01929  3.354930 292 -3.880644  0.0001
+Phase           -15.70348  5.521114 292 -2.844259  0.0048
+I(Time^2)        34.26346  6.968565 292  4.916861  0.0000
+Time:Phase       70.61318 13.753633 292  5.134147  0.0000
+Phase:I(Time^2) -74.00387 10.431059 292 -7.094569  0.0000
+ Correlation: 
+                (Intr) Time   Phase  I(T^2) Tm:Phs
+Time             0.124                            
+Phase           -0.023  0.007                     
+I(Time^2)       -0.183 -0.813  0.009              
+Time:Phase       0.011 -0.155 -0.974  0.169       
+Phase:I(Time^2)  0.044  0.461  0.739 -0.627 -0.857
+
+Standardized Within-Group Residuals:
+        Min          Q1         Med          Q3         Max 
+-2.60877104 -0.61023415 -0.03880177  0.56420782  2.83691767 
+
+Number of Observations: 308
+Number of Groups: 11 
