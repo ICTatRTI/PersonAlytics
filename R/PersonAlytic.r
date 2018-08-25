@@ -530,8 +530,8 @@ pa1 <- function(e=parent.frame())
                     standardize=e$standardize   ,
                     alignPhase=e$alignPhase     )
 
-  if(e$detectAR) t1$GroupAR_order(maxAR = e$PQ[1]  ,
-                                  maxMA = e$PQ[2]  ,
+  if(e$detectAR) t1$GroupAR_order(P = e$PQ[1]  ,
+                                  Q = e$PQ[2]  ,
                                   IC    = e$IC[1]  )
   # t1$correlation
   # t1$formula

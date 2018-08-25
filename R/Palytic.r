@@ -89,21 +89,21 @@
 #'   used to specify generalized linear mixed effects models,
 #'   see \code{\link{gamlss.family}}).
 #'   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-#'   \item{\code{getAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
+#'   \item{\code{getAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
 #'   This method automates the task of determining the correlation structure for each case in
 #'   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
-#'   \code{maxAR} and \code{maxMA} set the highest autoregressive and moving
+#'   \code{P} and \code{Q} set the highest autoregressive and moving
 #'   average parameters to be tested. If the time variable is approximatetly equally spaced,
 #'   \code{IC} is the criterion used for determining the correlation structure for each
 #'   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
 #'   spaced, \code{IC} as also the criterion for
 #'   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
 #'   If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
-#'   method for \code{\link{lme}} objects. This is NOT reccomended unless maxMA=0 and only AR
+#'   method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0 and only AR
 #'   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
 #'   populates the
 #'   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
-#'   \item{\code{GroupAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
+#'   \item{\code{GroupAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
 #'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
@@ -1174,8 +1174,8 @@ Palytic$set("public", "gamlss",
 # this will only be applied to one participant at a time
 # IC can take on AIC or BIC
 Palytic$set("public", "getAR_order",
-               function(maxAR=3    ,
-                        maxMA=3    ,
+               function(P=3    ,
+                        Q=3    ,
                         IC="BIC" ,
                         lrt=FALSE  , # only valid for nested models, AR, MA are not nested
                         alpha=.05  )
@@ -1237,9 +1237,9 @@ Palytic$set("public", "getAR_order",
                      nullMod <- temp$lme(temp$data[[temp$ids]]==id)
                      if( "lme" %in% class(nullMod) )
                      {
-                       for(p in 1:maxAR)
+                       for(p in 1:P)
                        {
-                         for(q in 1:maxMA)
+                         for(q in 1:Q)
                          {
                            # will this automatically update the fixed effects? it doesn't
                            # need to for nlme which takes `correlation` directly, but would
@@ -1332,7 +1332,7 @@ Palytic$set("public", "getAR_order",
 
 # IC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",
-               function(maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05,
+               function(P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05,
                         subgroup=NULL)
                {
                  corMods <- list(); cc <- 1
@@ -1340,9 +1340,9 @@ Palytic$set("public", "GroupAR_order",
                  nullMod <- self$lme(subgroup)
                  if( "lme" %in% class(nullMod) )
                  {
-                   for(p in 1:maxAR)
+                   for(p in 1:P)
                    {
-                     for(q in 1:maxMA)
+                     for(q in 1:Q)
                      {
                        #t0 <- self #self$clone() # some wierd inheretance is going on
                        # will this automatically update the fixed effects? it doesn't
