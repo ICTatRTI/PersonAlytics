@@ -10,25 +10,35 @@ Ovary data from nlme modified for ideographic clinical trial analysis
 \examples{
 # A simple mixed effects models using PersonAlytic and lme
 t1 <- PersonAlytic(data=OvaryICT,
-                 ids="Mare",
-                 dvs="follicles",
-                 phase="Phase",
-                 time="Time",
-                 package="nlme")
-summary(t1)
+                   ids="Mare",
+                   dvs="follicles",
+                   phase="Phase",
+                   time="Time",
+                   package="nlme",
+                   detectAR = FALSE,
+                   detectTO = FALSE,
+                   standardize = FALSE,
+                   alignPhase = FALSE)
+
 # Verify the PersonAlytic results to a direct call to lme
-ctrl <- lmeControl(opt="optim")
-t2 <- lme(follicles ~ Time * Phase + I(Time^2) * Phase,
+t2 <- lme(follicles ~ Time * Phase,
           data = OvaryICT,
-          random = ~Time + I(Time^2) | Mare,
-          correlation = NULL,
+          random = ~Time | Mare,
           method = "REML",
-          control = ctrl )
+          control = t1$call$control)
 summary(t2)
-# check
-identical(t1,t2)
-# NOTE. Time is a trigonometric function of Time, warnings are produced
-# because Time is not ordered.
+
+# verification tests
+all.equal(summary(t1)$tTable, summary(t2)$tTable)
+all.equal(VarCorr(t1), VarCorr(t2))
+
+# verify estimates
+all.equal( summary(t1)$tTable[,1],
+c(`(Intercept)`  = 10.6616306,
+   Time          = -0.8689801,
+   Phase         = 10.9720945,
+   `Time:Phase`  = -8.6438502) )
+
 # definition of OvaryICT
 \dontrun{
 OvaryICT <- as.data.frame(nlme::Ovary)
@@ -38,10 +48,6 @@ OvaryICT$Time <- sin(2*pi*OvaryICT$Time)
 OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
 }
 
-# output verification of t1
-capture.output(t1.coef <- summary(t1), file = 'NUL')
-all.equal(as.vector(t1.coef[,1]),
-c(11.2421402, -1.9730995, 0.9126069, -1.9746526, 1.0967642))
 }
 \references{
 Pinero, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS

@@ -329,7 +329,7 @@ PersonAlytic <- function(output=NULL              ,
                          sigma.formula=~1         ,
                          p.method = "BY"          ,
                          alpha = .05              ,
-                         alignPhase = TRUE        ,
+                         alignPhase = FALSE       ,
                          debugforeach = FALSE     )
 {
   if(length(IC)>1) IC <- IC[1]
@@ -530,8 +530,7 @@ pa1 <- function(e=parent.frame())
                     standardize=e$standardize   ,
                     alignPhase=e$alignPhase     )
 
-  if(e$detectAR) t1$GroupAR_order(dV    = e$dvs    ,
-                                  maxAR = e$PQ[1]  ,
+  if(e$detectAR) t1$GroupAR_order(maxAR = e$PQ[1]  ,
                                   maxMA = e$PQ[2]  ,
                                   IC    = e$IC[1]  )
   # t1$correlation

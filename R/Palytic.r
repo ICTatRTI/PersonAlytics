@@ -1174,8 +1174,7 @@ Palytic$set("public", "gamlss",
 # this will only be applied to one participant at a time
 # IC can take on AIC or BIC
 Palytic$set("public", "getAR_order",
-               function(dV         ,
-                        maxAR=3    ,
+               function(maxAR=3    ,
                         maxMA=3    ,
                         IC="BIC" ,
                         lrt=FALSE  , # only valid for nested models, AR, MA are not nested
@@ -1194,7 +1193,7 @@ Palytic$set("public", "getAR_order",
                    if(IC=="BIC") ic = "bic"
                    if(IC=="AIC") ic = "aic"
                    #frmToChar(self$fixed) # 20180816 not sure why this is here, depricate
-                   AR_orders <- by(self$data[[dV]],
+                   AR_orders <- by(self$data[[self$dv]],
                                    self$data[[self$ids]],
                                    FUN = function(x) forecast::auto.arima(x,
                                                      ic=ic)$arma[c(1,3)])
@@ -1217,8 +1216,7 @@ Palytic$set("public", "getAR_order",
                  }
                  if(!eqSpace)
                  {
-                   temp    <- self
-                   temp$dv <- dV
+                   temp     <- self
                    bestCors <- list()
 
                    # this is supposedly taboo but I've been unable to work around it b/c we
@@ -1334,7 +1332,7 @@ Palytic$set("public", "getAR_order",
 
 # IC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",
-               function(dV, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05,
+               function(maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05,
                         subgroup=NULL)
                {
                  corMods <- list(); cc <- 1
@@ -1346,7 +1344,7 @@ Palytic$set("public", "GroupAR_order",
                    {
                      for(q in 1:maxMA)
                      {
-                       t0 <- self$clone()
+                       #t0 <- self #self$clone() # some wierd inheretance is going on
                        # will this automatically update the fixed effects? it doesn't
                        # need to for nlme which takes `correlation` directly, but would
                        # need to be updated for gamlss; hence, lme for now (faster too)
@@ -1354,8 +1352,8 @@ Palytic$set("public", "GroupAR_order",
                                         q=", q, ")", sep="")
                        cortemp <- gsub('\n', '', cortemp)
                        cortemp <- gsub(' ', '', cortemp)
-                       t0$correlation <- cortemp
-                       corMods[[cc]]  <- t0$lme(subgroup)
+                       self$correlation <- cortemp
+                       corMods[[cc]]  <- self$lme(subgroup)
                        if( any(corMods[[cc]]=="Model did not converge") )
                        {
                          corMods[[cc]] <- NULL

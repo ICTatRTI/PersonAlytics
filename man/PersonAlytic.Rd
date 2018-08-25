@@ -11,7 +11,7 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   standardize = TRUE, package = "nlme", individual_mods = FALSE,
   PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3), IC = c("BIC",
   "AIC"), detectTO = TRUE, charSub = NULL, sigma.formula = ~1,
-  p.method = "BY", alpha = 0.05, alignPhase = TRUE,
+  p.method = "BY", alpha = 0.05, alignPhase = FALSE,
   debugforeach = FALSE)
 }
 \arguments{
