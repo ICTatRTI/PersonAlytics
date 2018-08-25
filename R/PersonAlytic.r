@@ -154,6 +154,14 @@
 #' Options are \code{\link{nlme}} and \code{\link{gamlss}}
 #' It is passed as character strings, e.g., \code{"gamlss"} or \code{"nlme"}.
 #'
+#' @param method character. The default is \code{"REML"}.
+#'
+#' Which likelihood methods should be used to fit the models? Options are
+#' \code{"REML"}, which should be used for final parameter estimates and
+#' effect sizes, and \code{"ML"}, which should be used for model comparisons
+#' (e.g., this is done for automatic residual correlation structure detection
+#' and automatic time order detection).
+#'
 #' @param individual_mods Logical. The default is \code{individual_mods=FALSE}.
 #'
 #' Should individual models be fit for each ID in \code{ids}?
@@ -200,8 +208,8 @@
 #' @param detectTO Logical. The default is \code{detectTO=TRUE}.
 #'
 #' Should the \code{time_power} value
-#' be automatically selected? Values from 1 to \code{time_power} will be tested.
-#' For example, if \code{time_power=3} (implying a cubic growth model), the models
+#' be automatically selected? Values from 1 to \code{maxOrder} will be tested.
+#' For example, if \code{maxOrder=3} (implying a cubic growth model), the models
 #' compared include \code{time}, \code{time + I(time^2)}, and
 #' \code{time + I(time^2)+I(time^3)}. Since these models are nested, the best
 #' fitting model is selected using likelihood ratio tests with mixed effects
@@ -209,6 +217,10 @@
 #'
 #' This is done separately for each individual in \code{ids} if
 #' \code{individual_mods=TRUE}.
+#'
+#' @param maxOrder Numeric. The default is \code{maxOrder=3}.
+#'
+#' See \code{detectTO}.
 #'
 #' @param charSub Character list. The default in \code{charSub=NULL}.
 #'
@@ -318,6 +330,7 @@ PersonAlytic <- function(output=NULL              ,
                          family=gamlss.dist::NO() ,
                          subgroup=NULL            ,
                          standardize=TRUE         ,
+                         method='REML'            ,
                          package='nlme'           ,
                          individual_mods=FALSE    ,
                          PalyticObj=NULL          ,
@@ -325,6 +338,7 @@ PersonAlytic <- function(output=NULL              ,
                          PQ=c(3,3)                ,
                          IC=c("BIC", "AIC")       ,
                          detectTO=TRUE            ,
+                         maxOrder=3               ,
                          charSub=NULL             ,
                          sigma.formula=~1         ,
                          p.method = "BY"          ,
@@ -333,9 +347,6 @@ PersonAlytic <- function(output=NULL              ,
                          debugforeach = FALSE     )
 {
   if(length(IC)>1) IC <- IC[1]
-  maxOrder   <- time_power
-  time_power <- 1
-
 
   if(individual_mods==FALSE & length(dvs)==1 & length(target_ivs)<=1)
   {
@@ -497,6 +508,7 @@ pa1 <- function(e=parent.frame())
     subgroup        <- NULL
     standardize     <- FALSE
     package         <- 'nlme'
+    method          <- 'ML'
     individual_mods <- FALSE
     PalyticObj      <- NULL
     detectAR        <- FALSE
@@ -521,14 +533,16 @@ pa1 <- function(e=parent.frame())
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
 
   t1 <- Palytic$new(data=e$data[e$subgroup,]    ,
-                    dv=e$dvs                    ,
                     ids=e$ids                   ,
+                    dv=e$dvs                    ,
                     time=e$time                 ,
                     phase=e$phase               ,
                     ivs=e$ivs                   ,
                     interactions=e$interactions ,
                     time_power=e$time_power     ,
                     correlation=e$correlation   ,
+                    family=e$family             ,
+                    method=e$method             ,
                     standardize=e$standardize   ,
                     alignPhase=e$alignPhase     )
 

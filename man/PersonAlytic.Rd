@@ -8,11 +8,11 @@ mixed effects models with high throughput options.}
 PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 3,
   correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
-  standardize = TRUE, package = "nlme", individual_mods = FALSE,
-  PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3), IC = c("BIC",
-  "AIC"), detectTO = TRUE, charSub = NULL, sigma.formula = ~1,
-  p.method = "BY", alpha = 0.05, alignPhase = FALSE,
-  debugforeach = FALSE)
+  standardize = TRUE, method = "REML", package = "nlme",
+  individual_mods = FALSE, PalyticObj = NULL, detectAR = TRUE, PQ = c(3,
+  3), IC = c("BIC", "AIC"), detectTO = TRUE, maxOrder = 3,
+  charSub = NULL, sigma.formula = ~1, p.method = "BY", alpha = 0.05,
+  alignPhase = FALSE, debugforeach = FALSE)
 }
 \arguments{
 \item{output}{Character. The default is \code{NULL}.
@@ -123,6 +123,14 @@ which makes parameter estimate magnitudes comparable across individuals, outcome
 \code{dvs}, and covariates in \code{target_ivs}. For dependent variables in
 \code{dvs}, standardization is only applied for normal outcomes, see \code{family}.}
 
+\item{method}{character. The default is \code{"REML"}.
+
+Which likelihood methods should be used to fit the models? Options are
+\code{"REML"}, which should be used for final parameter estimates and
+effect sizes, and \code{"ML"}, which should be used for model comparisons
+(e.g., this is done for automatic residual correlation structure detection
+and automatic time order detection).}
+
 \item{package}{Character. The default is \code{"nlme"}.
 
 Which package should be used to fit the models?
@@ -175,8 +183,8 @@ in \code{ids} if \code{individual_mods=TRUE}.}
 \item{detectTO}{Logical. The default is \code{detectTO=TRUE}.
 
 Should the \code{time_power} value
-be automatically selected? Values from 1 to \code{time_power} will be tested.
-For example, if \code{time_power=3} (implying a cubic growth model), the models
+be automatically selected? Values from 1 to \code{maxOrder} will be tested.
+For example, if \code{maxOrder=3} (implying a cubic growth model), the models
 compared include \code{time}, \code{time + I(time^2)}, and
 \code{time + I(time^2)+I(time^3)}. Since these models are nested, the best
 fitting model is selected using likelihood ratio tests with mixed effects
@@ -184,6 +192,10 @@ models fit using maximum likelihood estimators in \code{\link{lme}}.
 
 This is done separately for each individual in \code{ids} if
 \code{individual_mods=TRUE}.}
+
+\item{maxOrder}{Numeric. The default is \code{maxOrder=3}.
+
+See \code{detectTO}.}
 
 \item{charSub}{Character list. The default in \code{charSub=NULL}.
 
