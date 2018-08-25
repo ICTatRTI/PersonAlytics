@@ -567,6 +567,8 @@ Palytic <- R6::R6Class("Palytic",
                                            "For ARMA(3,1) use 'corARMA(p=3,q=1)'.",
                                            sep="\n") )
                              }
+                             # NULL is a valid `value` for correlation, so we need one more
+                             # parameter `corFromPalyticObj` to get it right
                              frms <- forms(private$.data,
                                            PalyticObj   = self,
                                            ids          = NULL,
@@ -580,7 +582,8 @@ Palytic <- R6::R6Class("Palytic",
                                            fixed        = NULL,
                                            random       = NULL,
                                            formula      = NULL,
-                                           method       = NULL)
+                                           method       = NULL,
+                                           corFromPalyticObj = FALSE)
                              private$.ids          <- frms$ids
                              private$.dv           <- frms$dv
                              private$.time         <- frms$time
@@ -1336,7 +1339,7 @@ Palytic$set("public", "GroupAR_order",
                      subgroup=NULL)
             {
               corMods <- list(); cc <- 1
-              self$correlation <- NULL
+              self$correlation <- "NULL"
               nullMod <- self$lme(subgroup)
               if( "lme" %in% class(nullMod) )
               {

@@ -137,8 +137,12 @@ forms <- function(data                  ,
                   random       = NULL   ,
                   formula      = NULL   ,
                   method       = "REML" ,
-                  dropTime     = FALSE  )
+                  dropTime     = FALSE  ,
+                  corFromPalyticObj = TRUE)
 {
+  # since NULL is a valid option for correlation, we must override it using
+  #corFromPalyticObj
+
   if(!is.null(PalyticObj))
   {
     # unpack PalyticObj
@@ -149,7 +153,8 @@ forms <- function(data                  ,
     if(is.null(ivs         )) ivs          <- PalyticObj$ivs
     if(is.null(interactions)) interactions <- PalyticObj$interactions
     if(is.null(time_power  )) time_power   <- PalyticObj$time_power
-    if(is.null(correlation )) correlation  <- PalyticObj$correlation
+    if( corFromPalyticObj)    correlation  <- PalyticObj$correlation
+    if(!corFromPalyticObj)    correlation  <- correlation
     if(is.null(family      )) family       <- PalyticObj$family
     if(is.null(method      )) method       <- PalyticObj$method
 
@@ -182,7 +187,7 @@ forms <- function(data                  ,
   }
 
   # update time using time_power, only if the I() function is not already in time
-  if(!is.null(time) & time[[1]] != "1")
+  if(!is.null(time) & !any(time != "1"))
   {
     if( length( unlist(strsplit(time, "I\\("))) == 1 )
     {
