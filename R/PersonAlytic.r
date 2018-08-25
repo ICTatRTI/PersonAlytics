@@ -480,7 +480,7 @@ paHTP <- function(e=parent.frame())
 pa1 <- function(e=parent.frame())
 {
   # if no data are given, use a test data set
-  if(is.null(data))
+  if(is.null(e$data))
   {
     output          <- NULL
     data            <- OvaryICT
@@ -509,6 +509,7 @@ pa1 <- function(e=parent.frame())
     alpha           <- .05
     alignPhase      <- TRUE
     debugforeach    <- FALSE
+    maxOrder        <- 3
   }
 
   if(is.null(e$output))
