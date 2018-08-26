@@ -17,3 +17,6 @@ to01 - function to convent any variable to the [0,1] range
 \references{
 Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54.
 }
+\author{
+Stephen Tueller \email{Stueller@rti.org}
+}

@@ -2,8 +2,8 @@
 % Please edit documentation in R/utils.r
 \name{iscorStruct}
 \alias{iscorStruct}
-\title{isCorStruct - function to test whether a string resolves into a valid correlation
-structure}
+\title{isCorStruct - function to test whether a string resolves into a valid
+correlation structure}
 \usage{
 iscorStruct(x)
 }
@@ -12,6 +12,12 @@ iscorStruct(x)
 }
 \description{
 Note that \code{NULL} is a valiad \code{corStruct}
+}
+\examples{
+iscorStruct(NULL)
+iscorStruct("NULL")
+iscorStruct("corARMA(3,3)")
+iscorStruct(c(2,2))
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}

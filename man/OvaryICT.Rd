@@ -8,20 +8,38 @@
 Ovary data from nlme modified for ideographic clinical trial analysis
 }
 \examples{
-# this example
+# A simple mixed effects models using PersonAlytic and lme
 t1 <- PersonAlytic(data=OvaryICT,
-                 ids="Mare",
-                 dv="follicles",
-                 phase="Phase",
-                 time="Time")
+                   ids="Mare",
+                   dvs="follicles",
+                   phase="Phase",
+                   time="Time",
+                   package="nlme",
+                   detectAR = FALSE,
+                   detectTO = FALSE,
+                   standardize = FALSE,
+                   alignPhase = FALSE)
 summary(t1)
-# is equivalent to
-t2 <- PersonAlytic()
+
+# Verify the PersonAlytic results to a direct call to lme
+t2 <- lme(follicles ~ Time * Phase,
+          data = OvaryICT,
+          random = ~Time | Mare,
+          method = "REML",
+          control = t1$call$control)
 summary(t2)
-# check
-identical(t1,t2)
-# NOTE. Time is a trigonometric function of Time, warnings are produced
-# because Time is not ordered.
+
+# verification tests
+all.equal(summary(t1)$tTable, summary(t2)$tTable)
+all.equal(VarCorr(t1), VarCorr(t2))
+
+# verify estimates
+all.equal( summary(t1)$tTable[,1],
+c(`(Intercept)`  = 10.6616306,
+   Time          = -0.8689801,
+   Phase         = 10.9720945,
+   `Time:Phase`  = -8.6438502) )
+
 # definition of OvaryICT
 \dontrun{
 OvaryICT <- as.data.frame(nlme::Ovary)
@@ -31,10 +49,6 @@ OvaryICT$Time <- sin(2*pi*OvaryICT$Time)
 OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
 }
 
-# output verification of t1
-capture.output(t1.coef <- summary(t1), file = 'NUL')
-all.equal(as.vector(t1.coef[,1]),
-c(11.2421402, -1.9730995, 0.9126069, -1.9746526, 1.0967642))
 }
 \references{
 Pinero, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS
@@ -42,14 +56,4 @@ Pinero, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}
-
-The Ovary data set from the nlme package, modified as shown in the example.
-
-\itemize{
-  \item Mare. The mare ID.
-  \item Time. The time variable.
-  \item follicles. See \code{\link{Ovary}}.
-  \item Phase. A faux phase variable created at \code{Time > .5}.
-  \item Time. Equal to \code{sin(2*pi*Ovary$Time)}. See Pinheiro & Bates (2000).
-}
 }

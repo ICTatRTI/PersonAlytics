@@ -7,7 +7,11 @@
 monotone(ids, time, data)
 }
 \arguments{
-\item{x}{Any object}
+\item{ids}{See \code{\link{PersonAlytic}}.}
+
+\item{time}{See \code{\link{PersonAlytic}}.}
+
+\item{data}{See See \code{\link{PersonAlytic}}.}
 }
 \description{
 monotone

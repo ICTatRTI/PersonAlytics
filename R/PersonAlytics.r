@@ -12,11 +12,7 @@
 #' Additional independent variables (or covariates) can be included.
 #' The \code{PersonAlytics} package provides the simplified user interface
 #' for implementing this model using \code{\link{gamlss}} or \code{\link{lme}}. The
-#' two primary functions of \code{PersonAlytics} are \code{\link{PersonAlytic}}, which
-#' runs a single model, and \code{\link{PersonAlyticHTP}} which iterates over multiple
-#' models. Note that \code{\link{PersonAlyticsHTP}} can be used to run a single model but
-#' this will go much more slowly because of the computational overhead required for
-#' parralellization.
+#' primary function of \code{PersonAlytics} is \code{\link{PersonAlytic}}.
 #'
 #' Key features of the \code{PersonAlytics} package include:
 #'
@@ -142,6 +138,7 @@ NULL
 #' @name OvaryICT
 #' @docType data
 #' @author Stephen Tueller \email{stueller@@rti.org}
+#' @export
 #'
 #' The Ovary data set from the nlme package, modified as shown in the example.
 #'
@@ -157,20 +154,38 @@ NULL
 #' (statistics and computing).
 #'
 #' @examples
-#' # this example
+#' # A simple mixed effects models using PersonAlytic and lme
 #' t1 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  time="Time")
+#'                    ids="Mare",
+#'                    dvs="follicles",
+#'                    phase="Phase",
+#'                    time="Time",
+#'                    package="nlme",
+#'                    detectAR = FALSE,
+#'                    detectTO = FALSE,
+#'                    standardize = FALSE,
+#'                    alignPhase = FALSE)
 #' summary(t1)
-#' # is equivalent to
-#' t2 <- PersonAlytic()
+#'
+#' # Verify the PersonAlytic results to a direct call to lme
+#' t2 <- lme(follicles ~ Time * Phase,
+#'           data = OvaryICT,
+#'           random = ~Time | Mare,
+#'           method = "REML",
+#'           control = t1$call$control)
 #' summary(t2)
-#' # check
-#' identical(t1,t2)
-#' # NOTE. Time is a trigonometric function of Time, warnings are produced
-#' # because Time is not ordered.
+#'
+#' # verification tests
+#' all.equal(summary(t1)$tTable, summary(t2)$tTable)
+#' all.equal(VarCorr(t1), VarCorr(t2))
+#'
+#' # verify estimates
+#' all.equal( summary(t1)$tTable[,1],
+#' c(`(Intercept)`  = 10.6616306,
+#'    Time          = -0.8689801,
+#'    Phase         = 10.9720945,
+#'    `Time:Phase`  = -8.6438502) )
+#'
 #' # definition of OvaryICT
 #' \dontrun{
 #' OvaryICT <- as.data.frame(nlme::Ovary)
@@ -180,10 +195,6 @@ NULL
 #' OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
 #' }
 #'
-#' # output verification of t1
-#' capture.output(t1.coef <- summary(t1), file = 'NUL')
-#' all.equal(as.vector(t1.coef[,1]),
-#' c(11.2421402, -1.9730995, 0.9126069, -1.9746526, 1.0967642))
 
 if(1==2)
 {

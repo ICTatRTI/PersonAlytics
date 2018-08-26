@@ -2,17 +2,20 @@
 #'
 #' @param data See \code{\link{PersonAlytic}}.
 #' @param ids See \code{\link{PersonAlytic}}.
-#' @param dv See \code{\link{PersonAlytic}}.
+#' @param dv See \code{\link{Palytic}}.
 #' @param time See \code{\link{PersonAlytic}}.
 #' @param phase See \code{\link{PersonAlytic}}.
-#' @param ivs Used by \code{PersonAlyticPro}.
-#' @param dvs Used by \code{PersonAlyticPro}.
-#' @param target_ivs Used by \code{PersonAlyticPro}.
+#' @param ivs See \code{PersonAlytic}.
 #' @param fixed See \code{\link{Palytic}}.
 #' @param random See \code{\link{Palytic}}.
 #' @param formula See \code{\link{Palytic}}.
+#' @param correlation See \code{\link{PersonAlytic}}.
+#' @param family See \code{\link{PersonAlytic}}.
+#' @param dvs See \code{\link{PersonAlytic}}.
+#' @param target_ivs See \code{PersonAlytic}.
 #' @param standardize Logical. Should all variables be standardized? Only applies
-#' to \code{dv}, \code{ivs}, and \code{target_ivs}.
+#' to \code{dvs}, \code{ivs}, and \code{target_ivs}.
+#' @param alignPhase See \code{\link{PersonAlytic}}.
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
@@ -37,16 +40,18 @@ clean <- function(data		 	            ,
                   random      	=	NULL	,
                   formula	      =	NULL	,
                   correlation 	=	NULL	,
+                  family        = NULL  ,
                   dvs	          =	NULL	,
-                  target_ivs        	=	NULL	,
+                  target_ivs    =	NULL	,
                   standardize 	=	FALSE	,
                   sortData	    =	TRUE	,
                   alignPhase 	  =	TRUE  )
 {
   # check that variables are in the data set
-  vars <- unique( c(ids, dv, time, phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
+  vars <- unique( c(ids, dv, time[[1]], phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- vars[which(vars!='1')]
+  #vars <- gsub(" ", "", vars) # this will be a problem if var names have spaces...
   wvars <- which( ! vars %in% names(data) )
   if( length(wvars) > 0 )
   {
@@ -74,7 +79,8 @@ clean <- function(data		 	            ,
   # check variance - note that this also must be done for each ids in loops,
   # but follow curelator analyses and return per-person errors in output rather
   # than stopping analyses
-  novar <- lapply(data[,unlist(vars[2:length(vars)])], function(x) all(duplicated(x)[-1L]) )
+  novar <- lapply(data[,unlist(vars[2:length(vars)])],
+                  function(x) all(duplicated(x)[-1L]) )
   novar <- unlist(novar)
   if( any(novar) )
   {
@@ -84,7 +90,12 @@ clean <- function(data		 	            ,
   # standardize the data
   if(standardize)
   {
-    if( !is.null(dv)  ) data[[dv]] <- scale(data[[dv]])
+    # only standardize dv if it is normal
+    if( !is.null(dv) &
+        (is.null(family) | as.character(family)[1]=="c(\"NO\", \"Normal\")") )
+    {
+      data[[dv]] <- scale(data[[dv]])
+    }
     if( !is.null(dvs) & length(dvs) > 0 )
     {
       for(i in 1:length(dvs)) data[[dvs[[i]]]] <- scale( data[[dvs[[i]]]] )
@@ -100,7 +111,10 @@ clean <- function(data		 	            ,
     {
       for(i in 1:length(target_ivs))
       {
-        if(!is.factor(data[[target_ivs[[i]]]])) data[[target_ivs[[i]]]] <- scale( data[[target_ivs[[i]]]] )
+        if(!is.factor(data[[target_ivs[[i]]]]))
+        {
+          data[[target_ivs[[i]]]] <- scale( data[[target_ivs[[i]]]] )
+        }
       }
     }
   }
@@ -131,7 +145,7 @@ clean <- function(data		 	            ,
   # this doesn't work for trigonometric functions of time
   if(sortData)
   {
-    data <- data[order(data[[ids]], data[[time]]),]
+    data <- data[order(data[[ids]], data[[time[[1]]]]),]
   }
   # data <- data[order(data[[ids]]), ] # see issue #12 on github
 
@@ -257,7 +271,6 @@ alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
     hist(dat[,time])
     par(mfrow=c(1,1))
   }
-
 
   return(dat)
 }

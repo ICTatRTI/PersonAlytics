@@ -107,21 +107,21 @@ user accesible. Populated by \code{\link{PersonAylticsPro}}.}
   used to specify generalized linear mixed effects models,
   see \code{\link{gamlss.family}}).
   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-  \item{\code{getAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
+  \item{\code{getAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
   This method automates the task of determining the correlation structure for each case in
   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
-  \code{maxAR} and \code{maxMA} set the highest autoregressive and moving
+  \code{P} and \code{Q} set the highest autoregressive and moving
   average parameters to be tested. If the time variable is approximatetly equally spaced,
   \code{IC} is the criterion used for determining the correlation structure for each
   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
   spaced, \code{IC} as also the criterion for
   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
   If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
-  method for \code{\link{lme}} objects. This is NOT reccomended unless maxMA=0 and only AR
+  method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0 and only AR
   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
   populates the
   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
-  \item{\code{GroupAR_order(dv, maxAR=3, maxMA=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
+  \item{\code{GroupAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
   determining  \code{time_power} for each case in \code{ids}
@@ -175,7 +175,7 @@ t2$formula
 t1 <- Palytic$new(data = OvaryICT, ids='Mare',
                   dv='follicles', time='Time', phase='Phase')
 t1$getTime_Power()
-t1$time_powesr
+t1$time_powers
 # getAR_order works on one case at a time
 t1$getAR_order(t1$dv)
 t1$corStructs

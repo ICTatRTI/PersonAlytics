@@ -8,7 +8,8 @@
 htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
                 interactions=NULL, time_power=1, correlation=NULL,
                 family = gamlss.dist::NO(), standardize=TRUE, package='gamlss',
-                detectAR = TRUE, detectTO = TRUE, maxOrder=3, sigma.formula=~1,
+                detectAR = TRUE, PQ = c(3,3), IC = "BIC",
+                detectTO = TRUE, maxOrder=3, sigma.formula=~1,
                 debugforeach = FALSE)
 {
   library(foreach)
@@ -36,19 +37,20 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
 
     if(dims$ID[1]!="All Cases")
     {
-      if(detectAR)  t0$getAR_order(dvs[[dv]])
+      if(detectTO) t0$getTime_Power(maxOrder, IC[1])
+      #t0$time_powers
+
+      if(detectAR)  t0$getAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
       if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
                                               arma=rep("NULL", length(dims$ID)))
+      #t0$corStructs
 
-      if(detectTO) t0$getTime_Power(maxOrder)
-      #t0$time_powers
     }
     if(dims$ID[1]=="All Cases")
     {
-      if(detectAR) t0$GroupAR_order(dvs[[dv]])
-      if(detectTO) t0$GroupTime_Power(maxOrder)
+      if(detectTO) t0$GroupTime_Power(maxOrder, IC[1])
+      if(detectAR) t0$GroupAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
     }
-
 
     # parralelization
     funcs <- c("mean") # c(".eds") -- not importing from PersonAlytic correctly
@@ -79,6 +81,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
       IDout <- list()
       for(id in dims$ID)
       {
+        print(id)
         if(debugforeach){
           cat('starting id = ', id, '\n\n',
               file = paste('htp', dvs[dv], target_ivs[iv], 'log', sep='.'),
@@ -111,7 +114,7 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
         err_id['ids']          <- ids
         err_id['ids']          <- t1$ids
         err_id['dvs']          <- t1$dvs
-        err_id['family']       <- t1$family
+        err_id['family']       <- t1$family[[1]][2]
         err_id['package']      <- t1$package
         err_id['time']         <- t1$time
         err_id['phase']        <- t1$phase
@@ -347,7 +350,6 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
       return( IDoutSumm )
       rm( t1 )
     } # end of for each IVout
-    parallel::stopCluster(cl)
 
     # populate DVout
     ncols <- unlist( lapply(IVout, function(x) dim(x)[2]) )
@@ -358,5 +360,6 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
   row.names(outmat) <- NULL
   return( outmat )
 
+  parallel::stopCluster(cl)
 }
 

@@ -46,19 +46,21 @@ eds <- function(x)
 
 #' monotone
 #' @author Stephen Tueller \email{stueller@@rti.org}
-#' @param x Any object
+#' @param ids See \code{\link{PersonAlytic}}.
+#' @param time See \code{\link{PersonAlytic}}.
+#' @param data See See \code{\link{PersonAlytic}}.
 #'
 #' @keywords internal
 monotone <- function(ids, time, data)
 {
   .m <- function(x) all( diff(x) >= 0 )
-  monotonic <- by(data[[time]], INDICES = data[[ids]], FUN = .m)
+  monotonic <- by(data[[time[[1]]]], INDICES = data[[ids]], FUN = .m)
   monotonic <- unlist( as.list(monotonic) )
   data.frame(ids=ids, monotonic=monotonic)
 }
 
-#' isCorStruct - function to test whether a string resolves into a valid correlation
-#' structure
+#' isCorStruct - function to test whether a string resolves into a valid
+#' correlation structure
 #'
 #' @description Note that \code{NULL} is a valiad \code{corStruct}
 #'
@@ -66,19 +68,41 @@ monotone <- function(ids, time, data)
 #' @param x Any character string
 #'
 #' @keywords internal
+#'
+#' @examples
+#' iscorStruct(NULL)
+#' iscorStruct("NULL")
+#' iscorStruct("corARMA(3,3)")
+#' iscorStruct(c(2,2))
 iscorStruct <- function(x)
 {
-  if( ! class(x) %in% c('NULL', 'character') )
+  if( ! class(x) %in% c('NULL', 'character') &
+      ( length(x)!=2 & !is.numeric(x) )
+    )
   {
-    stop('`x` must be a character string')
+    stop('`correlation` must be one of\n\n',
+         '- A quoted character string of an `nlme` `corStruct`, see `?corStruct`\n',
+         '- `"NULL"` or `NULL` to get the default for `lme`\n',
+         '- A numeric vector of length 2, `correlation` and `detectAR` in `?PersonAlytic`')
   }
-  if(! is.null(x) )
+  if( is.numeric(x) )
+  {
+    if( sum(x) == 0 )
+    {
+      stop('At least one of `P` or `Q` in `correlation=c(P,Q)` must be > 0. ',
+           '\n\nIf you wish to specify a specific `ARMA(p,q)` model, use ',
+           '`correlation="corARMA(p,q)" \ninstead of `correlation=c(P,Q)` which ',
+           'initializes an automatice search among\n`p=1,...,P` and ',
+           '`q=1,...,Q`.')
+    }
+  }
+  if( ! is.null(x) & is.character(x) )
   {
     if(x!="NULL")
     {
       if(! 'corStruct' %in% class( eval( parse( text = x ) ) ) )
       {
-        stop('`x` is not a valid `corStruct`')
+        stop('`correlation` is not a valid `corStruct`')
       }
     }
   }
@@ -115,19 +139,24 @@ forms <- function(data                  ,
                   random       = NULL   ,
                   formula      = NULL   ,
                   method       = "REML" ,
-                  dropTime     = FALSE  )
+                  dropTime     = FALSE  ,
+                  corFromPalyticObj = TRUE)
 {
+  # since NULL is a valid option for correlation, we must override it using
+  #corFromPalyticObj
+
   if(!is.null(PalyticObj))
   {
     # unpack PalyticObj
     if(is.null(ids         )) ids          <- PalyticObj$ids
     if(is.null(dv          )) dv           <- PalyticObj$dv
-    if(is.null(time        )) time         <- PalyticObj$time
+    if(is.null(time        )) time         <- PalyticObj$time[[1]]
     if(is.null(phase       )) phase        <- PalyticObj$phase
     if(is.null(ivs         )) ivs          <- PalyticObj$ivs
     if(is.null(interactions)) interactions <- PalyticObj$interactions
     if(is.null(time_power  )) time_power   <- PalyticObj$time_power
-    if(is.null(correlation )) correlation  <- PalyticObj$correlation
+    if( corFromPalyticObj)    correlation  <- PalyticObj$correlation
+    if(!corFromPalyticObj)    correlation  <- correlation
     if(is.null(family      )) family       <- PalyticObj$family
     if(is.null(method      )) method       <- PalyticObj$method
 
@@ -139,7 +168,7 @@ forms <- function(data                  ,
     }
     if(!is.null(random))
     {
-      random.t <- unlist( strsplit(as.character(random), "\\|") )
+      random.t <- gsub(" ", "", unlist( strsplit(as.character(random), "\\|") ) )
       time     <- random.t[2]
       ids      <- random.t[3]
     }
@@ -159,17 +188,15 @@ forms <- function(data                  ,
     }
   }
 
-  # update time using time_power, only if the I() function is not already in time
-  if(!is.null(time))
+  # update time using time_power
+  if(!is.null(time_power))
   {
-    if( length( unlist(strsplit(time, "I\\("))) == 1 )
+    if( is.null(time_power) ) time_power <- 1
+    if(time_power > 1)
     {
-      if( is.null(time_power) ) time_power <- 1
-      if(time_power > 1)
-      {
-        time <- c(time, paste("I(", time, "^", 2:time_power, ")", sep=''))
-      }
+      time <- c(time, paste("I(", time, "^", 2:time_power, ")", sep=''))
     }
+    if(time_power == 1) time <- time[[1]]
   }
 
   theForms <- makeForms(ids          = ids         ,
@@ -182,8 +209,8 @@ forms <- function(data                  ,
                         family       = family      ,
                         dropTime     = dropTime    ,
                         method       = method      )
-  fixed <- theForms$fixed
-  random <- theForms$random
+  fixed   <- theForms$fixed
+  random  <- theForms$random
   formula <- theForms$formula
 
   # check that the variables are in the data
@@ -191,10 +218,13 @@ forms <- function(data                  ,
   vars <- unique( c(ids, dv, time, phase, ivs.test,
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, '\\*|\\+'), unlist))) )
-  vars <- vars[which(vars!="1")]
   wi <- which( substr(vars, 1, 2) == "I(" )
   vars[wi] <- unlist(strsplit(gsub("\\I|\\(|\\)", "", vars[wi]), "\\^"))[1]
+  vars <- vars[which(vars!="1")]
+  vars <- vars[!is.na(vars)]
+
   wvars <- which( ! vars %in% names(data) )
+
   if( length(wvars) > 0 )
   {
     stop( paste('\n`', vars[wvars], '` is not in the data\n'))
@@ -498,7 +528,7 @@ alf <- function(x)
 
 
 #' to01 - function to convent any variable to the [0,1] range
-#' @author Stephen Tueller \email{Stueller@@rti.org
+#' @author Stephen Tueller \email{Stueller@@rti.org}
 #' @param x A numeric vector.
 #' @param na.rm Logical, should missing data be excluded when calculating min/max
 #' @references Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54.
@@ -506,4 +536,16 @@ alf <- function(x)
 to01 <- function(x, na.rm=TRUE)
 {
   (x - min(x, na.rm=na.rm))/(max(x, na.rm=na.rm)-min(x, na.rm=na.rm))
+}
+
+#' subdat - function to take a subset of data with column select
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @param subgroup Logical vector.
+#' @param data data.frame.
+#' @param formula a formula.
+#' @keywords internal
+subdat <- function(data, subgroup, formula)
+{
+  if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(data))
+  na.omit( subset(data, subgroup, all.vars(formula)) )
 }

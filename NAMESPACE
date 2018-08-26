@@ -3,7 +3,6 @@
 export(ICC)
 export(Palytic)
 export(PersonAlytic)
-export(PersonAlyticHTP)
 export(clean_curelator)
 export(psuite)
 export(to01)
