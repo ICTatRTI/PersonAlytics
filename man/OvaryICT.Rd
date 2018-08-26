@@ -19,6 +19,7 @@ t1 <- PersonAlytic(data=OvaryICT,
                    detectTO = FALSE,
                    standardize = FALSE,
                    alignPhase = FALSE)
+summary(t1)
 
 # Verify the PersonAlytic results to a direct call to lme
 t2 <- lme(follicles ~ Time * Phase,

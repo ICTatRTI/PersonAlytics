@@ -46,7 +46,9 @@ eds <- function(x)
 
 #' monotone
 #' @author Stephen Tueller \email{stueller@@rti.org}
-#' @param x Any object
+#' @param ids See \code{\link{PersonAlytic}}.
+#' @param time See \code{\link{PersonAlytic}}.
+#' @param data See See \code{\link{PersonAlytic}}.
 #'
 #' @keywords internal
 monotone <- function(ids, time, data)

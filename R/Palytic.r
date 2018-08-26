@@ -1334,7 +1334,7 @@ Palytic$set("public", "getAR_order",
 # IC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",
             function(P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05,
-                     subgroup=NULL)
+                       subgroup=NULL)
             {
               self$method <- "ML"
               corMods <- list(); cc <- 1
@@ -1364,6 +1364,7 @@ Palytic$set("public", "GroupAR_order",
                 }
                 names(corMods) <- unlist( lapply(corMods,
                                                  function(x) x$PalyticSummary$correlation) )
+                corMods <- corMods[!is.na(names(corMods))]
 
                 if(lrt)
                 {
@@ -1421,12 +1422,12 @@ Palytic$set("public", "GroupAR_order",
                   bestCor <- c("NULL", names(corMods))[which.min(ICs[,1])]
                 }
               }
-              if(! "nlme" %in% class(nullMod) )
+              if(! "lme" %in% class(nullMod) )
               {
                 bestCor <- "NULL"
               }
 
-              self$corStructs <- bestCor
+              self$correlation <- bestCor
             },
             overwrite = TRUE)
 
