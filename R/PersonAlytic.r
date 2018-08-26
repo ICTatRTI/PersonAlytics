@@ -325,7 +325,7 @@ PersonAlytic <- function(output=NULL              ,
                          ivs=NULL                 ,
                          target_ivs=NULL          ,
                          interactions=NULL        ,
-                         time_power=3             ,
+                         time_power=1             ,
                          correlation=NULL         ,
                          family=gamlss.dist::NO() ,
                          subgroup=NULL            ,
@@ -549,7 +549,7 @@ pa1 <- function(e=parent.frame())
   # always check time order first, that way the time order carries over to
   # the AR, which should be residuals on the fullest model
 
-  if(e$detectTO) t1$GroupTime_Power(e$maxOrder)
+  if(e$detectTO) t1$GroupTime_Power(e$maxOrder, e$IC[1])
   # t1$time_power
   # t1$formula
 

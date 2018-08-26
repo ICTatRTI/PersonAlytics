@@ -148,7 +148,7 @@ forms <- function(data                  ,
     # unpack PalyticObj
     if(is.null(ids         )) ids          <- PalyticObj$ids
     if(is.null(dv          )) dv           <- PalyticObj$dv
-    if(is.null(time        )) time         <- PalyticObj$time
+    if(is.null(time        )) time         <- PalyticObj$time[[1]]
     if(is.null(phase       )) phase        <- PalyticObj$phase
     if(is.null(ivs         )) ivs          <- PalyticObj$ivs
     if(is.null(interactions)) interactions <- PalyticObj$interactions
@@ -186,17 +186,15 @@ forms <- function(data                  ,
     }
   }
 
-  # update time using time_power, only if the I() function is not already in time
-  if(!is.null(time_power) & !any(time == "1"))
+  # update time using time_power
+  if(!is.null(time_power))
   {
-    if( length( unlist(strsplit(time, "I\\("))) == 1 )
+    if( is.null(time_power) ) time_power <- 1
+    if(time_power > 1)
     {
-      if( is.null(time_power) ) time_power <- 1
-      if(time_power > 1)
-      {
-        time <- c(time, paste("I(", time, "^", 2:time_power, ")", sep=''))
-      }
+      time <- c(time, paste("I(", time, "^", 2:time_power, ")", sep=''))
     }
+    if(time_power == 1) time <- time[[1]]
   }
 
   theForms <- makeForms(ids          = ids         ,

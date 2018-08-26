@@ -1432,7 +1432,7 @@ Palytic$set("public", "GroupAR_order",
 
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "getTime_Power",
-            function(maxOrder=3)
+            function(maxOrder=3, IC="BIC")
             {
               self$method <- "ML"
               uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
@@ -1474,14 +1474,14 @@ Palytic$set("public", "GroupTime_Power",
               {
                 self$time_power <- i
                 mods[[i]] <- self$lme()
-                if(! "lme" %in% class(mod0))
+                if(! "lme" %in% class(mods[[i]]))
                 {
                   mods[[i]] <- NULL
                 }
               }
               if(IC=="BIC") bestMods <- unlist( lapply(mods, BIC) )
               if(IC=="AIC") bestMods <- unlist( lapply(mods, AIC) )
-              self$time_power <- which.min( aics )
+              self$time_power <- which.min( bestMods )
             },
             overwrite = TRUE)
 

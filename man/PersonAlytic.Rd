@@ -6,7 +6,7 @@
 mixed effects models with high throughput options.}
 \usage{
 PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
-  ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 3,
+  ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 1,
   correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
   standardize = TRUE, method = "REML", package = "nlme",
   individual_mods = FALSE, PalyticObj = NULL, detectAR = TRUE, PQ = c(3,
