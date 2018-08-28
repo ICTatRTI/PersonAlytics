@@ -5,12 +5,28 @@
 # the current state of using Palytic is to create one object for
 # loops across individuals, but overwrite the the Palytic object
 # for loops across dvs/ivs
-htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
-                interactions=NULL, time_power=1, correlation=NULL,
-                family = gamlss.dist::NO(), standardize=TRUE, package='gamlss',
-                detectAR = TRUE, PQ = c(3,3), IC = "BIC",
-                detectTO = TRUE, maxOrder=3, sigma.formula=~1,
-                debugforeach = FALSE)
+htp.foreach <- function(data                       ,
+                        dims                       ,
+                        dvs                        ,
+                        phase                      ,
+                        ids                        ,
+                        uids                       ,
+                        time                       ,
+                        ivs                        ,
+                        target_ivs                 ,
+                        interactions=NULL          ,
+                        time_power=1               ,
+                        correlation=NULL           ,
+                        family = gamlss.dist::NO() ,
+                        standardize=TRUE           ,
+                        package='gamlss'           ,
+                        detectAR = TRUE            ,
+                        PQ = c(3, 3)               ,
+                        whichIC = "BIC"            ,
+                        detectTO = TRUE            ,
+                        maxOrder=3                 ,
+                        sigma.formula=~1           ,
+                        debugforeach = FALSE       )
 {
   library(foreach)
 
@@ -37,19 +53,19 @@ htp.foreach <- function(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs
 
     if(dims$ID[1]!="All Cases")
     {
-      if(detectTO) t0$getTime_Power(maxOrder, IC[1])
+      if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
       #t0$time_powers
 
-      if(detectAR)  t0$getAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
+      if( detectAR) t0$getAR_order(PQ[1], PQ[2], whichIC[1])
       if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
-                                              arma=rep("NULL", length(dims$ID)))
+                                     arma=rep(self$correlation, length(dims$ID)))
       #t0$corStructs
 
     }
     if(dims$ID[1]=="All Cases")
     {
-      if(detectTO) t0$GroupTime_Power(maxOrder, IC[1])
-      if(detectAR) t0$GroupAR_order(dvs[[dv]], PQ[1], PQ[2], IC[1])
+      if(detectTO) t0$GroupTime_Power(maxOrder, whichIC[1])
+      if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
 
     # parralelization

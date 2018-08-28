@@ -27,7 +27,7 @@ Key features of the \code{PersonAlytics} package include:
 structure for all patients or for each patient.
 
 \strong{Automated detection of the function form for the time variable.}
-\code{PersonAlytics} automates model comparisons for determining the the functional
+\code{PersonAlytics} automates model comparisons for determining the functional
 form of the relationship between time and the outcome
 (i.e., linear vs. quadratic vs. cubic growth models) for all patients or for each patient.
 
@@ -40,17 +40,17 @@ a list of target covariates, and/or
 or desire the analyses to be repeated for each individual in the data set, high
 throughput options automate the model fitting process.
 
-\strong{False Discovery Rate Adjustment.} When hight throughput options are requested,
+\strong{False Discovery Rate Adjustment.} When high throughput options are requested,
 Type I error correction and false discovery rate adjustments are implemented
 post-implementation across target covariates (and individuals if requested) within
 each outcome.
 
 \strong{Linear and Generalized Linear Mixed Effects Models.} Linear mixed effects models
 can be fit in either the \code{\link{nlme}} framework or the \code{\link{gamlss}}
-approach. The two approaches give nearly identicle fixed effects estimates but differ
+approach. The two approaches give nearly identical fixed effects estimates but differ
 in their computation of standard errors and random effects. Generalized linear
 mixed effects models can be fit using the \code{\link{gamlss}} option
-(see \code{\link{gamlss.family}}). The \code{\link{gamlss}} appoarch also allows models
+(see \code{\link{gamlss.family}}). The \code{\link{gamlss}}  appoarch also allows models
 for dealing with heteroscedasticity implemented by including mixed effects models for
 the variance.
 }

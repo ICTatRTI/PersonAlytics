@@ -107,21 +107,21 @@ user accesible. Populated by \code{\link{PersonAylticsPro}}.}
   used to specify generalized linear mixed effects models,
   see \code{\link{gamlss.family}}).
   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-  \item{\code{getAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
+  \item{\code{getAR_order(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{
   This method automates the task of determining the correlation structure for each case in
   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
   \code{P} and \code{Q} set the highest autoregressive and moving
   average parameters to be tested. If the time variable is approximatetly equally spaced,
-  \code{IC} is the criterion used for determining the correlation structure for each
+  \code{whichIC} is the criterion used for determining the correlation structure for each
   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
-  spaced, \code{IC} as also the criterion for
+  spaced, \code{whichIC} as also the criterion for
   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
   If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
   method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0 and only AR
   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
   populates the
   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
-  \item{\code{GroupAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
+  \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{The
   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
   determining  \code{time_power} for each case in \code{ids}
@@ -156,15 +156,7 @@ summary(t1$lme())
 # fit the model only to the first mare with ML instead of REML
 t1$method <- 'ML'
 summary(t1$gamlss(OvaryICT$Mare==1))
-# quadratic model
-t2 <- t1$clone()
-#t2$random <- formula("Time + I(Time^2) | Mare") # debug, this doesn't work
-#t2$lme()
-# change the time variable and notice perpetuate through the other objects
-t1$time <- 'Time'
-t1$fixed
-t1$random
-t1$formula
+
 # change the formula (note limitations with the interaciton)
 t2 <- t1$clone()
 t2$formula <- formula(follicles ~ Time * Phase +
@@ -172,12 +164,14 @@ t2$formula <- formula(follicles ~ Time * Phase +
                       correlation = corARMA(p=1,q=0)))
 t2$formula
 
+# getTime_Power
 t1 <- Palytic$new(data = OvaryICT, ids='Mare',
                   dv='follicles', time='Time', phase='Phase')
 t1$getTime_Power()
 t1$time_powers
+
 # getAR_order works on one case at a time
-t1$getAR_order(t1$dv)
+t1$getAR_order()
 t1$corStructs
 }
 \author{

@@ -89,21 +89,21 @@
 #'   used to specify generalized linear mixed effects models,
 #'   see \code{\link{gamlss.family}}).
 #'   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-#'   \item{\code{getAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{
+#'   \item{\code{getAR_order(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{
 #'   This method automates the task of determining the correlation structure for each case in
 #'   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
 #'   \code{P} and \code{Q} set the highest autoregressive and moving
 #'   average parameters to be tested. If the time variable is approximatetly equally spaced,
-#'   \code{IC} is the criterion used for determining the correlation structure for each
+#'   \code{whichIC} is the criterion used for determining the correlation structure for each
 #'   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
-#'   spaced, \code{IC} as also the criterion for
+#'   spaced, \code{whichIC} as also the criterion for
 #'   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
 #'   If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
 #'   method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0 and only AR
 #'   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
 #'   populates the
 #'   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
-#'   \item{\code{GroupAR_order(dv, P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05)}}{The
+#'   \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{The
 #'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
@@ -137,15 +137,7 @@
 #' # fit the model only to the first mare with ML instead of REML
 #' t1$method <- 'ML'
 #' summary(t1$gamlss(OvaryICT$Mare==1))
-#' # quadratic model
-#' t2 <- t1$clone()
-#' #t2$random <- formula("Time + I(Time^2) | Mare") # debug, this doesn't work
-#' #t2$lme()
-#' # change the time variable and notice perpetuate through the other objects
-#' t1$time <- 'Time'
-#' t1$fixed
-#' t1$random
-#' t1$formula
+#'
 #' # change the formula (note limitations with the interaciton)
 #' t2 <- t1$clone()
 #' t2$formula <- formula(follicles ~ Time * Phase +
@@ -153,12 +145,14 @@
 #'                       correlation = corARMA(p=1,q=0)))
 #' t2$formula
 #'
+#' # getTime_Power
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare',
 #'                   dv='follicles', time='Time', phase='Phase')
 #' t1$getTime_Power()
 #' t1$time_powers
+#'
 #' # getAR_order works on one case at a time
-#' t1$getAR_order(t1$dv)
+#' t1$getAR_order()
 #' t1$corStructs
 
 
@@ -1172,15 +1166,19 @@ Palytic$set("public", "gamlss",
 )
 
 # this will only be applied to one participant at a time
-# IC can take on AIC or BIC
+# whichIC can take on AIC or BIC
 Palytic$set("public", "getAR_order",
             function(P=3    ,
                      Q=3    ,
-                     IC="BIC" ,
+                     whichIC="BIC" ,
                      lrt=FALSE  , # only valid for nested models, AR, MA are not nested
                      alpha=.05  )
             {
+              saveMethod  <- self$method
+              saveFormula <- self$formula
+
               self$method <- "ML"
+
               # check whether time is (approximately) equally spaced, use the
               # first participant for now; the method is the standard deviation
               # of the 1st order difference score
@@ -1188,16 +1186,21 @@ Palytic$set("public", "getAR_order",
               tt  <- self$data[[self$time]][self$data[[self$ids]]==uid[1]]
               ttd <- diff( tt )
               eqSpace <- sd(ttd) < .1
-              #
+
+              # for bluedoor review 20180827 set eqSpace <- 0, 'ic' is not
+              # passing correctly to auto.arima()
+              eqSpace <- FALSE
+
+              # if time is equally spaced use the auto.arima function
+              # NOTE: this has not been tested agaignst the lme approach, but
+              # it is much faster
               if(eqSpace)
               {
-                if(IC=="BIC") ic = "bic"
-                if(IC=="AIC") ic = "aic"
-                #frmToChar(self$fixed) # 20180816 not sure why this is here, depricate
                 AR_orders <- by(self$data[[self$dv]],
                                 self$data[[self$ids]],
-                                FUN = function(x) forecast::auto.arima(x,
-                                                                       ic=ic)$arma[c(1,3)])
+                                FUN = forecast::auto.arima,
+                                ic=tolower(whichIC[1]))
+
                 AR_orders <- lapply(AR_orders, function(x)as.data.frame(t(x)))
                 AR_orders <- plyr::rbind.fill(AR_orders)
                 AR_orders <- data.frame(ids=as.numeric(row.names(AR_orders)),
@@ -1215,11 +1218,12 @@ Palytic$set("public", "getAR_order",
                 AR_orders[,2]   <- as.character( AR_orders[,2] )
                 self$corStructs <- AR_orders
               }
+
+              # this approach is residual, auto.arima is observed
+              # an option to increase speed would be to use auto.arima
+              # on the residuals
               if(!eqSpace)
               {
-                temp     <- self
-                bestCors <- list()
-
                 # this is supposedly taboo but I've been unable to work around it b/c we
                 # cannot :: the %dopar% operator
                 require(foreach)
@@ -1231,94 +1235,67 @@ Palytic$set("public", "getAR_order",
                 doSNOW::registerDoSNOW(cl)
                 pkgs  <- c("gamlss", "nlme")
 
+                #bestCors <- list()
+                #for(id in uid)
                 bestCors <- foreach(id=uid, .packages = pkgs)  %dopar%
                 {
                   corModsid <- list(); cc = 1
-                  temp$correlation <- "NULL"
-                  nullMod <- temp$lme(temp$data[[temp$ids]]==id)
+                  self$correlation <- "NULL"
+                  nullMod <- self$lme(self$data[[self$ids]]==id)
+                  print(id)
                   if( "lme" %in% class(nullMod) )
                   {
-                    for(p in 1:P)
+                    for(p in 0:P)
                     {
-                      for(q in 1:Q)
+                      for(q in 0:Q)
                       {
-                        # will this automatically update the fixed effects? it doesn't
-                        # need to for nlme which takes `correlation` directly, but would
-                        # need to be updated for gamlss; hence, lme for now (faster too)
-                        cortemp <- paste("nlme::corARMA(p=", p, ",
-                                         q=", q, ")", sep="")
-                        cortemp <- gsub('\n', '', cortemp)
-                        cortemp <- gsub(' ', '', cortemp)
-                        temp$correlation <- cortemp
-                        corModsid[[cc]]  <- temp$lme(temp$data[[temp$ids]]==id)
-                        if( any(corModsid[[cc]]=="Model did not converge") )
+                        if(p>0 | q>0)
                         {
-                          corModsid[[cc]] <- NULL
+                          # will this automatically update the fixed effects? it doesn't
+                          # need to for nlme which takes `correlation` directly, but would
+                          # need to be updated for gamlss; hence, lme for now (faster too)
+                          cortemp <- paste("nlme::corARMA(p=", p, ",
+                                         q=", q, ")", sep="")
+                          cortemp <- gsub('\n', '', cortemp)
+                          cortemp <- gsub(' ', '', cortemp)
+                          self$correlation <- cortemp
+                          corModsid[[cc]]  <- self$lme(self$data[[self$ids]]==id)
+                          #print( corModsid[[cc]]$dims$N )
+                          if( any(corModsid[[cc]]=="Model did not converge") )
+                          {
+                            corModsid[[cc]] <- NULL
+                          }
+                          else cc = cc + 1
+                          self$formula <- saveFormula # restore formulae, incl. correlation
                         }
-                        else cc = cc + 1
                       }
                     }
                     names(corModsid) <- unlist( lapply(corModsid,
-                                                       function(x) x$call$correlation) )
-                    # consider depricating, tests are invalid, models are not
-                    # nested
-                    if(lrt)
-                    {
-                      lrts <- lapply( lapply( corModsid,
-                                              function(x) anova(x, nullMod)),
-                                      function(x) x[2,])
-                      lrts <- data.frame(cor=names(corModsid), plyr::rbind.fill(lrts))
-                      wlrt <- which(lrts$`p.value`<=alpha)
-                      if( length(wlrt) > 1 )
-                      {
-                        # we may need to do this recursively until nothing is
-                        # sig, e.g., while loop
-                        newnullmod <- corModsid[wlrt[1]]
-                        nmnnm      <- names(newnullmod)
-                        newnullmod <- newnullmod[[1]]
-                        compmods   <- corModsid[wlrt[2:length(wlrt)]]
-                        newlrts    <- lapply( lapply( compmods, function(x)
-                          anova(x, newnullmod)),
-                          function(x) x[2,])
-                        wnl <- unlist(lapply(newlrts, length))
-                        wnl <- which(wnl < max(wnl, na.rm=TRUE))
-                        newlrts[wnl] <- NULL
-                        compmods[wnl] <- NULL
-                        newlrts    <- data.frame(cor=names(compmods),
-                                                 plyr::rbind.fill(newlrts))
-                        if( all(newlrts$p.value<.05) )
-                        {
-                          # minimum p-value is a bad criterion,
-                          # serving only as a placeholder for
-                          # a recursive search
-                          return( as.character( names(compmods)[which.min(newlrts$p.value)] ) )
-                        }
-                        else return( nmnnm )
-                      }
-                      if( length(wlrt)==1 )
-                      {
-                        return( as.character( lrts$cor[wlrt] ) )
-                      }
-                      if( length(wlrt)==0 )
-                      {
-                        return( "NULL" )
-                      }
-                      #else stop('Failure in getAR_order, likelihood ratio test (lrt)')
-                    }
+                                                function(x) x$PalyticSummary$correlation) )
+                    corModsid <- corModsid[!is.na(names(corModsid))]
 
                     if(!lrt)
                     {
-                      if(IC=="AIC") ICs <- data.frame( unlist( lapply(corModsid, AIC) ) )
-                      if(IC=="BIC") ICs <- data.frame( unlist( lapply(corModsid, BIC) ) )
-                      else( stop( paste(IC, "is not a valid value for `IC`,",
+                      if(whichIC=="AIC") ICs <- data.frame( Cor = names(corModsid),
+                                                       unlist( lapply(corModsid, AIC) ) )
+                      if(whichIC=="BIC") ICs <- data.frame( Cor = names(corModsid),
+                                                       unlist( lapply(corModsid, BIC) ) )
+                      else( stop( paste(whichIC, "is not a valid value for `whichIC`,",
                                         "use AIC or BIC.")))
-                      ICs <- rbind(NULL = ifelse(IC=="AIC", AIC(nullMod),
-                                                 BIC(nullMod)), ICs)
-                      return( row.names(ICs)[which.min(ICs[,1])] )
-                    }
-                  }
+                      names(ICs) <- c('Cor', 'IC')
+                      nullModIC  <- c(Cor = "NULL",
+                                       IC = ifelse(whichIC=="AIC", AIC(nullMod),
+                                                  BIC(nullMod)))
+                      nullModIC    <- as.data.frame(t(nullModIC))
+                      nullModIC$IC <- as.numeric(as.character(nullModIC$IC))
+                      ICs <- rbind(nullModIC, ICs)
+                      return( as.character( ICs$Cor[which.min(ICs[,2])] ) )
+                      #bestCors[[id]] <- as.character( ICs$Cor[which.min(ICs[,2])] )
+                    } # end of if(!lrt)
+                  } # end of if( "lme" %in% class(nullMod) )
                   if(! "nlme" %in% class(nullMod) )
                   {
+                    #bestCors[[id]] <- "NULL"
                     return( "NULL" )
                   }
                 } # end of dopar
@@ -1326,20 +1303,27 @@ Palytic$set("public", "getAR_order",
 
                 self$corStructs <- data.frame(ids=uid,
                                               arma=as.character( unlist(bestCors)) )
+                self$method  <- saveMethod
+                self$formula <- saveFormula # restore formulae, incl. correlation
               } #oef !eqspace
               #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
             },
             overwrite = TRUE)
 
-# IC can take AIC or BIC
+# whichIC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",
-            function(P=3, Q=3, IC="BIC", lrt=FALSE, alpha=.05,
+            function(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05,
                        subgroup=NULL)
             {
+              saveMethod      <- self$method
+              saveFormula     <- self$formula
+
               self$method <- "ML"
-              corMods <- list(); cc <- 1
               self$correlation <- "NULL"
+
               nullMod <- self$lme(subgroup)
+
+              corMods <- list(); cc <- 1
               if( "lme" %in% class(nullMod) )
               {
                 for(p in 0:P)
@@ -1359,6 +1343,8 @@ Palytic$set("public", "GroupAR_order",
                         corMods[[cc]] <- NULL
                       }
                       else cc = cc + 1
+                      self$formula <- saveFormula # restore formulae, incl. correlation
+                      #print(self$formula)
                     }
                   }
                 }
@@ -1413,11 +1399,11 @@ Palytic$set("public", "GroupAR_order",
 
                 if(!lrt)
                 {
-                  if(IC=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
-                  if(IC=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
-                  else( stop( paste(IC, "is not a valid value for `IC`,",
+                  if(whichIC=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
+                  if(whichIC=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
+                  else( stop( paste(whichIC, "is not a valid value for `whichIC`,",
                                     "use AIC or BIC.")))
-                  ICs <- rbind("NULL" = ifelse(IC=="AIC", AIC(nullMod),
+                  ICs <- rbind("NULL" = ifelse(whichIC=="AIC", AIC(nullMod),
                                                BIC(nullMod)), ICs)
                   bestCor <- c("NULL", names(corMods))[which.min(ICs[,1])]
                 }
@@ -1428,12 +1414,13 @@ Palytic$set("public", "GroupAR_order",
               }
 
               self$correlation <- bestCor
+              self$method      <- saveMethod
             },
             overwrite = TRUE)
 
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "getTime_Power",
-            function(maxOrder=3, IC="BIC")
+            function(maxOrder=3, whichIC="BIC")
             {
               self$method <- "ML"
               uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
@@ -1465,7 +1452,7 @@ Palytic$set("public", "getTime_Power",
 
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "GroupTime_Power",
-            function(maxOrder=3, IC="BIC")
+            function(maxOrder=3, whichIC="BIC")
             {
               self$method <- "ML"
               #temp <- Palytic$new(self$data, self$ids, self$dv,
@@ -1480,8 +1467,8 @@ Palytic$set("public", "GroupTime_Power",
                   mods[[i]] <- NULL
                 }
               }
-              if(IC=="BIC") bestMods <- unlist( lapply(mods, BIC) )
-              if(IC=="AIC") bestMods <- unlist( lapply(mods, AIC) )
+              if(whichIC=="BIC") bestMods <- unlist( lapply(mods, BIC) )
+              if(whichIC=="AIC") bestMods <- unlist( lapply(mods, AIC) )
               self$time_power <- which.min( bestMods )
             },
             overwrite = TRUE)

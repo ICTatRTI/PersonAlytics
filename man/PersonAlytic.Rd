@@ -10,7 +10,7 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
   standardize = TRUE, method = "REML", package = "nlme",
   individual_mods = FALSE, PalyticObj = NULL, detectAR = TRUE, PQ = c(3,
-  3), IC = c("BIC", "AIC"), detectTO = TRUE, maxOrder = 3,
+  3), whichIC = c("BIC", "AIC"), detectTO = TRUE, maxOrder = 3,
   charSub = NULL, sigma.formula = ~1, p.method = "BY", alpha = 0.05,
   alignPhase = FALSE, debugforeach = FALSE)
 }
@@ -20,10 +20,10 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
 A character string that will be used to name a file for saving
 output. If left \code{NULL}, the date and time will prefix
 `PersonAlytic_Output`. Do not give a file extension, these will be added
-automatically. For example, if \code{output='MyResults'}, the output file will
+automatically. For example, if  \code{output='MyResults'}, the output file will
 be called \code{'MyResults.csv'} if high throughput options are used, or
 \code{'MyResults.txt'} if only one model is fit. A full path with `/` instead
-of `\` can also be used. For example \code{output='C:/MyResults'} will produce
+of `\` can also be used. For example, \code{output='C:/MyResults'} will produce
 the files \code{'C:/MyResults.csv'} or \code{'C:/MyResults.txt'}. If a full
 path is not given, the results will be saved in the working directory (see
 \code{\link{getwd}}).}
@@ -34,7 +34,7 @@ path is not given, the results will be saved in the working directory (see
 \code{dv}, \code{time}, and optionally, \code{phase}, \code{ivs},
 \code{target_ivs}.}
 
-\item{ids}{Character.\code{ids} must be provided by the user.
+\item{ids}{Character. \code{ids} must be provided by the user.
 
 The name of the ID variable. The ID variable must be a variable in \code{data}
 and must be numeric.}
@@ -67,7 +67,7 @@ Name of the phase or treatment variable. For model fitting,
 \item{ivs}{Character list. The default value is \code{NULL}.
 
 A list of names of covariates, e.g., \code{list('iv2', 'iv2')}.
-Note that the variables in \code{ivs} cannot also be in \code{target_ivs}.}
+Note that the variables in \code{ivs} cannot also be in  \code{target_ivs}.}
 
 \item{target_ivs}{Character list. The default value is \code{NULL}.
 
@@ -79,7 +79,7 @@ Effects for these variables are labeled as 'target predictor' in the output.}
 List of pairs of variable names for interactions
 to include in the model, e.g., \code{list(c('iv1','phase'), c('iv1','iv2'))}.}
 
-\item{time_power}{Numeric. The defaults is \code{time_power=3}.
+\item{time_power}{Numeric. The default is \code{time_power=3}.
 
 Power of the time variable (e.g., \code{time^time_power}).
 A quadratic or cubic growth model would be specified using
@@ -89,7 +89,7 @@ The default value is \code{3}, testing up to a cubic growth model if
 \code{detectTo=TRUE}. If a linear growth model is desired, set
 \code{detectTO=FALSE} and \code{time_power=1}.}
 
-\item{correlation}{Charcter. The default value is \code{NULL}.
+\item{correlation}{Character. The default value is \code{NULL}.
 
 See \code{\link{corStruct}} in \code{\link{nlme}}.
 Must be passed as a character, e.g. \code{"corARMA(p=1)"}.
@@ -103,12 +103,12 @@ will be ignored.}
 
 A list of the same length as \code{length(dv)} can be supplied. For example if
 \code{dv=list('normal_y', 'binary_y', 'beta_y')}, then family could be
-\code{family=list(NO(), BI(), BEINF())}. If \code{length(dv)>1} and
+\code{family=list(NO(), BI(), BEINF())}. If  \code{length(dv)>1} and
 \code{length(family)==1}, the one distribution in \code{family} will be
 applied to all outcomes.
 The \code{family} parameter is ignored if \code{package="nlme"}.}
 
-\item{subgroup}{Logical vector. The defauls is \code{subgroup==NULL}.
+\item{subgroup}{Logical vector. The default is \code{subgroup==NULL}.
 
 A vector where \code{length(subgroup)==nrow(data)} indicating
 which subset of the data should be used for analysis. For example, if a model
@@ -134,7 +134,7 @@ and automatic time order detection).}
 \item{package}{Character. The default is \code{"nlme"}.
 
 Which package should be used to fit the models?
-Options are \code{\link{nlme}} and \code{\link{gamlss}}
+Options are \code{\link{nlme}} and \code{\link{gamlss}}.
 It is passed as character strings, e.g., \code{"gamlss"} or \code{"nlme"}.}
 
 \item{individual_mods}{Logical. The default is \code{individual_mods=FALSE}.
@@ -155,7 +155,7 @@ search), and user specified models via \code{formula}.}
 Should the residual autocorrelation structure be automatically selected from
 among \code{ARMA(p,q)} models? See \code{correlation}. Since these models are
 not generally nested, model selection is done using information information
-criterion (see \code{IC}).}
+criterion (see \code{whichIC}).}
 
 \item{PQ}{Numeric vector of length 2. The default is \code{PQ=c(3,3)}.
 
@@ -166,14 +166,14 @@ from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
 are passed to \code{\link{nlme::corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
 testing (see \code{detectAR}).}
 
-\item{IC}{Character. The default is \code{IC="BIC"}.
+\item{whichIC}{Character. The default is \code{whichIC="BIC"}.
 
-Either the Akaike Information Criterion (\code{IC="AIC"}) or
-the Bayesian Information Criterion (\code{IC="BIC"}).
+Either the Akaike Information Criterion (\code{whichIC="AIC"}) or
+the Bayesian Information Criterion (\code{whichIC="BIC"}).
 
 If the \code{time} variable is equally spaced, this is
 done using the function \code{\link{forecast}}. If the \code{time} variable
-is notequally spaced, this is done using comparisons of
+is not equally spaced, this is done using comparisons of
 mixed effects models using \code{\link{lme}} fit using maximum likelihood
 estimators.
 
@@ -206,7 +206,7 @@ parameter allows users put the illegal characters back in. For example,
 if the original variable name was "17.00_832.2375m/z", a letter would need to
 prefix the variable name and the
 "/" would need to be replaced with another character, e.g., "X17.00_832.2375m.z".
-To get the row names of the output back to original varibale name, use
+To get the row names of the output back to original variable name, use
 \code{charSub=list(c("X", ""), c("m.z", "m/z"))}. Note that inputs to charSub
 must be in double quotes and are case sensitive. All duplicates will be substituted.
 For example, if the variable name was "X1X23.x" and \code{charSub=list(c("X", ""))},
@@ -215,7 +215,7 @@ the resulting row label for this variable would be "123.x".}
 \item{sigma.formula}{Not currently implemented.
 
 A formula for the variance under \code{\link{gamlss}}.
-Curently static: it will not change dynamically over iterations nor will it be
+Currently static: it will not change dynamically over iterations nor will it be
 updated by \code{time_power} or \code{detectTO}. If model fitting using this
 option fails, another attempt will be made after reseting it to its defaul,
 i.e., \code{~1}.}
@@ -231,7 +231,7 @@ adjusting p-values.}
 
 Should the time variable be realigned at the phase?
 If \code{TRUE} (the default), the time for first observation in the second phase
-becomes 0 and times prior to the secord phase are negative. For example, if the
+becomes 0 and times prior to the second phase are negative. For example, if the
 time variable is \code{c(0,1,2,3,4,5)} and the phase variable is
 \code{c(0,0,0,1,1,1)}, phase alignment yields a time variable of
 \code{c{-3,-2,-1,0,1,2}}. This is useful when the timing of the transition
@@ -254,8 +254,8 @@ The basic mixed effects model is \eqn{dv=time+phase+phase*time}
 with random intercepts and random slopes for time. The phase variable is optional.
 Additional independent variables (or covariates) can be included.
 
-High throughput capabalities are invoked when the model
-is to be fit to multiple indidivuals, multiple dependent variables, iterated
+High throughput capabilities are invoked when the model
+is to be fit to multiple individuals, multiple dependent variables, iterated
 over multiple target independent variables, or any combination of these three.
 
 The residual correlation structure \code{ARMA(p,q)} is automatically selected
@@ -265,7 +265,7 @@ by comparing fit indices using either the \code{BIC} or \code{AIC} (ARMA models
 are not generally nested, precluding the use of likelihood ratio tests).
 
 The functional form of the relationship between time and the dependent variable
-is automatically selected up to \code{time^time_power} where \code{time_power} is
+is automatically selected up to \code{time^time_power}  where \code{time_power} is
 selected by the user. Model selection is done using likelihood
 ratio tests (LRT) with maximum likelihood estimators. For example,
 if \code{time_power=3} (implying a maximum of a cubic growth model), linear,
@@ -274,8 +274,8 @@ growth model, then there will be random and fixed effects for \code{time} and
 \code{time^2}.
 
 When there are multiple dependent variables and multiple target independent
-variables, Type I error corrections or false disovery rate corrections are
-made across target independent variables within each depenedent variable (and
+variables, Type I error corrections or false discovery rate corrections are
+made across target independent variables within each dependent variable (and
 within each person if individual models are being fit to the data). Correction
 options are given in \code{\link{p.adjust}}.
 }
