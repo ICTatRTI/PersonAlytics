@@ -36,6 +36,8 @@ htp.foreach <- function(data                       ,
   DVout <- list()
   for(dv in dims$DV)
   {
+    message("\n\nPersonAlytics: Starting analyses for ", dvs[[dv]], " \n\n")
+
     # initialize the null object to be copied (do NOT use $clone() as it
     # has failed in tests)
     t0 <- Palytic$new(data=data,
@@ -81,6 +83,7 @@ htp.foreach <- function(data                       ,
     ##############################
     # middle loop for covariates
     ##############################
+    message("\n\nPersonAlytics: Starting target_ivs loops \n\n")
     IVout <- foreach(iv = dims$IV, .packages = pkgs,
                      .options.snow = opts) %dopar%
     {

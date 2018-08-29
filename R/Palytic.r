@@ -1174,6 +1174,9 @@ Palytic$set("public", "getAR_order",
                      lrt=FALSE  , # only valid for nested models, AR, MA are not nested
                      alpha=.05  )
             {
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "residual correlation structure starting.")
+
               saveMethod  <- self$method
               saveFormula <- self$formula
 
@@ -1311,6 +1314,8 @@ Palytic$set("public", "getAR_order",
                 self$formula <- saveFormula # restore formulae, incl. correlation
               } #oef !eqspace
               #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "residual correlation structure completed")
             },
             overwrite = TRUE)
 
@@ -1319,6 +1324,9 @@ Palytic$set("public", "GroupAR_order",
             function(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05,
                        subgroup=NULL)
             {
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "residual correlation structure starting.")
+
               saveMethod      <- self$method
               saveFormula     <- self$formula
 
@@ -1419,6 +1427,9 @@ Palytic$set("public", "GroupAR_order",
 
               self$correlation <- bestCor
               self$method      <- saveMethod
+
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "residual correlation structure completed.")
             },
             overwrite = TRUE)
 
@@ -1426,6 +1437,9 @@ Palytic$set("public", "GroupAR_order",
 Palytic$set("public", "getTime_Power",
             function(maxOrder=3, whichIC="BIC")
             {
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "time/outcome relationship starting.")
+
               self$method <- "ML"
               uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
               time_powers <- list()
@@ -1451,6 +1465,9 @@ Palytic$set("public", "getTime_Power",
                                              which.min( aics ) )
               }
               self$time_powers <- data.frame(ids=uid, time_power=unlist(time_powers))
+
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "time/outcome relationship completed.")
             },
             overwrite = TRUE)
 
@@ -1458,6 +1475,9 @@ Palytic$set("public", "getTime_Power",
 Palytic$set("public", "GroupTime_Power",
             function(maxOrder=3, whichIC="BIC")
             {
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "time/outcome relationship starting.")
+
               self$method <- "ML"
               #temp <- Palytic$new(self$data, self$ids, self$dv,
               #                    self$time)
@@ -1474,6 +1494,9 @@ Palytic$set("public", "GroupTime_Power",
               if(whichIC=="BIC") bestMods <- unlist( lapply(mods, BIC) )
               if(whichIC=="AIC") bestMods <- unlist( lapply(mods, AIC) )
               self$time_power <- which.min( bestMods )
+
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "time/outcome relationship completed.")
             },
             overwrite = TRUE)
 
