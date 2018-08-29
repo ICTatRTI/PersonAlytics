@@ -242,9 +242,9 @@ htp.foreach <- function(data                       ,
             }
             if(!any(has_method)) err_id['re_estimator'] <- "Cannot be determined"
 
-            err_id['gamlss_estimator'] <- as.character( modid$method )
+            err_id['gamlss_estimator'] <- modid$PalyticSummary$method
             err_id['analyzed_N'] <- paste(modid$N, 'cases were analyzed.')
-            err_id['call'] <- toString( modid$call )
+            err_id['call'] <- modid$PalyticSummary$formula
           }
         }
 
@@ -264,9 +264,10 @@ htp.foreach <- function(data                       ,
           if(  "lme"  %in%  class(modid) )
           {
             err_id['converge'] <- paste('Convergence is `', 'TRUE`', sep='')
-            err_id['estimator'] <- modid$method
+            err_id['estimator'] <- modid$PalyticSummary$method
             err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
-            err_id['call'] <- toString( modid$call )
+            err_id['call'] <- paste(modid$PalyticSummary$fixed,
+                                    modid$PalyticSummary$random, sep='   ')
           }
         }
 

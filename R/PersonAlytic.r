@@ -441,7 +441,7 @@ pa1 <- function(e=parent.frame())
   if(e$package=="gamlss") Grp.out <- t1$gamlss()
   if(e$package=="nlme")   Grp.out <- t1$lme()
 
-  sink(file=e$output)
+  sink(file=paste(e$output, '.txt', sep=''))
   Grp.out
   sink()
 
@@ -589,7 +589,7 @@ paHTP <- function(e=parent.frame())
     }
   }
   DVout <- do.call(data.frame, lapply(DVout, nnull))
-  write.csv(DVout, file=e$output, row.names=FALSE)
+  write.csv(DVout, file=paste(e$output, '.csv', sep=''), row.names=FALSE)
 
   if(!is.null(e$p.method) & length(e$target_ivs) > 1) DVout <- psuite(DVout,
                                                                       rawdata=e$data,
