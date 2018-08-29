@@ -441,7 +441,7 @@ pa1 <- function(e=parent.frame())
   if(e$package=="gamlss") Grp.out <- t1$gamlss()
   if(e$package=="nlme")   Grp.out <- t1$lme()
 
-  sink(file=paste(e$output, '.txt', sep=''))
+  sink(file=paste(output, '.txt', sep=''))
   Grp.out
   sink()
 
