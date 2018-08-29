@@ -74,11 +74,15 @@ htp.foreach <- function(data                       ,
     snow::clusterExport(cl, funcs)
     doSNOW::registerDoSNOW(cl)
     pkgs  <- c("gamlss", "nlme")
+    pb <- txtProgressBar(max = length(dims$IV), style = 3)
+    progress <- function(n) setTxtProgressBar(pb, n)
+    opts <- list(progress = progress)
 
     ##############################
     # middle loop for covariates
     ##############################
-    IVout <- foreach(iv = dims$IV, .packages = pkgs) %dopar%
+    IVout <- foreach(iv = dims$IV, .packages = pkgs,
+                     .options.snow = opts) %dopar%
     {
       t1 <- t0
       ivs.temp <- unlist(c(ivs, target_ivs[iv]))

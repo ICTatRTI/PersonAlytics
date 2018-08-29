@@ -1234,10 +1234,14 @@ Palytic$set("public", "getAR_order",
                 snow::clusterExport(cl, funcs)
                 doSNOW::registerDoSNOW(cl)
                 pkgs  <- c("gamlss", "nlme")
+                pb <- txtProgressBar(max = length(uid), style = 3)
+                progress <- function(n) setTxtProgressBar(pb, n)
+                opts <- list(progress = progress)
 
                 #bestCors <- list()
                 #for(id in uid)
-                bestCors <- foreach(id=uid, .packages = pkgs)  %dopar%
+                bestCors <- foreach(id=uid, .packages = pkgs,
+                                    .options.snow = opts)  %dopar%
                 {
                   corModsid <- list(); cc = 1
                   self$correlation <- "NULL"
