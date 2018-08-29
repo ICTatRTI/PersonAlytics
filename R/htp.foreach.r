@@ -60,7 +60,7 @@ htp.foreach <- function(data                       ,
 
       if( detectAR) t0$getAR_order(PQ[1], PQ[2], whichIC[1])
       if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
-                                     arma=rep(self$correlation, length(dims$ID)))
+                                     arma=rep(t0$correlation, length(dims$ID)))
       #t0$corStructs
 
     }

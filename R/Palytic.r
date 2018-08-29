@@ -1176,6 +1176,7 @@ Palytic$set("public", "getAR_order",
             {
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "residual correlation structure starting.")
+              start <- Sys.time()
 
               saveMethod  <- self$method
               saveFormula <- self$formula
@@ -1229,9 +1230,9 @@ Palytic$set("public", "getAR_order",
               {
                 # this is supposedly taboo but I've been unable to work around it b/c we
                 # cannot :: the %dopar% operator
-                require(foreach)
+
                 # parralelization
-                # c(".eds") -- not importing from PersonAlytic correctly
+                require(foreach)
                 funcs <- c("mean")
                 cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK")
                 snow::clusterExport(cl, funcs)
@@ -1314,8 +1315,9 @@ Palytic$set("public", "getAR_order",
                 self$formula <- saveFormula # restore formulae, incl. correlation
               } #oef !eqspace
               #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
-              message("\n\nPersonAlytics: Automatic detection of the\n",
-                      "residual correlation structure completed")
+              message("\n\nAutomatic detection of the residual\n",
+                      "correlation structure took ",
+                      round((Sys.time() - start)/60,1), " minutes.\n\n")
             },
             overwrite = TRUE)
 
@@ -1325,7 +1327,8 @@ Palytic$set("public", "GroupAR_order",
                        subgroup=NULL)
             {
               message("\n\nPersonAlytics: Automatic detection of the\n",
-                      "residual correlation structure starting.")
+                      "residual correlation structure starting...")
+              start <- Sys.time()
 
               saveMethod      <- self$method
               saveFormula     <- self$formula
@@ -1338,6 +1341,7 @@ Palytic$set("public", "GroupAR_order",
               corMods <- list(); cc <- 1
               if( "lme" %in% class(nullMod) )
               {
+
                 for(p in 0:P)
                 {
                   for(q in 0:Q)
@@ -1428,8 +1432,9 @@ Palytic$set("public", "GroupAR_order",
               self$correlation <- bestCor
               self$method      <- saveMethod
 
-              message("\n\nPersonAlytics: Automatic detection of the\n",
-                      "residual correlation structure completed.")
+              message("Automatic detection of the residual\n",
+                      "correlation structure took ",
+                      round((Sys.time() - start)/60,1), " minutes.\n\n")
             },
             overwrite = TRUE)
 
@@ -1438,7 +1443,8 @@ Palytic$set("public", "getTime_Power",
             function(maxOrder=3, whichIC="BIC")
             {
               message("\n\nPersonAlytics: Automatic detection of the\n",
-                      "time/outcome relationship starting.")
+                      "time/outcome relationship starting...")
+              start <- Sys.time()
 
               self$method <- "ML"
               uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
@@ -1466,8 +1472,9 @@ Palytic$set("public", "getTime_Power",
               }
               self$time_powers <- data.frame(ids=uid, time_power=unlist(time_powers))
 
-              message("\n\nPersonAlytics: Automatic detection of the\n",
-                      "time/outcome relationship completed.")
+              message("Automatic detection of the time/outcome\n",
+                      "relationship took ",
+                      round((Sys.time() - start)/60,1), " minutes.\n\n")
             },
             overwrite = TRUE)
 
@@ -1476,7 +1483,8 @@ Palytic$set("public", "GroupTime_Power",
             function(maxOrder=3, whichIC="BIC")
             {
               message("\n\nPersonAlytics: Automatic detection of the\n",
-                      "time/outcome relationship starting.")
+                      "time/outcome relationship starting...")
+              start <- Sys.time()
 
               self$method <- "ML"
               #temp <- Palytic$new(self$data, self$ids, self$dv,
@@ -1495,8 +1503,9 @@ Palytic$set("public", "GroupTime_Power",
               if(whichIC=="AIC") bestMods <- unlist( lapply(mods, AIC) )
               self$time_power <- which.min( bestMods )
 
-              message("\n\nPersonAlytics: Automatic detection of the\n",
-                      "time/outcome relationship completed.")
+              message("Automatic detection of the time/outcome\n",
+                      "relationship took ",
+                      round((Sys.time() - start)/60,1), " minutes.\n\n")
             },
             overwrite = TRUE)
 

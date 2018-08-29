@@ -347,6 +347,7 @@ PersonAlytic <- function(output=NULL              ,
                          debugforeach = FALSE     )
 {
   if(length(whichIC)>1) whichIC <- whichIC[1]
+  if(is.null(correlation)) correlation <- "NULL"
 
   if(individual_mods==FALSE & length(dvs)==1 & length(target_ivs)<=1)
   {
