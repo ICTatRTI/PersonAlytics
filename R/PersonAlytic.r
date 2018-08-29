@@ -352,7 +352,7 @@ PersonAlytic <- function(output=NULL              ,
   {
     pout <- pa1()
   }
-  if(individual_mods==TRUE | length(dvs)>1 & length(target_ivs)>1)
+  if(individual_mods==TRUE | length(dvs)>1 | length(target_ivs)>1)
   {
     pout <- paHTP()
   }
