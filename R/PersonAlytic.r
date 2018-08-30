@@ -407,6 +407,10 @@ pa1 <- function(e=parent.frame())
   {
     e$output <- gsub(":", ".", paste(Sys.time(), 'PersonAlyticHTP_Output.txt'))
   }
+  if(!is.null(e$output))
+  {
+    e$output <- paste(e$output, 'txt', sep='.')
+  }
 
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
 
@@ -441,8 +445,8 @@ pa1 <- function(e=parent.frame())
   if(e$package=="gamlss") Grp.out <- t1$gamlss()
   if(e$package=="nlme")   Grp.out <- t1$lme()
 
-  sink(file=paste(output, '.txt', sep=''))
-  Grp.out
+  sink(file=e$output)
+  print( Grp.out )
   sink()
 
   return(Grp.out)
@@ -458,6 +462,10 @@ paHTP <- function(e=parent.frame())
   if(is.null(e$output))
   {
     e$output <- gsub(":", ".", paste(Sys.time(), 'PersonAlyticHTP_Output.csv'))
+  }
+  if(!is.null(e$output))
+  {
+    e$output <- paste(e$output, 'csv', sep='.')
   }
 
   # check that dvs, target_ivs are lists, if not, force
