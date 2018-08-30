@@ -39,7 +39,8 @@ htp.foreach <- function(data                       ,
     message("\n\nPersonAlytics: Starting analyses for ", dvs[[dv]], " \n\n")
 
     # initialize the null object to be copied (do NOT use $clone() as it
-    # has failed in tests)
+    # has failed in tests) ---- note that there are inheritance issues and
+    # t0 can be modified by its child t1, hence the save* objects
     t0 <- Palytic$new(data=data,
                       ids=ids,
                       dv=dvs[[dv]],
@@ -52,6 +53,8 @@ htp.foreach <- function(data                       ,
                       family=family,
                       method="REML"
                       )
+    saveMethod  <- t0$method
+    saveFormula <- t0$formula
 
     if(dims$ID[1]!="All Cases")
     {
@@ -277,6 +280,11 @@ htp.foreach <- function(data                       ,
         Model = "NA"
         if(any(c("gamlss", "lme") %in% class(modid))) Model = modid
         IDout[[paste(ids, id, sep='.')]] <- list( Messages=err_id, Model=Model )
+
+        # reclaim inputs in case there are inheritance issues due to $gamlss or $lme
+        # dropping terms
+        t0$method <- saveMethod
+        t0$formula <- saveFormula
       } # end of for IDout
 
       # dis aggregate messages and models
