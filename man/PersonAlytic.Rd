@@ -163,7 +163,7 @@ If \code{detectAR=TRUE}, automatic selection of the residual covariance
 structure is invoked initializing a search among
 \code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
 from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
-are passed to \code{\link{nlme::corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
+are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
 testing (see \code{detectAR}).}
 
 \item{whichIC}{Character. The default is \code{whichIC="BIC"}.

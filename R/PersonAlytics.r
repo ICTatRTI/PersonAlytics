@@ -3,7 +3,7 @@
 #' The PersonAlytics package provides the simplified user interface
 #' for implementing linear mixed effects models for idiographic clinical trials
 #' (ICT) data, single case studies, and small N studies with intensive longitudinal
-#' designs. Contact us via \link{https://personalytics.rti.org/} for
+#' designs. Contact us via https://personalytics.rti.org/ for
 #' licensing options.
 #'
 #' @details

@@ -114,7 +114,7 @@ iscorStruct <- function(x)
 #' whenever a change to any variable that can go into a formula is made
 #'
 #' Note that only the following combinations work, but these are enforced in
-#' \code{\link{Palytitic}} rather than enforced internally
+#' \code{\link{Palytic}} rather than enforced internally
 #' 1. Objects except for PalyticObj, fixed, random, and formula (e.g., Palytic$new)
 #' 2. PalyticObj and exactly 1 other parameter
 #'

@@ -1,7 +1,6 @@
 #' psuite - apply p.adjust and add output and graphics
 #'
 #' @name psuite
-#' @docType class
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
 #' @export
@@ -34,7 +33,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
 
   # find all the p-value columns
   wc <- which(! lapply( strsplit(names(DVout), '.p.value'),
-                  function(DVout) paste(DVout, collapse='')) == names(DVout))
+                        function(DVout) paste(DVout, collapse='')) == names(DVout))
 
   adjuster <- function(x, wc, method)
   {
@@ -44,7 +43,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
     return(data.frame(x, adj.ps))
   }
   DVoutadj <- do.call(rbind, as.list(by(DVout, DVout$dv,
-                              adjuster, wc=wc, method=method)))
+                                        adjuster, wc=wc, method=method)))
 
   tn <- which(names(DVoutadj)=='target_iv')
   te <- which(grepl("TargetPredictor.Value", names(DVoutadj)))
@@ -140,6 +139,27 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
 ### metabolomics version, updates needed include
 # - allow user to specify different time variables for analysis and visualization
 
+#' trajplot - plot trajectories
+#'
+#' @name trajplot
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#'
+#' @export
+#' @import gridExtra
+#' @import ggplot2
+#'
+#' @description
+#' trajectoy plots
+#'
+#' @param data Inputs from psuite()
+#' @param ids See \code{\link{PersonAlytics}}
+#' @param dv See \code{\link{PersonAlytics}}
+#' @param time See \code{\link{PersonAlytics}}
+#' @param phase See \code{\link{PersonAlytics}}
+#' @param ivs  See \code{\link{PersonAlytics}}
+#' @param target_iv See \code{\link{PersonAlytics}}
+#' @param target_nm The name of the target_iv
+#'
 trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
 {
   library(ggplot2)
@@ -155,15 +175,24 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
   tempdata$target_iv <- scale(tempdata$target_iv)
 
   t1 <- Palytic$new(data = tempdata,
-                   ids = "id",
-                   dv  = "dv",
-                   time = "time",
-                   phase = "phase",
-                   ivs = list("target_iv", "ivs"))
+                    ids = "id",
+                    dv  = "dv",
+                    time = "time",
+                    phase = "phase",
+                    ivs = list("target_iv", "ivs"),
+                    standardize = TRUE)
 
-  t1$GroupAR_order("dv"); t1$correlation
   t1$GroupTime_Power(); t1$time_power
-  t1.lme <- t1$lme()
+  t1$GroupAR_order(); t1$correlation
+
+  # predict is looking for self, for now est directly
+  cor <- eval(parse(text = ifelse(!is.null(t1$correlation),
+                                  t1$correlation,
+                                  'NULL')))
+  t1.lme <- nlme::lme(t1$fixed, data = tempdata,
+                      random = t1$random,
+                      correlation = cor,
+                      na.action = na.omit)
 
   # level = 0 is fixed effects only, level = 1 includes random effects
   preddat <- predict(t1.lme, tempdata, level = 1)
@@ -194,13 +223,13 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
                         labels=c(paste(dv, "Observed Values"),
                                  paste(dv, "Predicted Values"),
                                  target_nm))# +
-    #scale_linetype_manual(values = c('dotted', 'dashed', 'solid'))
+  #scale_linetype_manual(values = c('dotted', 'dashed', 'solid'))
 
 
   return( g )
 
   #pdat$y[pdat$g==t1$ivs[[1]]] <- 2^( tempdata$X19.43_887.1030m.zr )
-#
+  #
   #ggplot(pdat, aes(x=Time, y=y, group=id, col=g)) +
   #  geom_line(position=position_jitter(h=.05), alpha=.25) +
   #  ylab("Standardized Scale (mean 0, unit variance)") +

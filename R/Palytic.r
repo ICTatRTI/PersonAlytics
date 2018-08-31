@@ -62,9 +62,9 @@
 #' and \code{\link{gamlss}} models.
 #' @field standardize Logical. Should \code{y} and \code{ivs} be standardized?
 #' @field corStructs Vector. A \code{correlation} structure for each case in \code{ids}. Not
-#' user accesible. Populated by \code{\link{PersonAylticsPro}}.
+#' user accesible. Populated by \code{\link{PersonAyltic}}.
 #' @field time_powers Vector. A \code{time_order} for each case in \code{ids}. Not
-#' user accesible. Populated by \code{\link{PersonAylticsPro}}.
+#' user accesible. Populated by \code{\link{PersonAyltic}}.
 #' @field is_clean Logical flag for data cleaning. Not yet implemented.
 #' @field warnings A list of warnings that will be populated as methods are called on a
 #' \code{Palytic} object.
