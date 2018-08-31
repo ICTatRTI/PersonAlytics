@@ -293,11 +293,11 @@
 #' summary(t0)
 #' summary(t1)
 #'
-#' # delete the output
+#' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
 #' {
-#'   if(file.exists('Test0.txt')) file.remove('Test0.txt')
-#'   if(file.exists('Test1.csv')) file.remove('Test1.csv')
+#'   file.remove( dir(getwd(), glob2rx("*.txt")) )
+#'   file.remove( dir(getwd(), glob2rx("*.csv")) )
 #' }
 #'
 #' # gamlss with two distributions - features not implemented
@@ -348,6 +348,7 @@ PersonAlytic <- function(output=NULL              ,
 {
   if(length(whichIC)>1) whichIC <- whichIC[1]
   if(is.null(correlation)) correlation <- "NULL"
+  pav <- paste("-PAv", packageVersion("PersonAlytics"), "-", sep='')
 
   if(individual_mods==FALSE & length(dvs)==1 & length(target_ivs)<=1)
   {
@@ -405,11 +406,12 @@ pa1 <- function(e=parent.frame())
 
   if(is.null(e$output))
   {
-    e$output <- gsub(":", ".", paste(Sys.time(), 'PersonAlyticHTP_Output.txt'))
+    e$output <- gsub(":", ".", paste(Sys.time(), e$pav,
+                               'PersonAlyticHTP_Output.txt'))
   }
   if(!is.null(e$output))
   {
-    e$output <- paste(e$output, 'txt', sep='.')
+    e$output <- paste(e$output, e$pav, 'txt', sep='.')
   }
 
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
@@ -461,11 +463,11 @@ paHTP <- function(e=parent.frame())
 
   if(is.null(e$output))
   {
-    e$output <- gsub(":", ".", paste(Sys.time(), 'PersonAlyticHTP_Output.csv'))
+    e$output <- gsub(":", ".", paste(Sys.time(), e$pav, 'PersonAlyticHTP_Output.csv'))
   }
   if(!is.null(e$output))
   {
-    e$output <- paste(e$output, 'csv', sep='.')
+    e$output <- paste(e$output, e$pav, 'csv', sep='.')
   }
 
   # check that dvs, target_ivs are lists, if not, force

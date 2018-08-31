@@ -25,6 +25,8 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
   library(gridExtra)
   library(ggplot2)
 
+  pav <- paste("-PAv", packageVersion("PersonAlytics"), "-", sep='')
+
   if(! method %in% p.adjust.methods)
   {
     stop("`method` must be one of", p.adjust.methods)
@@ -59,7 +61,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
               paste("Best", nbest, 'pvalues', sep="_"), sep="")
   print(fn)
 
-  sink(file = paste(fn, "txt", sep=".") )
+  sink(file = paste(fn, pav, "txt", sep=".") )
   ln <- paste("\n", paste(rep("-", 80), collapse=""), "\n\n", sep = "")
   for(d in unique(DVoutadj$dv))
   {
@@ -115,7 +117,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
             if(! "try-error" %in% class(g) ) bestplots[[p]] <- g
 
           }
-          pdf(paste(fn, "pdf", sep="."), onefile = TRUE)
+          pdf(paste(fn, pav, "pdf", sep="."), onefile = TRUE)
           lapply(bestplots, grid.arrange)
           dev.off()
         }
@@ -125,11 +127,12 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
         cat("All p-values are >", alpha, "\n\n\n")
       }
 
-      write.csv(best,  paste(fn, "csv", sep="."))
+      write.csv(best,  paste(fn, pav, "csv", sep="."))
     }
   }
   sink()
 
+  while( sink.number() > 0 ) sink()
 
   return( DVoutadj )
 }
