@@ -8,8 +8,6 @@
 #' @import gridExtra
 #' @import ggplot2
 #'
-#' @usage Palytic(DVout, method)
-#'
 #' @description
 #' Apply p.adjust and add output and graphics
 #'
@@ -54,7 +52,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
   st[2] <- gsub(":", "-", st[2])
   st <- paste(st, collapse="_")
 
-  dn <- paste('PersonAlytics p-value report', st)
+  dn <- paste('PersonAlytics p-value report for', st)
   if(!dir.exists((dn)))  dir.create(dn)
 
   fn <- paste(paste("./", dn, "/", sep=""),
@@ -88,7 +86,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
       nbestr <- nbest; if(nbest > nrow(best)) nbestr <- nrow(best)
       if(nbestr > 0)
       {
-        best <- best[order(abs(best[,(1+i)]), decreasing = TRUE),][1:nbestr,]
+        best <- best[order(abs(best[,(1+i)]), decreasing = FALSE),][1:nbestr,]
       }
       best <- data.frame(best)
       row.names(best) <- NULL

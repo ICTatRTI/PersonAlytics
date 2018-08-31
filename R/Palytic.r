@@ -1341,9 +1341,10 @@ Palytic$set("public", "GroupAR_order",
               corMods <- list(); cc <- 1
               if( "lme" %in% class(nullMod) )
               {
-
+                pb <- txtProgressBar(min = 0, max = P, style = 3)
                 for(p in 0:P)
                 {
+                  setTxtProgressBar(pb, p)
                   for(q in 0:Q)
                   {
                     if(p>0 | q>0)
