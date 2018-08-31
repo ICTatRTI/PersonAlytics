@@ -86,7 +86,7 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
       nbestr <- nbest; if(nbest > nrow(best)) nbestr <- nrow(best)
       if(nbestr > 0)
       {
-        best <- best[order(abs(best[,(1+i)]), decreasing = FALSE),][1:nbestr,]
+        best <- best[order(abs(best[,2]), decreasing = TRUE),][1:nbestr,]
       }
       best <- data.frame(best)
       row.names(best) <- NULL
