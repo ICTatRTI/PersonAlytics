@@ -1315,7 +1315,7 @@ Palytic$set("public", "getAR_order",
                 self$formula <- saveFormula # restore formulae, incl. correlation
               } #oef !eqspace
               #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
-              message("\n\nAutomatic detection of the residual\n",
+              message("\nAutomatic detection of the residual\n",
                       "correlation structure took ",
                       round((Sys.time() - start)/60,1), " minutes.\n\n")
             },
@@ -1338,13 +1338,22 @@ Palytic$set("public", "GroupAR_order",
 
               nullMod <- self$lme(subgroup)
 
-              corMods <- list(); cc <- 1
               if( "lme" %in% class(nullMod) )
               {
-                pb <- txtProgressBar(min = 0, max = P, style = 3)
-                for(p in 0:P)
+                require(foreach)
+                funcs <- c("mean")
+                cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK")
+                snow::clusterExport(cl, funcs)
+                doSNOW::registerDoSNOW(cl)
+                pkgs  <- c("gamlss", "nlme")
+                pb <- txtProgressBar(max = P, style = 3)
+                progress <- function(n) setTxtProgressBar(pb, n)
+                opts <- list(progress = progress)
+
+                corMods <- foreach(p=0:P, .packages = pkgs,
+                                   .options.snow = opts)  %dopar%
                 {
-                  setTxtProgressBar(pb, p)
+                  corMod <- list()
                   for(q in 0:Q)
                   {
                     if(p>0 | q>0)
@@ -1354,65 +1363,24 @@ Palytic$set("public", "GroupAR_order",
                       cortemp <- gsub('\n', '', cortemp)
                       cortemp <- gsub(' ', '', cortemp)
                       self$correlation <- cortemp
-                      corMods[[cc]]  <- self$lme(subgroup)
-                      if( any(corMods[[cc]]=="Model did not converge") )
+                      corMod[[q+1]] <- self$lme(subgroup)
+                      if( any(corMod[[q+1]]=="Model did not converge") )
                       {
-                        corMods[[cc]] <- NULL
+                        corMod[[q+1]] <- NULL
                       }
-                      else cc = cc + 1
                       self$formula <- saveFormula # restore formulae, incl. correlation
-                      #print(self$formula)
                     }
                   }
+                  return(corMod)
                 }
+                parallel::stopCluster(cl)
+
+                corMods <- do.call(list, unlist(corMods, recursive=FALSE))
+                corMods <- corMods[!unlist(lapply(corMods, is.null))]
+
                 names(corMods) <- unlist( lapply(corMods,
                                                  function(x) x$PalyticSummary$correlation) )
                 corMods <- corMods[!is.na(names(corMods))]
-
-                if(lrt)
-                {
-                  lrts <- lapply( lapply( corMods,
-                                          function(x) anova(x, nullMod)),
-                                  function(x) x[2,])
-                  #print(lrts)
-                  lrts <- data.frame(cor=names(corMods), plyr::rbind.fill(lrts))
-                  wlrt <- which(lrts$`p.value`<=alpha)
-                  if( length(wlrt) > 1 )
-                  {
-                    # we may need to do this recursively until nothing is
-                    # sig, e.g., while loop
-                    newnullmod <- corMods[wlrt[1]]
-                    nmnnm      <- names(newnullmod)
-                    newnullmod <- newnullmod[[1]]
-                    compmods   <- corMods[wlrt[2:length(wlrt)]]
-                    newlrts    <- lapply( lapply( compmods, function(x)
-                      anova(x, newnullmod)),
-                      function(x) x[2,])
-                    wnl <- unlist(lapply(newlrts, length))
-                    wnl <- which(wnl < max(wnl, na.rm=TRUE))
-                    newlrts[wnl] <- NULL
-                    compmods[wnl] <- NULL
-                    newlrts    <- data.frame(cor=names(compmods),
-                                             plyr::rbind.fill(newlrts))
-                    if( all(newlrts$p.value<.05) & nrow(newlrts) > 1 )
-                    {
-                      # minimum p-value is a bad criterion,
-                      # serving only as a placeholder for
-                      # a recursive search
-                      bestCor <- as.character( names(compmods)[
-                        which.min(newlrts$p.value)] )
-                    }
-                    else bestCor <- nmnnm
-                  }
-                  if( length(wlrt)==1 )
-                  {
-                    bestCor <- as.character( lrts$cor[wlrt] )
-                  }
-                  if( length(wlrt)==0 )
-                  {
-                    bestCor <- "NULL"
-                  }
-                }
 
                 if(!lrt)
                 {
@@ -1433,7 +1401,7 @@ Palytic$set("public", "GroupAR_order",
               self$correlation <- bestCor
               self$method      <- saveMethod
 
-              message("Automatic detection of the residual\n",
+              message("\nAutomatic detection of the residual\n",
                       "correlation structure took ",
                       round((Sys.time() - start)/60,1), " minutes.\n\n")
             },
@@ -1473,7 +1441,7 @@ Palytic$set("public", "getTime_Power",
               }
               self$time_powers <- data.frame(ids=uid, time_power=unlist(time_powers))
 
-              message("Automatic detection of the time/outcome\n",
+              message("\nAutomatic detection of the time/outcome\n",
                       "relationship took ",
                       round((Sys.time() - start)/60,1), " minutes.\n\n")
             },
@@ -1504,7 +1472,7 @@ Palytic$set("public", "GroupTime_Power",
               if(whichIC=="AIC") bestMods <- unlist( lapply(mods, AIC) )
               self$time_power <- which.min( bestMods )
 
-              message("Automatic detection of the time/outcome\n",
+              message("\nAutomatic detection of the time/outcome\n",
                       "relationship took ",
                       round((Sys.time() - start)/60,1), " minutes.\n\n")
             },

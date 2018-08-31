@@ -302,11 +302,11 @@ t1 <- PersonAlytic(output='Test1',
 summary(t0)
 summary(t1)
 
-# delete the output
+# delete the output if this was run in the development directory
 if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
 {
-  if(file.exists('Test0.txt')) file.remove('Test0.txt')
-  if(file.exists('Test1.csv')) file.remove('Test1.csv')
+  file.remove( dir(getwd(), glob2rx("*.txt")) )
+  file.remove( dir(getwd(), glob2rx("*.csv")) )
 }
 
 # gamlss with two distributions - features not implemented
