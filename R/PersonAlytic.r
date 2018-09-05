@@ -601,10 +601,13 @@ paHTP <- function(e=parent.frame())
   DVout <- do.call(data.frame, lapply(DVout, nnull))
   write.csv(DVout, file=paste(e$output, '.csv', sep=''), row.names=FALSE)
 
-  if(!is.null(e$p.method) & length(e$target_ivs) > 1) DVout <- psuite(DVout,
-                                                                      rawdata=e$data,
-                                                                      method=e$p.method,
-                                                                      alpha=e$alpha)
+  if(!is.null(e$p.method) & length(e$target_ivs) > 1)
+  {
+    DVout <- try( psuite(DVout,
+                    rawdata=e$data,
+                    method=e$p.method,
+                    alpha=e$alpha), silent = TRUE )
+  }
 
   return(DVout)
 }

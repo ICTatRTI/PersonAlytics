@@ -49,6 +49,8 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
   te <- which(grepl("TargetPredictor.Value", names(DVoutadj)))
   tp <- which(grepl(glob2rx("TargetPredictor*p.value*"), names(DVoutadj)))
 
+  if(length(tp)<1) stop('TargetPredictor p.values not found.')
+
   st <- unlist( strsplit(as.character( Sys.time()), " ") )
   st[2] <- gsub(":", "-", st[2])
   st <- paste(st, collapse="_")
@@ -182,8 +184,8 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
                     ivs = list("target_iv", "ivs"),
                     standardize = TRUE)
 
-  t1$GroupTime_Power(); t1$time_power
-  t1$GroupAR_order(); t1$correlation
+  t1$GroupTime_Power()
+  t1$GroupAR_order()
 
   # predict is looking for self, for now est directly
   cor <- eval(parse(text = ifelse(!is.null(t1$correlation),
@@ -193,6 +195,9 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
                       random = t1$random,
                       correlation = cor,
                       na.action = na.omit)
+  t1.lme$call$fixed  <- t1$fixed
+  t1.lme$call$random <- t1$random
+  t1.lme$call$correlation <- cor
 
   # level = 0 is fixed effects only, level = 1 includes random effects
   preddat <- predict(t1.lme, tempdata, level = 1)

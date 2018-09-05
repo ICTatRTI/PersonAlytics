@@ -73,10 +73,10 @@ and \code{\link{gamlss}} models.}
 \item{\code{standardize}}{Logical. Should \code{y} and \code{ivs} be standardized?}
 
 \item{\code{corStructs}}{Vector. A \code{correlation} structure for each case in \code{ids}. Not
-user accesible. Populated by \code{\link{PersonAyltic}}.}
+user accesible. Populated by \code{\link{PersonAlytic}}.}
 
 \item{\code{time_powers}}{Vector. A \code{time_order} for each case in \code{ids}. Not
-user accesible. Populated by \code{\link{PersonAyltic}}.}
+user accesible. Populated by \code{\link{PersonAlytic}}.}
 
 \item{\code{is_clean}}{Logical flag for data cleaning. Not yet implemented.}
 
