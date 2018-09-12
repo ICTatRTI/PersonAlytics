@@ -330,7 +330,9 @@ Palytic <- R6::R6Class("Palytic",
                              private$.random       <- frms$random
                              private$.formula      <- frms$formula
                              private$.method       <- frms$method
-                             private$.ismonotone   <- monotone(private$.ids, private$.time, private$.data)
+                             private$.ismonotone   <- monotone(private$.ids,
+                                                               private$.time,
+                                                               private$.data)
                              self
                            }
                          },
