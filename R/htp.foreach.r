@@ -91,6 +91,7 @@ htp.foreach <- function(data                       ,
                      .options.snow = opts) %dopar%
     {
       t1 <- t0
+      t1$method <- "REML"
       ivs.temp <- unlist(c(ivs, target_ivs[iv]))
       if( is.null(ivs.temp) )
       {
@@ -184,8 +185,7 @@ htp.foreach <- function(data                       ,
         ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
         ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
                                function(x) !all(duplicated(x)[-1L])) )
-        err_id['ivVar'] <- paste( paste('T
-                                        he variance of `', ivvs, '` is ',
+        err_id['ivVar'] <- paste( paste('The variance of `', ivvs, '` is ',
                                         ifelse(ivv, '> 0 ', '= 0 '),
                                         sep=''), collapse='; ')
 
@@ -257,20 +257,25 @@ htp.foreach <- function(data                       ,
           if(! "lme"  %in%  class(modid) )
           {
             err_id['converge'] <- modid
-            err_id['estimator'] <- NA
+            err_id['estimator'] <- t1$method
             err_id['analyzed_N'] <- NA
-            err_id['call'] <- NA
-            # this is a placeholder for getting error messsages from lme
+            err_id['call'] <- paste(Reduce( paste, deparse( t1$fixed ) ),
+                                    Reduce( paste, deparse( t1$random ) ),
+                                    t1$correlation,
+                                    sep='; ')
+            # here is a placeholder for getting error messsages from lme
             # which needs to be updated in the error handling for
             # lme in Palytic
           }
           if(  "lme"  %in%  class(modid) )
           {
-            err_id['converge'] <- paste('Convergence is `', 'TRUE`', sep='')
-            err_id['estimator'] <- modid$PalyticSummary$method
+            err_id['converge']   <- 'Convergence is `TRUE`'
+            err_id['estimator']  <- modid$PalyticSummary$method
             err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
-            err_id['call'] <- paste(modid$PalyticSummary$fixed,
-                                    modid$PalyticSummary$random, sep='   ')
+            err_id['call'] <- paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
+                                     Reduce( paste, deparse(modid$PalyticSummary$random) ),
+                                     modid$PalyticSummary$correlation,
+                                     sep='; ')
           }
         }
 
@@ -281,10 +286,11 @@ htp.foreach <- function(data                       ,
         if(any(c("gamlss", "lme") %in% class(modid))) Model = modid
         IDout[[paste(ids, id, sep='.')]] <- list( Messages=err_id, Model=Model )
 
-        # reclaim inputs in case there are inheritance issues due to $gamlss or $lme
-        # dropping terms
-        t0$method <- saveMethod
+        # reclaim inputs in case there are inheritance issues due to $gamlss or
+        # $lme dropping terms
+        t0$method  <- saveMethod
         t0$formula <- saveFormula
+
       } # end of for IDout
 
       # dis aggregate messages and models
@@ -316,27 +322,36 @@ htp.foreach <- function(data                       ,
           summary(x)$tTable} else NA})
       }
 
-      rcm <- function(x)
-      {
-        if(is.matrix(x))
-        {
-          xo <- data.frame( t(as.vector(t(x)) ) )
-          row.names(xo) <- NULL
-        }
-        if(!is.matrix(x))
-        {
-          xo <- data.frame(NA)
-        }
-        return( xo )
-      }
-
+      # function to prep row names
       # this function is fragile, we need it to adapt to any number of fixed ivs
-      # and use a common label for each target_ivs, potentially as a factor!
+      # and use a common label for each target_ivs
       rcn <- function(x)
       {
         if(is.matrix(x))
         {
-          row.names(x)[which( row.names(x) == target_ivs[[iv]] )] <- 'TargetPredictor'
+          # extract the name(s) of the rows corresponding to the targe predictor
+          Tnms <- row.names(x)[ which( grepl(target_ivs[[iv]], row.names(x)) ) ]
+
+          # if target predictor ! factor, set the name
+          if( length(Tnms) == 1 )
+          {
+            row.names(x)[ which(row.names(x) %in% Tnms) ] <- 'Targ'
+          }
+
+          # if target predicor is a factor variable, get the reference category
+          # and set the names
+          if( is.factor(t1$data[[target_ivs[[iv]]]]) )
+          {
+            uT     <- levels(t1$data[[target_ivs[[iv]]]])
+            comCat <- unlist( strsplit(Tnms, target_ivs[[iv]]) )
+            comCat <- comCat[comCat != ""]
+            refCat <- uT[! uT %in% comCat]
+            NewNms <- paste('Targ', comCat, 'vs', refCat, sep='_')
+            row.names(x)[ which(row.names(x) %in% Tnms) ] <- NewNms
+            rm(uT, comCat, refCat, NewNms)
+          }
+          rm(Tnms)
+
           xn <- apply(expand.grid(colnames(x), row.names(x)), 1,
                       function(x) paste(x[2], x[1], sep=" "))
         }
@@ -347,15 +362,27 @@ htp.foreach <- function(data                       ,
         return( xn )
       }
 
-      IDoutSumm <- lapply(IDoutSum, rcm)
-      IDoutSumn <- lapply(IDoutSum, rcn)
-      IDoutSumm <- plyr::rbind.fill(IDoutSumm)
-      firstNonMissResult <- which(!unlist(lapply(lapply(IDoutSumn, is.na), any)))[1]
-      # need an escape here for all missing
-      if(length(firstNonMissResult)<1) firstNonMissResult <- 1
-      names(IDoutSumm) <- unlist( IDoutSumn[firstNonMissResult] )
+      # function to force values to data.frame vectors for later stacking
+      rcm <- function(x)
+      {
+        if(is.matrix(x))
+        {
+          xo <- data.frame( t(as.vector(t(x)) ) )
+          row.names(xo) <- NULL
+          colnames(xo)  <- rcn(x)
+        }
+        if(!is.matrix(x))
+        {
+          xo <- data.frame(NA)
+        }
+        return( xo )
+      }
 
-      # populate IVout - consider writing to file here
+      # turn the numeric output into vectors & rbind them together
+      IDoutSumm <- lapply(IDoutSum, rcm)
+      IDoutSumm <- plyr::rbind.fill(IDoutSumm)
+
+      # functions to clean inputs, can cln be replaced with Reduce(paste, x)?
       cln <- function(x)
       {
         gsub("\n|\\s\"|\'", "", paste(format(x), collapse=" "))
@@ -365,19 +392,19 @@ htp.foreach <- function(data                       ,
         if(is.null(x)) return("NULL")
         else return(x)
       }
-      IDoutSumm <- data.frame(#ids        = row.names(IDmsg),
-                              #"ivs"       = cl2(paste(t1$ivs, collapse=', ')),
-                             "target_iv" = cl2(unlist(target_ivs)[iv]),
-                             fixed       = cln(t1$fixed),
-                             random      = cln(t1$random),
-                             correlation = ifelse(all(dims$ID=="All Cases"),
-                                                  cln(t1$correlation),
-                               cln(t1$corStructs[id,2])),
-                             formula     = cln(t1$formula),
-                             directory   = normalizePath(getwd()),
-                             date        = Sys.time(),
-                             IDmsg,
-                             IDoutSumm)
+
+      # populate IVout - consider writing to file here
+      IDoutSumm <- data.frame("target_iv" = cl2(unlist(target_ivs)[iv]),
+                              fixed       = cln(t1$fixed),
+                              random      = cln(t1$random),
+                              correlation = ifelse(all(dims$ID=="All Cases"),
+                                                   cln(t1$correlation),
+                                                   cln(t1$corStructs[id,2])),
+                              formula     = cln(t1$formula),
+                              directory   = normalizePath(getwd()),
+                              date        = Sys.time(),
+                              IDmsg,
+                              IDoutSumm)
       ###
       return( IDoutSumm )
       rm( t1 )
@@ -387,11 +414,12 @@ htp.foreach <- function(data                       ,
     ncols <- unlist( lapply(IVout, function(x) dim(x)[2]) )
     DVout[[dvs[[dv]]]] <- data.frame(dv=dvs[[dv]], plyr::rbind.fill(IVout))
   }
+  # stop the cluster
+  parallel::stopCluster(cl)
+
   # final post-processing
   outmat <- plyr::rbind.fill(DVout)
   row.names(outmat) <- NULL
   return( outmat )
-
-  parallel::stopCluster(cl)
 }
 
