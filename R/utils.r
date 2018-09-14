@@ -62,7 +62,7 @@ monotone <- function(ids, time, data)
 #' isCorStruct - function to test whether a string resolves into a valid
 #' correlation structure
 #'
-#' @description Note that \code{NULL} is a valiad \code{corStruct}
+#' @description Note that \code{NULL} is a valid \code{corStruct}
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #' @param x Any character string

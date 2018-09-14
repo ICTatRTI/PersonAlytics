@@ -40,12 +40,35 @@ c(`(Intercept)`  = 10.6616306,
    Phase         = 10.9720945,
    `Time:Phase`  = -8.6438502) )
 
+# Illustrate a multiphase study, Phase alignment (To do: add visualization)
+t3 <- PersonAlytic(data=OvaryICT,
+                   ids="Mare",
+                   dvs="follicles",
+                   phase="Phase2",
+                   time="Time",
+                   package="nlme",
+                   detectAR = FALSE,
+                   detectTO = FALSE,
+                   standardize = FALSE,
+                   alignPhase = TRUE)
+
 # definition of OvaryICT
 \dontrun{
 OvaryICT <- as.data.frame(nlme::Ovary)
 OvaryICT$Mare <- as.numeric(OvaryICT$Mare)
 OvaryICT$Phase <- as.numeric(OvaryICT$Time > .5)
+OvaryICT$Phase2 <- factor( cut(OvaryICT$Time,
+                               breaks = c(-Inf, .2, .6, 1, Inf)),
+                           labels = 1:4 )
 OvaryICT$Time <- sin(2*pi*OvaryICT$Time)
+set.seed(1)
+t1 <- matrix( sample(1:4, 3*nrow(OvaryICT), replace = TRUE), ncol = 3)
+t1 <- data.frame(t1)
+names(t1) <- paste('Target', 1:3, sep='')
+set.seed(2)
+t2 <- data.frame( matrix( rnorm(3*nrow(OvaryICT)), ncol = 3 ) )
+names(t2) <- paste('Target', 4:6, sep='')
+OvaryICT <- data.frame(OvaryICT, t1, t2)
 OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
 }
 

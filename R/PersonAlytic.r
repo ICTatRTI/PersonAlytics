@@ -379,7 +379,7 @@ pa1 <- function(e=parent.frame())
     time            <- "Time"
     phase           <- "Phase"
     ivs             <- NULL
-    target_ivs      <- NULL
+    target_ivs      <- as.list(paste("Target", 1:6, sep=''))
     interactions    <- NULL
     time_power      <- 3
     correlation     <- NULL
@@ -388,7 +388,7 @@ pa1 <- function(e=parent.frame())
     standardize     <- FALSE
     package         <- 'nlme'
     method          <- 'REML'
-    individual_mods <- FALSE
+    individual_mods <- TRUE
     PalyticObj      <- NULL
     detectAR        <- FALSE
     PQ              <- c(3,3)
@@ -477,10 +477,10 @@ paHTP <- function(e=parent.frame())
   # check that inputs conform. this is also done when creating a Palytic
   # object, but we do it early on here to avoid problems after loops start.
   e$data <- PersonAlytics:::clean(e$data, e$ids, dv=NULL, e$time, e$phase, e$ivs,
-                                  fixed=NULL, random=NULL, formula=NULL,
-                                  e$correlation, e$family,
-                                  e$dvs, e$target_ivs, e$standardize,
-                                  e$alignPhase)
+                  fixed=NULL, random=NULL, formula=NULL,
+                  e$correlation, e$family,
+                  e$dvs, e$target_ivs, e$standardize,
+                  e$alignPhase)
 
   # subgroup the data and delete the parameter, after this point, it is only
   # used to subgroup to unique ids
@@ -501,7 +501,8 @@ paHTP <- function(e=parent.frame())
     dvs    <- "follicles"
     phase  <- "Phase"
     ids    <- "Mare"
-    time   <- "TimeSin"
+    time   <- "Time"
+    target_ivs <- "TimeSin"
   }
 
   # unique ids

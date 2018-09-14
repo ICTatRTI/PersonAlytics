@@ -11,7 +11,7 @@ iscorStruct(x)
 \item{x}{Any character string}
 }
 \description{
-Note that \code{NULL} is a valiad \code{corStruct}
+Note that \code{NULL} is a valid \code{corStruct}
 }
 \examples{
 iscorStruct(NULL)

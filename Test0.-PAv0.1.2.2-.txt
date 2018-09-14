@@ -1,0 +1,17 @@
+Linear mixed-effects model fit by maximum likelihood
+  Data: na.omit(tempData) 
+  Log-likelihood: -312.4155
+  Fixed: self$fixed 
+(Intercept)        Time       Phase  Time:Phase 
+ -0.1639735  -0.3870964   0.1811336  -0.3918111 
+
+Random effects:
+ Formula: ~Time | Mare
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev    Corr  
+(Intercept) 0.5756246 (Intr)
+Time        0.3883462 -0.597
+Residual    0.6134923       
+
+Number of Observations: 308
+Number of Groups: 11 
