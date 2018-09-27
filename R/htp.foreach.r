@@ -1,7 +1,6 @@
 #' high throughput
 #'
 #' @keywords internal
-#' @export parallel
 
 # the current state of using Palytic is to create one object for
 # loops across individuals, but overwrite the the Palytic object
