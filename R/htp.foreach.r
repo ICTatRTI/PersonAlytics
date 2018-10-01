@@ -39,7 +39,7 @@ htp.foreach <- function(data                       ,
   {
     #...........................................................................
     # set up the parent palytic object
-    # -- do NOT use $clone() as it has failed in tests)
+    # -- do NOT use $clone() as it has failed in tests (inheritance issues)
     # -- there are inheritance issues, t0 can be modified by its child t1,
     #    hence the save* objects
     #...........................................................................

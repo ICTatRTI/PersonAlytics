@@ -918,6 +918,8 @@ Palytic <- R6::R6Class("Palytic",
                            #  read
                            #}
 
+
+
                            # checks that get used multiple times
                            is.min <- !(is.null(ids) | is.null(c) | is.null(time))
                            is.lme <- !(is.null(fixed) | is.null(random))
@@ -1020,8 +1022,44 @@ selfsumm <- function(x)
              try_silent   = x$try_silent   )
 }
 
+Palytic$set("public", "arma",
+            function(subgroup=NULL, max.p=3, max.q=3,
+                     max.P=0, max.Q=0, max.d=0, max.D=0, ...)
+            {
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
+              tempData <- subset(self$data, subgroup,
+                                 all.vars(self$formula))
+
+              # check that only one participant is in the data
+              if( length(unique(tempData[[self$ids]])) != 1 )
+              {
+                stop('`arma` requires n=1 data')
+              }
+
+              # `xreg` requires pre-constructed interaction terms, here we
+              # 1. create the model.matrix RHS from self$fixed
+              # 2. drop the intercept column
+              xdat <- model.matrix(self$fixed, tempData)[,-1]
+
+              # auto detect residual correlation structure here, time power
+              # must be detected elsewhere or added here
+              m1 <- forecast::auto.arima(y     = tempData[[self$dv]],
+                                         xreg  = xdat,
+                                         max.p = max.p,
+                                         max.q = max.q,
+                                         max.P = max.P,
+                                         max.Q = max.Q,
+                                         max.d = max.d,
+                                         max.D = max.D,
+                                         ...)
+
+              lmtest::coeftest(m1)
+
+            }
+              )
+
 Palytic$set("public", "lme",
-            function(subgroup=NULL)
+            function(subgroup=NULL, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
               tempData <- subset(self$data, subgroup,
@@ -1036,7 +1074,8 @@ Palytic$set("public", "lme",
                                   random=self$random,
                                   correlation=cor,
                                   method=self$method,
-                                  keep.data=FALSE),
+                                  keep.data=FALSE,
+                                  ...),
                         silent = TRUE)
 
               ctrl <- nlme::lmeControl()
@@ -1049,7 +1088,8 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=cor,
                                     method=self$method,
-                                    control=ctrl),
+                                    control=ctrl,
+                                    ...),
                           silent = TRUE)
               }
               # try without correlation structure
@@ -1063,7 +1103,8 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
-                                    control=ctrl),
+                                    control=ctrl,
+                                    ...),
                           silent = TRUE)
               }
               # try without random slopes or correlation structure
@@ -1081,7 +1122,8 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
-                                    control=ctrl),
+                                    control=ctrl,
+                                    ...),
                           silent = TRUE)
               }
               if( "lme" %in% class(m1) )
@@ -1107,7 +1149,7 @@ Palytic$set("public", "lme",
 #   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
 # -- this will be done in Palytic augmentations in .Palytic
 Palytic$set("public", "gamlss",
-            function(subgroup=NULL, sigma.formula = ~1, family=NULL)
+            function(subgroup=NULL, sigma.formula = ~1, family=NULL, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
               tempData <- na.omit( subset(self$data, subgroup,
@@ -1122,7 +1164,8 @@ Palytic$set("public", "gamlss",
               m1 <- try(gamlss::gamlss(formula = self$formula,
                                        sigma.formula = sigma.formula,
                                        data    = tempData,
-                                       family  = currentFamily),
+                                       family  = currentFamily,
+                                       ...),
                         silent = self$try_silent)
 
               if( "try-error" %in% class(m1) )# | !eds(m1) )
@@ -1133,7 +1176,8 @@ Palytic$set("public", "gamlss",
                                                sigma.formula = sigma.formula,
                                                data    = tempData,
                                                family  = currentFamily,
-                                               control = ctrl)),
+                                               control = ctrl,
+                                               ...)),
                           silent = self$try_silent)
               }
               if( "try-error" %in% class(m1) )
@@ -1142,14 +1186,16 @@ Palytic$set("public", "gamlss",
                 newformula <- forms(data       = self$data   ,
                                     PalyticObj = self        ,
                                     dropTime   = TRUE        ,
-                                    family     = currentFamily )
+                                    family     = currentFamily,
+                                    ... )
                 self$formula <- newformula$formula
                 #self$family  <- newformula$family
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                data    = tempData,
                                                family  = currentFamily,
-                                               control = ctrl)),
+                                               control = ctrl,
+                                               ...)),
                           silent = self$try_silent)
               }
               if("gamlss" %in% class(m1))
