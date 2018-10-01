@@ -134,8 +134,9 @@ and automatic time order detection).}
 \item{package}{Character. The default is \code{"nlme"}.
 
 Which package should be used to fit the models?
-Options are \code{\link{nlme}} and \code{\link{gamlss}}.
-It is passed as character strings, e.g., \code{"gamlss"} or \code{"nlme"}.}
+Options are \code{\link{nlme}}, \code{\link{gamlss}}, and \code{\link{arma}}.
+It is passed as character strings, e.g., \code{"gamlss"} or \code{"nlme"}. If
+there is only one participant in \code{ids}, "arma" will be used.}
 
 \item{individual_mods}{Logical. The default is \code{individual_mods=FALSE}.
 

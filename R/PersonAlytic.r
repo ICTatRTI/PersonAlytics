@@ -151,8 +151,9 @@
 #' @param package Character. The default is \code{"nlme"}.
 #'
 #' Which package should be used to fit the models?
-#' Options are \code{\link{nlme}} and \code{\link{gamlss}}.
-#' It is passed as character strings, e.g., \code{"gamlss"} or \code{"nlme"}.
+#' Options are \code{\link{nlme}}, \code{\link{gamlss}}, and \code{\link{arma}}.
+#' It is passed as character strings, e.g., \code{"gamlss"} or \code{"nlme"}. If
+#' there is only one participant in \code{ids}, "arma" will be used.
 #'
 #' @param method character. The default is \code{"REML"}.
 #'
@@ -416,6 +417,18 @@ pa1 <- function(e=parent.frame())
 
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
 
+  if( length(unique(data[[ids]][e$subgroup])) == 1 )
+  {
+    warning('There is only one participant, changing package to arma.')
+    e$package <- 'arma'
+  }
+  if( length(unique(data[[ids]][e$subgroup])) > 1 & e$package == 'arma' )
+  {
+    warning('There is more than one participant, changing to `package="nlme"`.',
+            '\nIf individual models are needed, use `individual_mods=TRUE`.')
+    e$package <- 'nlme'
+  }
+
   t1 <- Palytic$new(data=e$data[e$subgroup,]    ,
                     ids=e$ids                   ,
                     dv=e$dvs                    ,
@@ -437,15 +450,16 @@ pa1 <- function(e=parent.frame())
   # t1$time_power
   # t1$formula
 
-  if(e$detectAR) t1$GroupAR_order(P = e$PQ[1]  ,
-                                  Q = e$PQ[2]  ,
-                                  whichIC= e$whichIC[1]  )
+  if(e$detectAR & package!="arma") t1$GroupAR_order(P = e$PQ[1]  ,
+                                      Q = e$PQ[2]  ,
+                                      whichIC= e$whichIC[1]  )
   # t1$correlation
   # t1$formula
 
   # fit the models
-  if(e$package=="gamlss") Grp.out <- t1$gamlss()
-  if(e$package=="nlme")   Grp.out <- t1$lme()
+  if(e$package=="gamlss") Grp.out <- t1$gamlss(e$subgroup)
+  if(e$package=="nlme")   Grp.out <- t1$lme(e$subgroup)
+  if(e$package=="arma")   Grp.out <- t1$arma(e$subgroup)
 
   sink(file=e$output)
   print( Grp.out )
