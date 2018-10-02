@@ -133,7 +133,7 @@
 #' applied to all outcomes.
 #' The \code{family} parameter is ignored if \code{package="nlme"}.
 #'
-#' @param subgroup Logical vector. The default is \code{subgroup==NULL}.
+#' @param subgroup Logical vector. The default is \code{subgroup=NULL}.
 #'
 #' A vector where \code{length(subgroup)==nrow(data)} indicating
 #' which subset of the data should be used for analysis. For example, if a model
@@ -288,7 +288,7 @@
 #'                  dvs="follicles",
 #'                  phase="Phase",
 #'                  time="Time",
-#'                  package="nlme",
+#'                  package="arma",
 #'                  individual_mods=TRUE)
 #'
 #' summary(t0)
@@ -311,6 +311,16 @@
 #' #                 family=c(NO(), BEINF()),
 #' #                 package='gamlss')
 #'
+#' # verify single model runs against full model runs
+#' mare1 <- PersonAlytic(output='Mare1',
+#'                  data=OvaryICT,
+#'                  ids="Mare",
+#'                  dvs="follicles",
+#'                  phase="Phase",
+#'                  time="Time",
+#'                  package="arma",
+#'                  subgroup=OvaryICT$Mare==1
+#'                  )
 
 # \dontrun{
 # # if you wish to delete the automatically created csv file, run
@@ -345,12 +355,40 @@ PersonAlytic <- function(output=NULL              ,
                          p.method = "BY"          ,
                          alpha = .05              ,
                          alignPhase = FALSE       ,
-                         debugforeach = FALSE     )
+                         debugforeach = FALSE     ,
+                         packageTest = NULL       )
 {
   if(length(whichIC)>1) whichIC <- whichIC[1]
   if(is.null(correlation)) correlation <- "NULL"
   pav <- paste("-PAv", packageVersion("PersonAlytics"), "-", sep='')
 
+  # override user defaults if there is a data/package/individual_mods mismatch
+  if( length(unique(data[[ids]][subgroup])) == 1 & package != "arma" )
+  {
+    warning('There is only one participant, automatically switching to `package="arma"`.')
+    package <- 'arma'
+  }
+  if( length(unique(data[[ids]][subgroup])) > 1 & package == 'arma'  &
+      individual_mods != TRUE)
+  {
+    warning('There is more than one participant, using `package="nlme"`.',
+            '\nIf individual models are needed, switch to `individual_mods=TRUE`.')
+    package <- 'nlme'
+  }
+  if( individual_mods == TRUE & package != 'arma' )
+  {
+    warning('When `individual_mods=TRUE` you must use `package="arma"`.',
+            '\nAutomatically switching to `package="arma".')
+    package <- 'arma'
+  }
+
+  # for internal testing use only
+  if(!is.null(packageTest))
+  {
+    package <- packageTest
+  }
+
+  # call 'methods'
   if(individual_mods==FALSE & length(dvs)==1 & length(target_ivs)<=1)
   {
     pout <- pa1()
@@ -402,6 +440,7 @@ pa1 <- function(e=parent.frame())
     alignPhase      <- FALSE
     debugforeach    <- FALSE
     maxOrder        <- 3
+    packageTest     <- NULL
     e               <- parent.frame()
   }
 
@@ -417,19 +456,7 @@ pa1 <- function(e=parent.frame())
 
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
 
-  if( length(unique(data[[ids]][e$subgroup])) == 1 )
-  {
-    warning('There is only one participant, changing package to arma.')
-    e$package <- 'arma'
-  }
-  if( length(unique(data[[ids]][e$subgroup])) > 1 & e$package == 'arma' )
-  {
-    warning('There is more than one participant, changing to `package="nlme"`.',
-            '\nIf individual models are needed, use `individual_mods=TRUE`.')
-    e$package <- 'nlme'
-  }
-
-  t1 <- Palytic$new(data=e$data[e$subgroup,]    ,
+  t1 <- Palytic$new(data=e$data                 ,
                     ids=e$ids                   ,
                     dv=e$dvs                    ,
                     time=e$time                 ,
@@ -499,7 +526,7 @@ paHTP <- function(e=parent.frame())
   # subgroup the data and delete the parameter, after this point, it is only
   # used to subgroup to unique ids
   if( is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
-  if(!is.null(e$data)) e$data <- e$data[e$subgroup,]
+  if(!is.null(e$data))     e$data <- e$data[e$subgroup,]
 
   # check whether any variables in ivs are in target_ivs -
   # in the future, split them out automatically
@@ -511,11 +538,11 @@ paHTP <- function(e=parent.frame())
   ## if no data are given, use a test data set
   if(is.null(e$data))
   {
-    data   <- OvaryICT
-    dvs    <- "follicles"
-    phase  <- "Phase"
-    ids    <- "Mare"
-    time   <- "Time"
+    data       <- OvaryICT
+    dvs        <- "follicles"
+    phase      <- "Phase"
+    ids        <- "Mare"
+    time       <- "Time"
     target_ivs <- "TimeSin"
   }
 

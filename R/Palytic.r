@@ -1053,7 +1053,10 @@ Palytic$set("public", "arma",
                                          max.D = max.D,
                                          ...)
 
-              lmtest::coeftest(m1)
+
+
+              m1 <- list(arima = m1, tTable = lmtest::coeftest(m1),
+                         PalyticSummary = selfsumm(self))
 
             }
               )

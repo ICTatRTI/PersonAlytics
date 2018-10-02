@@ -66,11 +66,12 @@ htp.foreach <- function(data                       ,
       if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
       #t0$time_powers
 
-      if( detectAR) t0$getAR_order(PQ[1], PQ[2], whichIC[1])
-      if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
-                                                arma=rep(ifelse(is.null(t0$correlation),
-                                                            "NULL", t0$correlation),
-                                                         length(dims$ID)))
+      # individual AR orders are pending deprecation -- 20181001
+      #if( detectAR) t0$getAR_order(PQ[1], PQ[2], whichIC[1])
+      #if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
+      #                                          arma=rep(ifelse(is.null(t0$correlation),
+      #                                                      "NULL", t0$correlation),
+      #                                                   length(dims$ID)))
       #t0$corStructs
 
     }
@@ -113,29 +114,11 @@ htp.foreach <- function(data                       ,
       }
 
       #-------------------------------------------------------------------------
-      # for the current id, estimate null comparison model without the target IV
+      # copy the palytic object - this may not be neccessary; the goal is to
+      # be able to relaim changes made by fitting functinos, but inheritent may
+      # be making changes anyways
       #-------------------------------------------------------------------------
       t1 <- t0
-      # update correlation for individuals if individual models are being fit
-      if(dims$ID[1]!="All Cases")
-      {
-        if(is.null(t1$corStructs[wid,2]) | length(t1$corStructs[wid,2]) == 0 |
-           t1$corStructs[wid,2] == "NULL" | is.na(t1$corStructs[wid,2]) )
-        {
-          t1$correlation <- "NULL"
-        }
-        if(! is.null(t1$corStructs[wid,2]) )
-        {
-          t1$correlation <- as.character( t1$corStructs[wid,2] )
-        }
-
-        if(debugforeach)
-        {
-          cat('correllation for id = ', id, ' is ', t1$correlation, '\n\n',
-              file = paste('htp', dvs[dv], target_ivs[iv], 'log', sep='.'),
-              append = TRUE)
-        }
-      }
 
       #-------------------------------------------------------------------------
       # initialize input and error accumulation
@@ -156,13 +139,11 @@ htp.foreach <- function(data                       ,
       err_id['package']      <- t1$package
       err_id['time']         <- t1$time[1]
       err_id['phase']        <- t1$phase
-      err_id['ivs']          <- toString( t1$ivs          )
-      #err_id['target_ivs']         <- toString( t1$target_ivs         )
       err_id['interactions'] <- toString( t1$interactions )
       err_id['time_power']   <- t1$time_power
 
       # identify package
-      err_id['package'] <- t1$package
+      err_id['package'] <- package
 
       # adequate data
       err_id['Nobs'] <- paste('There are', nrow(na.omit(temp)),
@@ -201,11 +182,11 @@ htp.foreach <- function(data                       ,
                                       sep=''), collapse='; ')
 
       #-------------------------------------------------------------------------
-      # fit the model
+      # fit the model w/o target ivs
       #-------------------------------------------------------------------------
       if(package=="gamlss") mod1 <- t1$gamlss( useObs )
       if(package=="nlme"  ) mod1 <- t1$lme(    useObs )
-
+      if(package=="arma"  ) mod1 <- t1$arma(   useObs, max.p=PQ[1], max.q=PQ[2] )
 
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
@@ -220,6 +201,8 @@ htp.foreach <- function(data                       ,
       {
         t1$ivs <- gsub(" ", "", ivs.temp)
       }
+      err_id['ivs']       <- toString( t1$ivs         )
+      err_id['target_iv'] <- toString( target_ivs[iv] )
       # fit models
       if(package=="gamlss")
       {
@@ -263,8 +246,8 @@ htp.foreach <- function(data                       ,
         modid <- t1$lme( useObs )
         if(! "lme"  %in%  class(modid) )
         {
-          err_id['converge'] <- modid
-          err_id['estimator'] <- t1$method
+          err_id['converge']   <- modid
+          err_id['estimator']  <- t1$method
           err_id['analyzed_N'] <- NA
           err_id['call'] <- paste(Reduce( paste, deparse( t1$fixed ) ),
                                   Reduce( paste, deparse( t1$random ) ),
@@ -286,9 +269,35 @@ htp.foreach <- function(data                       ,
         }
       }
 
+      if(package=="arma")
+      {
+        modid <- t1$arma( useObs, max.p=PQ[1], max.q=PQ[2] )
+        if(! "coeftest"  %in%  class(modid$tTable) )
+        {
+          err_id['converge']   <- modid
+          err_id['estimator']  <- t1$method
+          err_id['analyzed_N'] <- NA
+          err_id['call'] <- paste(Reduce( paste, deparse( t1$fixed ) ),
+                                  Reduce( paste, deparse( t1$random ) ),
+                                  t1$correlation,
+                                  sep='; ')
+        }
+        if(  "coeftest"  %in%  class(modid$tTable) )
+        {
+          err_id['converge']   <- 'Convergence is `TRUE`'
+          err_id['estimator']  <- modid$PalyticSummary$method
+          err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
+          err_id['call'] <- paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
+                                   Reduce( paste, deparse(modid$PalyticSummary$random) ),
+                                   modid$PalyticSummary$correlation,
+                                   sep='; ')
+        }
+      }
+
       #-------------------------------------------------------------------------
       # LRT for target iv
       #-------------------------------------------------------------------------
+      lrtp <- NA
       if(any(c("gamlss", "lme") %in% class(mod1) ) &
          any(c("gamlss", "lme") %in% class(modid)) &
          length(dims$IV) > 0
@@ -299,13 +308,24 @@ htp.foreach <- function(data                       ,
         mod1$call$formula  <- mod1$PalyticSummary$formula
         modid$call$formula <- modid$PalyticSummary$formula
         lrt  <- anova(mod1, modid)
-        lrtp <- NA
         if(nrow(lrt)==2 & "p-value" %in% names(lrt))
         {
           lrtp <- lrt$"p-value"[2]
         }
-        err_id[['targ_ivs_lrt_pvalue']] <- lrtp
       }
+      if( any(c("ARIMA", "Arima") %in% class(mod1$arima) ) &
+          any(c("ARIMA", "Arima") %in% class(modid$arima))  )
+      {
+        l0 <- logLik(mod1$arima)
+        l1 <- logLik(modid$arima)
+        df0 <- strsplit( unlist( strsplit(capture.output(l0), "=") )[2] , ")")
+        df1 <- strsplit( unlist( strsplit(capture.output(l1), "=") )[2] , ")")
+        df0 <- as.numeric( unlist(df0) )
+        df1 <- as.numeric( unlist(df1) )
+        lrtest <- as.numeric(2*(l1-l0))
+        lrtp <- pchisq(lrtest, df1-df0, lower.tail = FALSE)
+      }
+      err_id[['targ_ivs_lrt_pvalue']] <- lrtp
 
       #-------------------------------------------------------------------------
       # populate IVout - consider writing to file here
@@ -319,18 +339,25 @@ htp.foreach <- function(data                       ,
         if(is.null(x)) return("NULL")
         else return(x)
       }
+      cla <- function(x)
+      {
+        ao <- forecast::arimaorder(x)
+        paste('auto.arima::ARMA(p=', ao[1], ', q=', ao[2], ')', sep='')
+      }
       err_id[["target_iv"]]   = cl2(unlist(target_ivs)[iv])
       err_id[["fixed"]]       = cln(t1$fixed)
       err_id[["random"]]      = cln(t1$random)
       err_id[["correlation"]] = ifelse(all(dims$ID=="All Cases"),
                                   cln(t1$correlation),
-                                  cln(t1$corStructs[id,2]))
+                                  ifelse(package=="arma",
+                                         cla(modid$arima),
+                                         cln(t1$corStructs[id,2])))
       err_id[["formula"]]     = cln(t1$formula)
       err_id[["directory"]]   = normalizePath(getwd())
-      err_id[["date"]]        = Sys.time()
+      err_id[["date"]]        = toString( Sys.time() )
 
       #-------------------------------------------------------------------------
-      # return messages and model
+      # return messages and re-run models with REML (unless arma)
       #-------------------------------------------------------------------------
       Model = "NA"
       if(any(c("gamlss", "lme") %in% class(modid)))
@@ -339,6 +366,11 @@ htp.foreach <- function(data                       ,
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
         if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
       }
+      if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
+      {
+        Model <- modid
+      }
+
       return( list( Messages=err_id, Model=Model ) )
 
       # reclaim inputs in case there are inheritance issues due to $gamlss or
@@ -347,22 +379,21 @@ htp.foreach <- function(data                       ,
       t0$formula <- saveFormula
 
       # clean up
-      rm(t1, t2)
+      rm(t1)
     } # end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
 
     #...........................................................................
-    # dis aggregate messages and models
+    # dis aggregate messages
     #...........................................................................
     IDmsg <- lapply( IDout, function(x) x$Messages )
-    IDout <- lapply( IDout, function(x) x$Model )
-    # restructure messages into data.frame
-    IDmsg <- do.call(rbind, IDmsg)
+    IDmsg <- data.frame( do.call(rbind, IDmsg) )
 
     #...........................................................................
-    # post-estimation aggregation
+    # post-estimation model extraction
     #...........................................................................
+    IDout <- lapply( IDout, function(x) x$Model )
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
     if(package=='gamlss')
     {
@@ -380,6 +411,11 @@ htp.foreach <- function(data                       ,
     {
       IDoutSum <- lapply( IDout, function(x){ if("lme" %in% class(x)){
         summary(x)$tTable} else NA})
+    }
+    if(package=="arma")
+    {
+      IDoutSum <- lapply( IDout, function(x){ if("ARIMA" %in% class(x$arima)){
+        x$tTable} else NA})
     }
 
     #...........................................................................
@@ -457,7 +493,7 @@ htp.foreach <- function(data                       ,
     IDoutSumm <- lapply(IDoutSum, rcm)
     IDoutSumm <- plyr::rbind.fill(IDoutSumm)
 
-    DVout[[dvs[[dv]]]] <- IDoutSumm
+    DVout[[dvs[[dv]]]] <- data.frame(IDmsg, IDoutSumm)
   } # end of dv loops
 
 
