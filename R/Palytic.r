@@ -152,7 +152,7 @@
 #' (t1.gamlss <- summary(t1$gamlss()))
 #' (t1.lme    <- summary(t1$lme()))
 #' # parameter estimates are equal within 0.01
-#' all.equal(t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01)
+#' warning('Are `lme` and `gamlss` results equivalent?\n', all.equal(t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01) )
 #' # now change the correlation structure and compare gamlss and lme output,
 #' # noting that the intercepts are very different now
 #' t1$correlation <- "corARMA(p=1, q=0)"
@@ -1015,7 +1015,11 @@ Palytic <- R6::R6Class("Palytic",
 Palytic$set("public", "summary",
             function()
             {
-              sc <- c(self$ids, self$dv, self$time, self$phase, self$ivs)
+              variables <- all.vars( self$formula )
+              dropvars  <- grep(pattern = '\\(', variables)
+              if(length(dropvars) > 0 ) variables <- variables[-dropvars]
+
+              # return the summary
               list(      ids          = self$ids            ,
                          dv           = self$dv             ,
                          time         = self$time           ,
@@ -1037,8 +1041,8 @@ Palytic$set("public", "summary",
                          warnings     = self$warnings       ,
                          errors       = self$errors         ,
                          try_silent   = self$try_silent     ,
-                         datac        = summary(self$datac[,sc]) ,
-                         data         = summary(self$data[,sc])  )
+                         datac        = summary(self$datac[,variables]) ,
+                         data         = summary(self$data[,variables])  )
             })
 
 Palytic$set("public", "describe",
@@ -1446,6 +1450,10 @@ Palytic$set("public", "GroupAR_order",
               if( "lme" %in% class(nullMod) )
               {
                 require(foreach)
+
+                DIMS <- expand.grid(p=0:P, q=0:Q)
+                DIMS <- DIMS[-1,]
+
                 funcs <- c("mean")
                 cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK")
                 snow::clusterExport(cl, funcs)
@@ -1455,32 +1463,26 @@ Palytic$set("public", "GroupAR_order",
                 progress <- function(n) setTxtProgressBar(pb, n)
                 opts <- list(progress = progress)
 
-                corMods <- foreach(p=0:P, .packages = pkgs,
+                corMods <- foreach(p=DIMS$p, q=DIMS$q, .packages = pkgs,
                                    .options.snow = opts)  %dopar%
                 {
-                  corMod <- list()
-                  for(q in 0:Q)
+
+                  cortemp <- paste("nlme::corARMA(p=", p, ",
+                                 q=", q, ")", sep="")
+                  cortemp <- gsub('\n', '', cortemp)
+                  cortemp <- gsub(' ', '', cortemp)
+                  self$correlation <- cortemp
+                  corMod <- self$lme(subgroup)
+                  if( class(corMod) != "lme" )
                   {
-                    if(p>0 | q>0)
-                    {
-                      cortemp <- paste("nlme::corARMA(p=", p, ",
-                                     q=", q, ")", sep="")
-                      cortemp <- gsub('\n', '', cortemp)
-                      cortemp <- gsub(' ', '', cortemp)
-                      self$correlation <- cortemp
-                      corMod[[q+1]] <- self$lme(subgroup)
-                      if( any(corMod[[q+1]]=="Model did not converge") )
-                      {
-                        corMod[[q+1]] <- NULL
-                      }
-                      self$formula <- saveFormula # restore formulae, incl. correlation
-                    }
+                    corMod <- NULL
                   }
+                  self$formula <- saveFormula # restore formulae, incl. correlation
+
                   return(corMod)
                 }
                 parallel::stopCluster(cl)
 
-                corMods <- do.call(list, unlist(corMods, recursive=FALSE))
                 corMods <- corMods[!unlist(lapply(corMods, is.null))]
 
                 names(corMods) <- unlist( lapply(corMods,

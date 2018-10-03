@@ -35,10 +35,10 @@ all.equal(VarCorr(t1), VarCorr(t2))
 
 # verify estimates against known values
 all.equal( summary(t1)$tTable[,1],
-c(`(Intercept)`  = 10.6616306,
-   Time          = -0.8689801,
-   Phase         = 10.9720945,
-   `Time:Phase`  = -8.6438502) )
+c(`(Intercept)`  = 11.2100153,
+   Time          = -1.9504839,
+   Phase         = 0.9115449,
+   `Time:Phase`  = -1.9746812) )
 
 # Illustrate a multiphase study, Phase alignment (To do: add visualization)
 t3 <- PersonAlytic(data=OvaryICT,

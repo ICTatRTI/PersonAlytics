@@ -331,7 +331,7 @@ htp.foreach <- function(data                       ,
       #-------------------------------------------------------------------------
       # descriptive statistics for target iv
       #-------------------------------------------------------------------------
-      #function()
+      err_id <- c(err_id, t1$describe())
 
       #-------------------------------------------------------------------------
       # populate IVout - consider writing to file here

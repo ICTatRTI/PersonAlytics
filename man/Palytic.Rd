@@ -109,7 +109,7 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
   and the raw data.}
   \item{\code{describe}}{This method gives the correlation between \code{dv} and
   each continuous variable in \code{ivs} (as well as the \code{time} variable), or,
-  if variablse are factors (includes \code{phase}), the mean of \code{dv} is given
+  if variablse are factors (including \code{phase}), the mean of \code{dv} is given
   for each factor level of each variable.}
   \item{\code{lme(subgroup = NULL)}}{This method fits the linear mixed effects
    \code{lme} model implied by the \code{Palytic} fields \code{ids},

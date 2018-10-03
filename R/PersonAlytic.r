@@ -308,7 +308,8 @@
 #'                       package  = "arma"           ,
 #'                       subgroup = OvaryICT$Mare==1
 #'                       )
-#' all.equal( c(t(mare1$tTable)), unname(unlist(t1[t1$Mare==1,26:41])))
+#' warning('Does batch run match a single run?\n', all.equal( c(t(mare1$tTable)),
+#' unname(unlist(t1[t1$Mare==1,26:41]))) )
 #'
 #' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
