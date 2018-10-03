@@ -87,6 +87,12 @@
 #'
 #' @section Methods:
 #' \describe{
+#'   \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
+#'   and the raw data.}
+#'   \item{\code{describe}}{This method gives the correlation between \code{dv} and
+#'   each continuous variable in \code{ivs} (as well as the \code{time} variable), or,
+#'   if variablse are factors (including \code{phase}), the mean of \code{dv} is given
+#'   for each factor level of each variable.}
 #'   \item{\code{lme(subgroup = NULL)}}{This method fits the linear mixed effects
 #'    \code{lme} model implied by the \code{Palytic} fields \code{ids},
 #'    \code{dv}, \code{phase}, \code{time}, and optionally \code{ivs}, \code{time_power}
@@ -102,7 +108,12 @@
 #'   used to specify generalized linear mixed effects models,
 #'   see \code{\link{gamlss.family}}).
 #'   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
+#'   \item{\code{arma}}{For individual level models, random intercepts and random slopes are not defined.
+#'   In this situatation, an \code{ARMA(p,q)} should be used. This is implemented using the \code{xreg}
+#'   option of \code{\link{arima}}. The residual correlation search is achieved using
+#'   \code{\link{auto.arima}}.}
 #'   \item{\code{getAR_order(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{
+#'   --- slated for deprication, superceded by \code{arma}. ---
 #'   This method automates the task of determining the correlation structure for each case in
 #'   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
 #'   \code{P} and \code{Q} set the highest autoregressive and moving
@@ -1004,34 +1015,63 @@ Palytic <- R6::R6Class("Palytic",
 Palytic$set("public", "summary",
             function()
             {
-
+              sc <- c(self$ids, self$dv, self$time, self$phase, self$ivs)
+              list(      ids          = self$ids            ,
+                         dv           = self$dv             ,
+                         time         = self$time           ,
+                         phase        = self$phase          ,
+                         ivs          = self$ivs            ,
+                         interactions = self$interactions   ,
+                         time_power   = self$time_power     ,
+                         correlation  = self$correlation    ,
+                         family       = self$family         ,
+                         fixed        = self$fixed          ,
+                         random       = self$random         ,
+                         formula      = self$formula        ,
+                         method       = self$method         ,
+                         standardize  = self$standardize    ,
+                         corStructs   = self$corStructs     ,
+                         time_powers  = self$time_powers    ,
+                         ismonotone   = self$ismonotone     ,
+                         warnings     = self$warnings       ,
+                         errors       = self$errors         ,
+                         try_silent   = self$try_silent     ,
+                         datac        = summary(self$datac[,sc]) ,
+                         data         = summary(self$data[,sc])  )
             })
 
-selfsumm <- function(x)
-{
-  list(      data         = summary(x$data)  ,
-             ids          = x$ids            ,
-             dv           = x$dv             ,
-             time         = x$time           ,
-             phase        = x$phase          ,
-             ivs          = x$ivs            ,
-             interactions = x$interactions   ,
-             time_power   = x$time_power     ,
-             correlation  = x$correlation    ,
-             family       = x$family         ,
-             fixed        = x$fixed          ,
-             random       = x$random         ,
-             formula      = x$formula        ,
-             method       = x$method         ,
-             standardize  = x$standardize    ,
-             corStructs   = x$corStructs     ,
-             time_powers  = x$time_powers    ,
-             ismonotone   = x$ismonotone     ,
-             datac        = summary(x$datac) ,
-             warnings     = x$warnings       ,
-             errors       = x$errors         ,
-             try_silent   = x$try_silent     )
-}
+Palytic$set("public", "describe",
+            function()
+            {
+              # concatenate all the ivs
+              ivall <- list(self=self$time)
+              if(!is.null(self$phase)) ivall$phase <- self$phase
+              if(!is.null(self$ivs) & length(self$ivs)>0)
+              {
+                ivall <- unname( c(unlist(ivall), unlist(self$ivs)) )
+              }
+
+              # get descriptive statistics for each from the raw data
+              ivstats <- list()
+              for(i in ivall)
+              {
+                if(is.factor(self$data[[i]]) | length(unique(self$data[[i]]))==2)
+                {
+                  mns <- aggregate(self$data[[self$dv]], list(self$data[[i]]),
+                                   mean, na.rm=TRUE)
+                  nms <- paste('mean', self$dv, paste(i, mns[,1],sep='_EQ_'), sep='_')
+                  for(j in 1:nrow(mns)) ivstats[[nms[j]]] <- unname( mns$x[j] )
+                }
+                else
+                {
+                  des <- paste('correlation', self$dv, i, sep='_')
+                  ivstats[[des]] <- cor(self$data[[self$dv]], self$data[[i]],
+                                      use = 'pairwise.complete.obs')
+                }
+              }
+              data.frame(unlist(ivstats))
+              return( ivstats )
+            })
 
 Palytic$set("public", "arma",
             function(subgroup=NULL, max.p=3, max.q=3,
@@ -1067,9 +1107,10 @@ Palytic$set("public", "arma",
 
 
               m1 <- list(arima = m1, tTable = lmtest::coeftest(m1),
-                         PalyticSummary = selfsumm(self))
-
-            }
+                         PalyticSummary = self$summary())
+              return(m1)
+            },
+            overwrite = TRUE # is this causing the inheritance issues?
               )
 
 Palytic$set("public", "lme",
@@ -1142,7 +1183,7 @@ Palytic$set("public", "lme",
               }
               if( "lme" %in% class(m1) )
               {
-                m1$PalyticSummary  <- selfsumm(self)
+                m1$PalyticSummary  <- self$summary()
                 m1$whichPalyticMod <- paste('Palytic lme model #', wm)
                 return(m1)
               }
@@ -1214,7 +1255,7 @@ Palytic$set("public", "gamlss",
               }
               if("gamlss" %in% class(m1))
               {
-                m1$PalyticSummary  <- selfsumm(self)
+                m1$PalyticSummary  <- self$summary()
                 m1$whichPalyticMod <- paste('Palytic gamlss model #', wm)
                 return(m1)
               }

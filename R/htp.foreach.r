@@ -203,6 +203,7 @@ htp.foreach <- function(data                       ,
       }
       err_id['ivs']       <- toString( t1$ivs         )
       err_id['target_iv'] <- toString( target_ivs[iv] )
+
       # fit models
       if(package=="gamlss")
       {
@@ -326,6 +327,11 @@ htp.foreach <- function(data                       ,
         lrtp <- pchisq(lrtest, df1-df0, lower.tail = FALSE)
       }
       err_id[['targ_ivs_lrt_pvalue']] <- lrtp
+
+      #-------------------------------------------------------------------------
+      # descriptive statistics for target iv
+      #-------------------------------------------------------------------------
+      #function()
 
       #-------------------------------------------------------------------------
       # populate IVout - consider writing to file here

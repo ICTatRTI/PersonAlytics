@@ -308,6 +308,18 @@ t1 <- PersonAlytic(output          = 'Test1'     ,
 summary(t0)
 summary(t1)
 
+# verify a single model run against batch model run in t1 (`individual_mods = TRUE`)
+mare1 <- PersonAlytic(output   = 'Mare1'          ,
+                      data     = OvaryICT         ,
+                      ids      = "Mare"           ,
+                      dvs      = "follicles"      ,
+                      phase    = "Phase"          ,
+                      time     = "Time"           ,
+                      package  = "arma"           ,
+                      subgroup = OvaryICT$Mare==1
+                      )
+all.equal( c(t(mare1$tTable)), unname(unlist(t1[t1$Mare==1,26:41])))
+
 # delete the output if this was run in the development directory
 if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
 {
@@ -325,14 +337,4 @@ if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
 #                 family=c(NO(), BEINF()),
 #                 package='gamlss')
 
-# verify single model runs against full model runs
-mare1 <- PersonAlytic(output   = 'Mare1'          ,
-                      data     = OvaryICT         ,
-                      ids      = "Mare"           ,
-                      dvs      = "follicles"      ,
-                      phase    = "Phase"          ,
-                      time     = "Time"           ,
-                      package  = "arma"           ,
-                      subgroup = OvaryICT$Mare==1
-                      )
 }

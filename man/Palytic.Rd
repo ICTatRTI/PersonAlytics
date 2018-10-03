@@ -105,6 +105,12 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
 \section{Methods}{
 
 \describe{
+  \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
+  and the raw data.}
+  \item{\code{describe}}{This method gives the correlation between \code{dv} and
+  each continuous variable in \code{ivs} (as well as the \code{time} variable), or,
+  if variablse are factors (includes \code{phase}), the mean of \code{dv} is given
+  for each factor level of each variable.}
   \item{\code{lme(subgroup = NULL)}}{This method fits the linear mixed effects
    \code{lme} model implied by the \code{Palytic} fields \code{ids},
    \code{dv}, \code{phase}, \code{time}, and optionally \code{ivs}, \code{time_power}
@@ -120,7 +126,12 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
   used to specify generalized linear mixed effects models,
   see \code{\link{gamlss.family}}).
   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
+  \item{\code{arma}}{For individual level models, random intercepts and random slopes are not defined.
+  In this situatation, an \code{ARMA(p,q)} should be used. This is implemented using the \code{xreg}
+  option of \code{\link{arima}}. The residual correlation search is achieved using
+  \code{\link{auto.arima}}.}
   \item{\code{getAR_order(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{
+  --- slated for deprication, superceded by \code{arma}. ---
   This method automates the task of determining the correlation structure for each case in
   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
   \code{P} and \code{Q} set the highest autoregressive and moving
