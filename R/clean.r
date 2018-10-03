@@ -43,7 +43,7 @@ clean <- function(data		 	            ,
                   family        = NULL  ,
                   dvs	          =	NULL	,
                   target_ivs    =	NULL	,
-                  standardize 	=	FALSE	,
+                  standardize 	=	list(dv=FALSE, iv=FALSE, byids=FALSE)	,
                   sortData	    =	TRUE	,
                   alignPhase 	  =	TRUE  )
 {
@@ -87,57 +87,17 @@ clean <- function(data		 	            ,
     stop( paste('\n`', names(novar)[novar], '` has zero variance' ))
   }
 
-  # standardize the data
-  if(standardize)
+  # Standardize the data. Note that dvs and target_ivs (as part of ivs) are
+  # resubmitted to clean() for each Palytic object created in htp, so we don't
+  # need to standardize them here
+  if(!is.list(standardize))
   {
-    # only standardize dv if it is normal
-    if( !is.null(dv) &
-        (is.null(family) | as.character(family)[1]=="c(\"NO\", \"Normal\")") )
-    {
-      data[[dv]] <- scale(data[[dv]])
-    }
-    if( !is.null(dvs) & length(dvs) > 0 )
-    {
-      for(i in 1:length(dvs)) data[[dvs[[i]]]] <- scale( data[[dvs[[i]]]] )
-    }
-    if( !is.null(ivs) & length(ivs) > 0 )
-    {
-      for(i in 1:length(ivs))
-      {
-        if(!is.factor(data[[ivs[[i]]]])) data[[ivs[[i]]]] <- scale( data[[ivs[[i]]]] )
-      }
-    }
-    if( !is.null(target_ivs) & length(target_ivs) > 0 )
-    {
-      for(i in 1:length(target_ivs))
-      {
-        if(!is.factor(data[[target_ivs[[i]]]]))
-        {
-          data[[target_ivs[[i]]]] <- scale( data[[target_ivs[[i]]]] )
-        }
-      }
-    }
+    stop("`standardize=", standardize, "`,\n",
+      "but `standardize` should be a named logical list with at least one of ",
+      "`dvs`, `ivs`, or `byids`. For example, `standardize=list(dvs=FALSE,",
+      "ivs=TRUE,byids=TRUE)`.")
   }
-
-  # redundant with monotonic(), clear this out
-  # check whether any time points are duplicated
-  ####dupTime <- lapply(by(data[[time]], data[[ids]], duplicated), any)
-  ####dupTimem <- list()
-  ####dupTimem[[ids]] <- names(dupTime)
-  ####dupTimem[['isDuplicated']] <- unlist( dupTime )
-  ####if(any(dupTimem$isDuplicated))
-  ####{
-  ####  warning(paste('\nThe following have duplicated values for', time, ':\n\n'),
-  ####          paste(paste(ids, dupTimem[[ids]][dupTimem$isDuplicated]), collapse='\n'),
-  ####          '\n\n1. Check that this is intentional. Duplicated time points\n',
-  ####          'should only occur when ',
-  ####          paste(time, 'is a trigonometric function of actual time.'),
-  ####          '\n2. Data cannot be sorted by PersonAlytic and the user should ensure that\n',
-  ####          paste('The data are sorted by', ids, 'then by', time, '. '),
-  ####          'Failure to do this can cause \nestimation problems and invalidate ',
-  ####          'graphical output.')
-  ####  sortData <- FALSE
-  ####}
+  data <- pstand(data, standardize, dv, ivs, family, ids)
 
   # sort the data
   # -- this is why ids must be numeric and
@@ -145,7 +105,7 @@ clean <- function(data		 	            ,
   # this doesn't work for trigonometric functions of time
   if(sortData)
   {
-    data <- data[order(data[[ids]], data[[time[[1]]]]),]
+    data <- data[order(data[[ids]], data[[time]]),]
   }
   # data <- data[order(data[[ids]]), ] # see issue #12 on github
 
@@ -166,6 +126,52 @@ clean <- function(data		 	            ,
   }
 
   return(data)
+}
+
+#' Function to standardize data with options from the \code{standardize} parameter.
+#'
+#' @param data See \code{\link{PersonAlytic}}.
+#' @param standardize See \code{\link{PersonAlytic}}.
+#' @param family See \code{\link{PersonAlytic}}.
+#'
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#'
+#' @keywords internal
+pstand <- function(data, standardize, dv, ivs, family, ids)
+{
+  # determine which variables to standardize
+  dostand <- list()
+
+  # only standardize dv if requested and if dv is normal
+  if( !is.null(standardize$dv) &
+      (is.null(family) | as.character(family)[1]=="c(\"NO\", \"Normal\")") )
+  {
+    if(standardize$dv) dostand$dv=dv
+  }
+
+  # ivs
+  if( !is.null(standardize$iv) & length(ivs) > 0 )
+  {
+    if(standardize$iv) dostand$iv=iv
+  }
+
+  # group standardization
+  dogroup <- FALSE
+  if(!is.null(standardize$byids))
+  {
+    if(standardize$byids) dogroup <- TRUE
+  }
+  for(i in dostand)
+  {
+    if(!dogroup) data[[i]] <- scale(data[[i]])
+    if( dogroup)
+    {
+      data[[i]] <- unlist( by(data[[i]], data[[ids]], scale))
+    }
+  }
+
+  return( data )
+
 }
 
 

@@ -70,7 +70,11 @@ a future release.}
 \item{\code{method}}{See \code{method} in \code{\link{lme}}. Is usef for both \code{\link{lme}}
 and \code{\link{gamlss}} models.}
 
-\item{\code{standardize}}{Logical. Should \code{y} and \code{ivs} be standardized?}
+\item{\code{standardize}}{Named logical list. Which variables should be standardized? The default
+is \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}. See \code{dv} and \code{ivs}. The option
+\code{byids} controls whether standardization is done by individuals or by group. Any time
+variables are changed (e.g., \code{ivs}), the data are subset, or the options in
+\code{standardize} are changed, the raw data will be restandardized (see \code{datac}).}
 
 \item{\code{corStructs}}{Vector. A \code{correlation} structure for each case in \code{ids}. Not
 user accesible. Populated by \code{\link{PersonAlytic}}.}
@@ -78,7 +82,16 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
 \item{\code{time_powers}}{Vector. A \code{time_order} for each case in \code{ids}. Not
 user accesible. Populated by \code{\link{PersonAlytic}}.}
 
-\item{\code{is_clean}}{Logical flag for data cleaning. Not yet implemented.}
+\item{\code{datac}}{data.frame. Cleaned data. Cleaning involves the following steps:
+1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
+\code{ivs}, and \code{interactions} are in \code{data}.
+2. The \code{ids} variable is forced to be numeric.
+3. The validity of the \code{correlation} structure is checked, see \code{\link{corStruct}}.
+4. check that variables have non-zero variance.
+5. If standardization is requested, standardize the data (see \code{standardize}).
+6. Sort the data on \code{ids} and \code{time}.
+7. If patients have < 2 observations, they are dropped from the data set.
+8. If phase alignment is requested, align phases (see \code{alignPhases}).}
 
 \item{\code{warnings}}{A list of warnings that will be populated as methods are called on a
 \code{Palytic} object.}

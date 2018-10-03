@@ -139,7 +139,11 @@
 #' which subset of the data should be used for analysis. For example, if a model
 #' should only be fit to females, \code{subgroup=gender=='female'} might be used.
 #'
-#' @param standardize Logical. The default is \code{FALSE}.
+#' @param standardize Named logical vector. The default is
+#' \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}.
+#'
+#' Which variables should be standardized?  See \code{dv} and \code{ivs}. The option
+#' \code{byids} controls whether standardization is done by individuals or by group.
 #'
 #' Should the dependent and independent variables
 #' be standardized (i.e., rescaled to have 0 mean and unit variance; see
@@ -273,26 +277,38 @@
 #'
 #' @examples
 #' # full sample model
-#' t0 <- PersonAlytic(output='Test0',
-#'                  data=OvaryICT,
-#'                  ids="Mare",
-#'                  dvs="follicles",
-#'                  phase="Phase",
-#'                  time="Time",
-#'                  package="nlme")
+#' t0 <- PersonAlytic(output  = 'Test0'     ,
+#'                    data    = OvaryICT    ,
+#'                    ids     = "Mare"      ,
+#'                    dvs     = "follicles" ,
+#'                    phase   = "Phase"     ,
+#'                    time    = "Time"      ,
+#'                    package = "nlme"      )
 #'
 #' # individual models
-#' t1 <- PersonAlytic(output='Test1',
-#'                  data=OvaryICT,
-#'                  ids="Mare",
-#'                  dvs="follicles",
-#'                  phase="Phase",
-#'                  time="Time",
-#'                  package="arma",
-#'                  individual_mods=TRUE)
+#' t1 <- PersonAlytic(output          = 'Test1'     ,
+#'                    data            = OvaryICT    ,
+#'                    ids             = "Mare"      ,
+#'                    dvs             = "follicles" ,
+#'                    phase           = "Phase"     ,
+#'                    time            = "Time"      ,
+#'                    package         = "arma"      ,
+#'                    individual_mods = TRUE        )
 #'
 #' summary(t0)
 #' summary(t1)
+#'
+#' # verify a single model run against batch model run in t1 (`individual_mods = TRUE`)
+#' mare1 <- PersonAlytic(output   = 'Mare1'          ,
+#'                       data     = OvaryICT         ,
+#'                       ids      = "Mare"           ,
+#'                       dvs      = "follicles"      ,
+#'                       phase    = "Phase"          ,
+#'                       time     = "Time"           ,
+#'                       package  = "arma"           ,
+#'                       subgroup = OvaryICT$Mare==1
+#'                       )
+#' all.equal( c(t(mare1$tTable)), unname(unlist(t1[t1$Mare==1,26:41])))
 #'
 #' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
@@ -311,52 +327,42 @@
 #' #                 family=c(NO(), BEINF()),
 #' #                 package='gamlss')
 #'
-#' # verify single model runs against full model runs
-#' mare1 <- PersonAlytic(output='Mare1',
-#'                  data=OvaryICT,
-#'                  ids="Mare",
-#'                  dvs="follicles",
-#'                  phase="Phase",
-#'                  time="Time",
-#'                  package="arma",
-#'                  subgroup=OvaryICT$Mare==1
-#'                  )
 
 # \dontrun{
 # # if you wish to delete the automatically created csv file, run
 # #NOT IMPLEMENTED YET
 # }
 
-PersonAlytic <- function(output=NULL              ,
-                         data                     ,
-                         ids                      ,
-                         dvs                      ,
-                         time                     ,
-                         phase=NULL               ,
-                         ivs=NULL                 ,
-                         target_ivs=NULL          ,
-                         interactions=NULL        ,
-                         time_power=1             ,
-                         correlation=NULL         ,
-                         family=gamlss.dist::NO() ,
-                         subgroup=NULL            ,
-                         standardize=TRUE         ,
-                         method='REML'            ,
-                         package='nlme'           ,
-                         individual_mods=FALSE    ,
-                         PalyticObj=NULL          ,
-                         detectAR=TRUE            ,
-                         PQ=c(3,3)                ,
-                         whichIC=c("BIC", "AIC")  ,
-                         detectTO=TRUE            ,
-                         maxOrder=3               ,
-                         charSub=NULL             ,
-                         sigma.formula=~1         ,
-                         p.method = "BY"          ,
-                         alpha = .05              ,
-                         alignPhase = FALSE       ,
-                         debugforeach = FALSE     ,
-                         packageTest = NULL       )
+PersonAlytic <- function(output=NULL                                       ,
+                         data                                              ,
+                         ids                                               ,
+                         dvs                                               ,
+                         time                                              ,
+                         phase=NULL                                        ,
+                         ivs=NULL                                          ,
+                         target_ivs=NULL                                   ,
+                         interactions=NULL                                 ,
+                         time_power=1                                      ,
+                         correlation=NULL                                  ,
+                         family=gamlss.dist::NO()                          ,
+                         subgroup=NULL                                     ,
+                         standardize=list(dv=FALSE, iv=FALSE, byids=FALSE) ,
+                         method='REML'                                     ,
+                         package='nlme'                                    ,
+                         individual_mods=FALSE                             ,
+                         PalyticObj=NULL                                   ,
+                         detectAR=TRUE                                     ,
+                         PQ=c(3,3)                                         ,
+                         whichIC=c("BIC", "AIC")                           ,
+                         detectTO=TRUE                                     ,
+                         maxOrder=3                                        ,
+                         charSub=NULL                                      ,
+                         sigma.formula=~1                                  ,
+                         p.method = "BY"                                   ,
+                         alpha = .05                                       ,
+                         alignPhase = FALSE                                ,
+                         debugforeach = FALSE                              ,
+                         packageTest = NULL                                )
 {
   if(length(whichIC)>1) whichIC <- whichIC[1]
   if(is.null(correlation)) correlation <- "NULL"
@@ -424,7 +430,7 @@ pa1 <- function(e=parent.frame())
     correlation     <- NULL
     family          <- gamlss.dist::NO()
     subgroup        <- NULL
-    standardize     <- FALSE
+    standardize     <- list(dv=FALSE, iv=FALSE, byids=FALSE)
     package         <- 'nlme'
     method          <- 'REML'
     individual_mods <- TRUE
@@ -477,7 +483,7 @@ pa1 <- function(e=parent.frame())
   # t1$time_power
   # t1$formula
 
-  if(e$detectAR & package!="arma") t1$GroupAR_order(P = e$PQ[1]  ,
+  if(e$detectAR & e$package!="arma") t1$GroupAR_order(P = e$PQ[1]  ,
                                       Q = e$PQ[2]  ,
                                       whichIC= e$whichIC[1]  )
   # t1$correlation
@@ -515,13 +521,26 @@ paHTP <- function(e=parent.frame())
   if( ! "list" %in% class(e$dvs) ) e$dvs <- as.list(e$dvs)
   if( ! "list" %in% class(e$ivs) ) e$ivs <- as.list(e$ivs)
 
-  # check that inputs conform. this is also done when creating a Palytic
+  # check that inputs conform. This is also done when creating a Palytic
   # object, but we do it early on here to avoid problems after loops start.
-  e$data <- PersonAlytics:::clean(e$data, e$ids, dv=NULL, e$time, e$phase, e$ivs,
-                  fixed=NULL, random=NULL, formula=NULL,
-                  e$correlation, e$family,
-                  e$dvs, e$target_ivs, e$standardize,
-                  e$alignPhase)
+  # Set standardize to FALSE here, standardization will be done later if
+  # requested by the user (this avoids standardizing standardized variables,
+  # which may differ under different subsets, e.g., individual_models = TRUE).
+  e$data <- PersonAlytics:::clean(data        = e$data        ,
+                                  ids         = e$ids         ,
+                                  dv          = NULL          ,
+                                  time        = e$time        ,
+                                  phase       = e$phase       ,
+                                  ivs         = e$ivs         ,
+                                  fixed       = NULL          ,
+                                  random      = NULL          ,
+                                  formula     = NULL          ,
+                                  correlation = e$correlation ,
+                                  family      = e$family      ,
+                                  dvs         = e$dvs         ,
+                                  target_ivs  = e$target_ivs  ,
+                                  standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
+                                  alignPhase  = e$alignPhase  )
 
   # subgroup the data and delete the parameter, after this point, it is only
   # used to subgroup to unique ids
@@ -558,14 +577,14 @@ paHTP <- function(e=parent.frame())
   #
   if( e$individual_mods )
   {
-    DVout <- htp.foreach(data  = e$data                  ,
-                         dims  = dims                    ,
-                         dvs   = e$dvs                   ,
-                         phase = e$phase                 ,
-                         ids   = e$ids                   ,
-                         uids  = uids                    ,
-                         time  = e$time                  ,
-                         ivs   = e$ivs                   ,
+    DVout <- htp.foreach(data          = e$data          ,
+                         dims          = dims            ,
+                         dvs           = e$dvs           ,
+                         phase         = e$phase         ,
+                         ids           = e$ids           ,
+                         uids          = uids            ,
+                         time          = e$time          ,
+                         ivs           = e$ivs           ,
                          target_ivs    = e$target_ivs    ,
                          interactions  = e$interactions  ,
                          time_power    = e$time_power    ,

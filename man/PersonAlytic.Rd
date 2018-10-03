@@ -8,11 +8,12 @@ mixed effects models with high throughput options.}
 PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 1,
   correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
-  standardize = TRUE, method = "REML", package = "nlme",
-  individual_mods = FALSE, PalyticObj = NULL, detectAR = TRUE, PQ = c(3,
-  3), whichIC = c("BIC", "AIC"), detectTO = TRUE, maxOrder = 3,
-  charSub = NULL, sigma.formula = ~1, p.method = "BY", alpha = 0.05,
-  alignPhase = FALSE, debugforeach = FALSE, packageTest = NULL)
+  standardize = list(dv = FALSE, iv = FALSE, byids = FALSE),
+  method = "REML", package = "nlme", individual_mods = FALSE,
+  PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3), whichIC = c("BIC",
+  "AIC"), detectTO = TRUE, maxOrder = 3, charSub = NULL,
+  sigma.formula = ~1, p.method = "BY", alpha = 0.05, alignPhase = FALSE,
+  debugforeach = FALSE, packageTest = NULL)
 }
 \arguments{
 \item{output}{Character. The default is \code{NULL}.
@@ -108,13 +109,17 @@ A list of the same length as \code{length(dv)} can be supplied. For example if
 applied to all outcomes.
 The \code{family} parameter is ignored if \code{package="nlme"}.}
 
-\item{subgroup}{Logical vector. The default is \code{subgroup==NULL}.
+\item{subgroup}{Logical vector. The default is \code{subgroup=NULL}.
 
 A vector where \code{length(subgroup)==nrow(data)} indicating
 which subset of the data should be used for analysis. For example, if a model
 should only be fit to females, \code{subgroup=gender=='female'} might be used.}
 
-\item{standardize}{Logical. The default is \code{FALSE}.
+\item{standardize}{Named logical vector. The default is
+\code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}.
+
+Which variables should be standardized?  See \code{dv} and \code{ivs}. The option
+\code{byids} controls whether standardization is done by individuals or by group.
 
 Should the dependent and independent variables
 be standardized (i.e., rescaled to have 0 mean and unit variance; see
@@ -282,23 +287,23 @@ options are given in \code{\link{p.adjust}}.
 }
 \examples{
 # full sample model
-t0 <- PersonAlytic(output='Test0',
-                 data=OvaryICT,
-                 ids="Mare",
-                 dvs="follicles",
-                 phase="Phase",
-                 time="Time",
-                 package="nlme")
+t0 <- PersonAlytic(output  = 'Test0'     ,
+                   data    = OvaryICT    ,
+                   ids     = "Mare"      ,
+                   dvs     = "follicles" ,
+                   phase   = "Phase"     ,
+                   time    = "Time"      ,
+                   package = "nlme"      )
 
 # individual models
-t1 <- PersonAlytic(output='Test1',
-                 data=OvaryICT,
-                 ids="Mare",
-                 dvs="follicles",
-                 phase="Phase",
-                 time="Time",
-                 package="nlme",
-                 individual_mods=TRUE)
+t1 <- PersonAlytic(output          = 'Test1'     ,
+                   data            = OvaryICT    ,
+                   ids             = "Mare"      ,
+                   dvs             = "follicles" ,
+                   phase           = "Phase"     ,
+                   time            = "Time"      ,
+                   package         = "arma"      ,
+                   individual_mods = TRUE        )
 
 summary(t0)
 summary(t1)
@@ -320,4 +325,14 @@ if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
 #                 family=c(NO(), BEINF()),
 #                 package='gamlss')
 
+# verify single model runs against full model runs
+mare1 <- PersonAlytic(output   = 'Mare1'          ,
+                      data     = OvaryICT         ,
+                      ids      = "Mare"           ,
+                      dvs      = "follicles"      ,
+                      phase    = "Phase"          ,
+                      time     = "Time"           ,
+                      package  = "arma"           ,
+                      subgroup = OvaryICT$Mare==1
+                      )
 }

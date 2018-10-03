@@ -132,7 +132,7 @@ NULL
 #'                    package="nlme",
 #'                    detectAR = FALSE,
 #'                    detectTO = FALSE,
-#'                    standardize = FALSE,
+#'                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
 #'                    alignPhase = FALSE)
 #' summary(t1)
 #'
@@ -144,11 +144,11 @@ NULL
 #'           control = t1$call$control)
 #' summary(t2)
 #'
-#' # verification tests
+#' # verification tests - are the results the same?
 #' all.equal(summary(t1)$tTable, summary(t2)$tTable)
 #' all.equal(VarCorr(t1), VarCorr(t2))
 #'
-#' # verify estimates
+#' # verify estimates against known values
 #' all.equal( summary(t1)$tTable[,1],
 #' c(`(Intercept)`  = 10.6616306,
 #'    Time          = -0.8689801,
@@ -164,8 +164,9 @@ NULL
 #'                    package="nlme",
 #'                    detectAR = FALSE,
 #'                    detectTO = FALSE,
-#'                    standardize = FALSE,
+#'                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
 #'                    alignPhase = TRUE)
+#' summary(t3)
 #'
 #' # definition of OvaryICT
 #' \dontrun{

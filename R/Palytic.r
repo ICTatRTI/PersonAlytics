@@ -60,12 +60,25 @@
 #' a future release.
 #' @field method See \code{method} in \code{\link{lme}}. Is usef for both \code{\link{lme}}
 #' and \code{\link{gamlss}} models.
-#' @field standardize Logical. Should \code{y} and \code{ivs} be standardized?
+#' @field standardize Named logical list. Which variables should be standardized? The default
+#' is \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}. See \code{dv} and \code{ivs}. The option
+#' \code{byids} controls whether standardization is done by individuals or by group. Any time
+#' variables are changed (e.g., \code{ivs}), the data are subset, or the options in
+#' \code{standardize} are changed, the raw data will be restandardized (see \code{datac}).
 #' @field corStructs Vector. A \code{correlation} structure for each case in \code{ids}. Not
 #' user accesible. Populated by \code{\link{PersonAlytic}}.
 #' @field time_powers Vector. A \code{time_order} for each case in \code{ids}. Not
 #' user accesible. Populated by \code{\link{PersonAlytic}}.
-#' @field is_clean Logical flag for data cleaning. Not yet implemented.
+#' @field datac data.frame. Cleaned data. Cleaning involves the following steps:
+#' 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
+#' \code{ivs}, and \code{interactions} are in \code{data}.
+#' 2. The \code{ids} variable is forced to be numeric.
+#' 3. The validity of the \code{correlation} structure is checked, see \code{\link{corStruct}}.
+#' 4. check that variables have non-zero variance.
+#' 5. If standardization is requested, standardize the data (see \code{standardize}).
+#' 6. Sort the data on \code{ids} and \code{time}.
+#' 7. If patients have < 2 observations, they are dropped from the data set.
+#' 8. If phase alignment is requested, align phases (see \code{alignPhases}).
 #' @field warnings A list of warnings that will be populated as methods are called on a
 #' \code{Palytic} object.
 #' @field errors A list of errors that will be populated as methods are called on a
@@ -172,12 +185,12 @@ Palytic <- R6::R6Class("Palytic",
                          .random      = NULL,
                          .formula     = NULL,
                          .method      = NULL,
-                         .standardize = FALSE,
+                         .standardize = list(dv=FALSE, iv=FALSE, byids=FALSE),
                          .corStructs  = NULL,
                          .time_powers = NULL,
                          .alignPhase  = FALSE,
                          .ismonotone  = NULL,
-                         .is_clean    = FALSE,
+                         .datac       = NULL,
                          .warnings    = list(),
                          .errors      = list(),
                          .try_silent  = TRUE
@@ -350,7 +363,7 @@ Palytic <- R6::R6Class("Palytic",
                              {
                                stop( paste(value, "is not in the data") )
                              }
-                             if( ! var(self$data[[value]], na.rm = TRUE) > 0 )
+                             if( ! var(self$datac[[value]], na.rm = TRUE) > 0 )
                              {
                                stop( paste(value, "has zero variance") )
                              }
@@ -857,14 +870,12 @@ Palytic <- R6::R6Class("Palytic",
                            }
                          },
 
-                         is_clean = function(value)
+                         datac = function(value)
                          {
-                           if( missing(value) ) private$.is_clean
+                           if( missing(value) ) private$.datac
                            else
                            {
-                             if(! "logical" %in% class(value)) stop("`is_clean` should be logical")
-                             private$.is_clean <- value
-                             self
+                             stop("`$datac (cleaned data) is read only", call. = FALSE)
                            }
                          },
 
@@ -901,12 +912,12 @@ Palytic <- R6::R6Class("Palytic",
                            random      = NULL,
                            formula     = NULL,
                            method      = "REML",
-                           standardize = FALSE,
+                           standardize = list(dv=FALSE, iv=FALSE, byids=FALSE),
                            corStructs  = NULL,
                            time_powers = NULL,
                            ismonotone  = NULL,
                            alignPhase  = FALSE,
-                           is_clean    = FALSE,
+                           datac       = NULL,
                            warnings    = list(), # can we hide these? or just make them read only?
                            errors      = list(),
                            try_silent  = TRUE
@@ -935,7 +946,7 @@ Palytic <- R6::R6Class("Palytic",
                              )
                            }
 
-                           data <- clean(data, ids, dv, time, phase, ivs,
+                           datac <- clean(data, ids, dv, time, phase, ivs,
                                          fixed, random, formula, correlation, family,
                                          dvs=NULL, target_ivs=NULL, standardize,
                                          sortData=TRUE, alignPhase)
@@ -978,7 +989,7 @@ Palytic <- R6::R6Class("Palytic",
                            private$.time_powers <- time_powers
                            private$.ismonotone  <- ismonotone
                            private$.alignPhase  <- alignPhase
-                           private$.is_clean    <- is_clean
+                           private$.datac       <- datac
                            private$.warnings    <- warnings
                            private$.errors      <- errors
                            private$.try_silent  <- try_silent
@@ -998,36 +1009,36 @@ Palytic$set("public", "summary",
 
 selfsumm <- function(x)
 {
-  list(      data         = x$data         ,
-             ids          = x$ids          ,
-             dv           = x$dv           ,
-             time         = x$time         ,
-             phase        = x$phase        ,
-             ivs          = x$ivs          ,
-             interactions = x$interactions ,
-             time_power   = x$time_power   ,
-             correlation  = x$correlation  ,
-             family       = x$family       ,
-             fixed        = x$fixed        ,
-             random       = x$random       ,
-             formula      = x$formula      ,
-             method       = x$method       ,
-             standardize  = x$standardize  ,
-             corStructs   = x$corStructs   ,
-             time_powers  = x$time_powers  ,
-             ismonotone   = x$ismonotone   ,
-             is_clean     = x$is_clean     ,
-             warnings     = x$warnings     ,
-             errors       = x$errors       ,
-             try_silent   = x$try_silent   )
+  list(      data         = summary(x$data)  ,
+             ids          = x$ids            ,
+             dv           = x$dv             ,
+             time         = x$time           ,
+             phase        = x$phase          ,
+             ivs          = x$ivs            ,
+             interactions = x$interactions   ,
+             time_power   = x$time_power     ,
+             correlation  = x$correlation    ,
+             family       = x$family         ,
+             fixed        = x$fixed          ,
+             random       = x$random         ,
+             formula      = x$formula        ,
+             method       = x$method         ,
+             standardize  = x$standardize    ,
+             corStructs   = x$corStructs     ,
+             time_powers  = x$time_powers    ,
+             ismonotone   = x$ismonotone     ,
+             datac        = summary(x$datac) ,
+             warnings     = x$warnings       ,
+             errors       = x$errors         ,
+             try_silent   = x$try_silent     )
 }
 
 Palytic$set("public", "arma",
             function(subgroup=NULL, max.p=3, max.q=3,
                      max.P=0, max.Q=0, max.d=0, max.D=0, ...)
             {
-              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
-              tempData <- subset(self$data, subgroup,
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              tempData <- subset(self$datac, subgroup,
                                  all.vars(self$formula))
 
               # check that only one participant is in the data
@@ -1064,8 +1075,8 @@ Palytic$set("public", "arma",
 Palytic$set("public", "lme",
             function(subgroup=NULL, ...)
             {
-              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
-              tempData <- subset(self$data, subgroup,
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              tempData <- subset(self$datac, subgroup,
                                  all.vars(self$formula))
               # github issue #1
               cor <- eval(parse(text = ifelse(!is.null(self$correlation),
@@ -1114,7 +1125,7 @@ Palytic$set("public", "lme",
               if( "try-error" %in% class(m1) )# | !eds(m1) )
               {
                 wm <- 4
-                newformula <- forms(data       = self$data ,
+                newformula <- forms(data       = self$datac ,
                                     PalyticObj = self      ,
                                     dropTime   = TRUE      )
                 self$random <- newformula$random
@@ -1154,8 +1165,8 @@ Palytic$set("public", "lme",
 Palytic$set("public", "gamlss",
             function(subgroup=NULL, sigma.formula = ~1, family=NULL, ...)
             {
-              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$data))
-              tempData <- na.omit( subset(self$data, subgroup,
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              tempData <- na.omit( subset(self$datac, subgroup,
                                           all.vars(self$formula)) )
 
               # allow for family to be changed on the fly
@@ -1186,7 +1197,7 @@ Palytic$set("public", "gamlss",
               if( "try-error" %in% class(m1) )
               {
                 wm <- 3 # drop the random slope(s)
-                newformula <- forms(data       = self$data   ,
+                newformula <- forms(data       = self$datac   ,
                                     PalyticObj = self        ,
                                     dropTime   = TRUE        ,
                                     family     = currentFamily,
@@ -1216,6 +1227,7 @@ Palytic$set("public", "gamlss",
             overwrite = TRUE
 )
 
+###### 20181002 -- slated for deprecation --
 # this will only be applied to one participant at a time
 # whichIC can take on AIC or BIC
 Palytic$set("public", "getAR_order",
@@ -1237,8 +1249,8 @@ Palytic$set("public", "getAR_order",
               # check whether time is (approximately) equally spaced, use the
               # first participant for now; the method is the standard deviation
               # of the 1st order difference score
-              uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
-              tt  <- self$data[[self$time]][self$data[[self$ids]]==uid[1]]
+              uid <- sort( as.numeric( unique(self$datac[[self$ids]]) ) )
+              tt  <- self$datac[[self$time]][self$datac[[self$ids]]==uid[1]]
               ttd <- diff( tt )
               eqSpace <- sd(ttd) < .1
 
@@ -1251,8 +1263,8 @@ Palytic$set("public", "getAR_order",
               # it is much faster
               if(eqSpace)
               {
-                AR_orders <- by(self$data[[self$dv]],
-                                self$data[[self$ids]],
+                AR_orders <- by(self$datac[[self$dv]],
+                                self$datac[[self$ids]],
                                 FUN = forecast::auto.arima,
                                 ic=tolower(whichIC[1]))
 
@@ -1300,7 +1312,7 @@ Palytic$set("public", "getAR_order",
                 {
                   corModsid <- list(); cc = 1
                   self$correlation <- "NULL"
-                  nullMod <- self$lme(self$data[[self$ids]]==id)
+                  nullMod <- self$lme(self$datac[[self$ids]]==id)
                   print(id)
                   if( "lme" %in% class(nullMod) )
                   {
@@ -1318,7 +1330,7 @@ Palytic$set("public", "getAR_order",
                           cortemp <- gsub('\n', '', cortemp)
                           cortemp <- gsub(' ', '', cortemp)
                           self$correlation <- cortemp
-                          corModsid[[cc]]  <- self$lme(self$data[[self$ids]]==id)
+                          corModsid[[cc]]  <- self$lme(self$datac[[self$ids]]==id)
                           #print( corModsid[[cc]]$dims$N )
                           if( any(corModsid[[cc]]=="Model did not converge") )
                           {
@@ -1467,9 +1479,9 @@ Palytic$set("public", "getTime_Power",
               start <- Sys.time()
 
               self$method <- "ML"
-              uid <- sort( as.numeric( unique(self$data[[self$ids]]) ) )
+              uid <- sort( as.numeric( unique(self$datac[[self$ids]]) ) )
               time_powers <- list()
-              temp <- Palytic$new(self$data, self$ids, self$dv,
+              temp <- Palytic$new(self$datac, self$ids, self$dv,
                                   self$time)
               for(id in uid)
               {
@@ -1477,7 +1489,7 @@ Palytic$set("public", "getTime_Power",
                 for(i in 1:maxOrder)
                 {
                   temp$time_power <- i
-                  mod0 <- temp$lme(self$data[[self$ids]]==id)
+                  mod0 <- temp$lme(self$datac[[self$ids]]==id)
                   if("lme" %in% class(mod0))
                   {
                     aics[[i]] <- AIC( mod0 )
@@ -1507,7 +1519,7 @@ Palytic$set("public", "GroupTime_Power",
               start <- Sys.time()
 
               self$method <- "ML"
-              #temp <- Palytic$new(self$data, self$ids, self$dv,
+              #temp <- Palytic$new(self$datac, self$ids, self$dv,
               #                    self$time)
               mods <- list()
               for(i in 1:maxOrder)
