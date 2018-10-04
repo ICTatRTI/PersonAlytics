@@ -50,7 +50,7 @@ clean <- function(data		 	            ,
   # check that variables are in the data set
   vars <- unique( c(ids, dv, time[[1]], phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
-  vars <- vars[which(vars!='1')]
+  vars <- vars[which(vars!='1' & vars!='0')]
   #vars <- gsub(" ", "", vars) # this will be a problem if var names have spaces...
   wvars <- which( ! vars %in% names(data) )
   if( length(wvars) > 0 )

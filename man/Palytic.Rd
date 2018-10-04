@@ -167,25 +167,41 @@ t1$fixed
 t1$random
 t1$formula
 t1$correlation
+
 # compare gamlss and lme output, in which the models of the default formulae are fit
 (t1.gamlss <- summary(t1$gamlss()))
 (t1.lme    <- summary(t1$lme()))
+
 # parameter estimates are equal within 0.01
-all.equal(t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01)
+warning('Are `lme` and `gamlss` results equivalent?\\n',
+all.equal(t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01) )
+
 # now change the correlation structure and compare gamlss and lme output,
 # noting that the intercepts are very different now
 t1$correlation <- "corARMA(p=1, q=0)"
 summary(t1$gamlss())
 summary(t1$lme())
+
 # fit the model only to the first mare with ML instead of REML
 t1$method <- 'ML'
 summary(t1$gamlss(OvaryICT$Mare==1))
 
-# change the formula (note limitations with the interaciton)
+# change the formula
 t2 <- t1$clone()
 t2$formula <- formula(follicles ~ Time * Phase +
                       re(random = ~Time + I(Time^2) | Mare, method = "ML",
                       correlation = corARMA(p=1,q=0)))
+t2$formula
+
+# random intercept only model
+t2 <- t1$clone()
+t2$random <- formula(~1|Mare)
+t2$random
+t2$formula
+
+# random slope only model
+t2$random <- formula(~0+Time|Mare)
+t2$random
 t2$formula
 
 # getTime_Power

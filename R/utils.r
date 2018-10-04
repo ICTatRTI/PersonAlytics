@@ -220,7 +220,7 @@ forms <- function(data                  ,
   vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, '\\*|\\+'), unlist))) )
   wi <- which( substr(vars, 1, 2) == "I(" )
   vars[wi] <- unlist(strsplit(gsub("\\I|\\(|\\)", "", vars[wi]), "\\^"))[1]
-  vars <- vars[which(vars!="1")]
+  vars <- vars[which(vars!="1" & vars!="0")]
   vars <- vars[!is.na(vars)]
 
   wvars <- which( ! vars %in% names(data) )

@@ -30,15 +30,16 @@ t2 <- lme(follicles ~ Time * Phase,
 summary(t2)
 
 # verification tests - are the results the same?
-all.equal(summary(t1)$tTable, summary(t2)$tTable)
-all.equal(VarCorr(t1), VarCorr(t2))
+warning( 'Are fixed effects equal?\\n', all.equal(summary(t1)$tTable, summary(t2)$tTable) )
+warning( 'Are variance components equal?\\n',all.equal(VarCorr(t1), VarCorr(t2)) )
 
 # verify estimates against known values
+warning('Are stored values replicated?\\n',
 all.equal( summary(t1)$tTable[,1],
 c(`(Intercept)`  = 11.2100153,
    Time          = -1.9504839,
    Phase         = 0.9115449,
-   `Time:Phase`  = -1.9746812) )
+   `Time:Phase`  = -1.9746812) ) )
 
 # Illustrate a multiphase study, Phase alignment (To do: add visualization)
 t3 <- PersonAlytic(data=OvaryICT,
