@@ -306,8 +306,8 @@ htp.foreach <- function(data                       ,
         modid <- t1$arma( useObs, max.p=PQ[1], max.q=PQ[2] )
         if(! "coeftest"  %in%  class(modid$tTable) )
         {
-          err_id['converge']   <- modid
-          err_id['estimator']  <- t1$method
+          err_id['converge']   <- modid$arima
+          err_id['estimator']  <- "ML" #t1$method --- currently default in arma, REML not an option
           err_id['analyzed_N'] <- NA
           err_id['call'] <- paste(Reduce( paste, deparse( t1$fixed ) ),
                                   Reduce( paste, deparse( t1$random ) ),
@@ -317,7 +317,7 @@ htp.foreach <- function(data                       ,
         if(  "coeftest"  %in%  class(modid$tTable) )
         {
           err_id['converge']   <- 'Convergence is `TRUE`'
-          err_id['estimator']  <- modid$PalyticSummary$method
+          err_id['estimator']  <- "ML" #modid$PalyticSummary$method
           err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
           err_id['call'] <- paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
                                    Reduce( paste, deparse(modid$PalyticSummary$random) ),
@@ -378,8 +378,16 @@ htp.foreach <- function(data                       ,
       }
       cla <- function(x)
       {
-        ao <- forecast::arimaorder(x)
-        paste('auto.arima::ARMA(p=', ao[1], ', q=', ao[2], ')', sep='')
+        if( "Arima" %in% class(x) )
+        {
+          ao <- forecast::arimaorder(x)
+          return( paste('auto.arima::ARMA(p=', ao[1],
+                        ', q=', ao[2], ')', sep='') )
+        }
+        if(! "Arima" %in% class(x) )
+        {
+          return( NA )
+        }
       }
       err_id[["target_iv"]]   = cl2(unlist(target_ivs)[iv])
       err_id[["fixed"]]       = cln(t1$fixed)
@@ -452,8 +460,15 @@ htp.foreach <- function(data                       ,
     }
     if(package=="arma")
     {
-      IDoutSum <- lapply( IDout, function(x){ if("ARIMA" %in% class(x$arima)){
-        x$tTable} else NA})
+      getARMAtbl <- function(x)
+      {
+        if( is.list(x) )
+        {
+          if("ARIMA" %in% class(x$arima)) return(x$tTable)
+        }
+        else return(NA)
+      }
+      IDoutSum <- lapply( IDout, getARMAtbl)
     }
 
     #...........................................................................

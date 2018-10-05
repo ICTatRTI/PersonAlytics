@@ -1137,8 +1137,12 @@ Palytic$set("public", "arma",
                                          max.d = max.d,
                                          max.D = max.D,
                                          ...), silent = TRUE)
-              if( class(m1) %in% "ARIMA" ) tTable = lmtest::coeftest(m1)
-              if(!class(m1) %in% "ARIMA" ) tTable = NA
+              if(  any("ARIMA" %in% class(m1)) ) tTable = lmtest::coeftest(m1)
+              if(! any("ARIMA" %in% class(m1)) )
+              {
+                m1 <- "Model did not converge"
+                tTable = NA
+              }
 
               m1 <- list(arima = m1, tTable = tTable,
                          PalyticSummary = self$summary())
