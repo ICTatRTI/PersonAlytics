@@ -152,8 +152,11 @@ pstand <- function(data, standardize, dv, ivs, family, ids)
   # ivs
   if( !is.null(standardize$iv) & length(ivs) > 0 )
   {
-    if(standardize$iv) dostand$iv=iv
+    if(standardize$iv) dostand$iv=ivs
   }
+
+  # turn dostand into a character vector
+  dostand <- unlist(dostand)
 
   # group standardization
   dogroup <- FALSE

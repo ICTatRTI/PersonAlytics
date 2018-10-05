@@ -75,9 +75,10 @@ NULL
 #'                  dv="severity.migraine",
 #'                  time="time",
 #'                  time_power=3,
-#'                  standardize=TRUE,
+#'                  standardize=list(dv=FALSE, iv=TRUE, byids=TRUE),
 #'                  package="nlme")
 #' summary(CurExMod)
+#'
 #' # angriness predictor model
 #' CurExModAng <- PersonAlytic(data=CurEx,
 #'                  ids="id",
@@ -85,9 +86,10 @@ NULL
 #'                  time="time",
 #'                  ivs=list('angriness'),
 #'                  time_power=3,
-#'                  standardize=TRUE,
+#'                  standardize=list(dv=FALSE, iv=TRUE, byids=TRUE),
 #'                  package="nlme")
 #' summary(CurExModAng)
+#'
 #' # angriness predictor model, add correlation
 #' CurExModAngAR1 <- PersonAlytic(data=CurEx,
 #'                  ids="id",
@@ -96,7 +98,7 @@ NULL
 #'                  ivs=list('angriness'),
 #'                  time_power=3,
 #'                  correlation="corARMA(p=1,q=0)",
-#'                  standardize=TRUE,
+#'                  standardize=list(dv=FALSE, iv=TRUE, byids=TRUE),
 #'                  package="nlme")
 #' summary(CurExModAngAR1)
 #'
@@ -145,11 +147,11 @@ NULL
 #' summary(t2)
 #'
 #' # verification tests - are the results the same?
-#' warning( 'Are fixed effects equal?\n', all.equal(summary(t1)$tTable, summary(t2)$tTable) )
-#' warning( 'Are variance components equal?\n',all.equal(VarCorr(t1), VarCorr(t2)) )
+#' message( '\n\nAre fixed effects equal?\n', all.equal(summary(t1)$tTable, summary(t2)$tTable) )
+#' message( '\n\nAre variance components equal?\n',all.equal(VarCorr(t1), VarCorr(t2)) )
 #'
 #' # verify estimates against known values
-#' warning('Are stored values replicated?\n',
+#' message('\n\nAre stored values replicated?\n',
 #' all.equal( summary(t1)$tTable[,1],
 #' c(`(Intercept)`  = 11.2100153,
 #'    Time          = -1.9504839,

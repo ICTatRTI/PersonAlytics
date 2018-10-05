@@ -118,8 +118,21 @@ htp.foreach <- function(data                       ,
     pb <- txtProgressBar(max = nrow(DIM), style = 3)
     progress <- function(n) setTxtProgressBar(pb, n)
     opts <- list(progress = progress)
+
+    message('\n\nFitting models of the dependent variable `', dvs[dv],
+            '` for ',
+            ifelse( length(dims$ID)>0,
+                    paste(length(dims$ID), 'cases in `', ids, '`'),
+                    dims$ID),
+            ifelse( length(target_ivs)>0,
+                    paste('\n and for', length(target_ivs),
+                          'target indepented variables in `target_ivs`.\n'),
+                    ".")
+            )
+    start <- Sys.time()
+
     IDout <- foreach( id=DIM$ID, iv=DIM$IV,
-             .packages = pkgs, .options.snow = opts) %dopar%
+            .packages = pkgs, .options.snow = opts) %dopar%
     #for(i in 1:nrow(DIM))
     {
       #id=DIM$ID[i]; iv=DIM$IV[i]
@@ -139,8 +152,8 @@ htp.foreach <- function(data                       ,
 
       #-------------------------------------------------------------------------
       # copy the palytic object - this may not be neccessary; the goal is to
-      # be able to relaim changes made by fitting functinos, but inheritent may
-      # be making changes anyways
+      # be able to relaim changes made by fitting functinos, but inheritentance
+      # may be making changes anyways
       #-------------------------------------------------------------------------
       t1 <- t0
 
@@ -216,11 +229,14 @@ htp.foreach <- function(data                       ,
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
       # check for 0 variance
-      tivv <- !all(duplicated(data[[target_ivs[iv]]][data[[ids]]==id])[-1L])
-      err_id['target_ivVar'] <- paste('The variance of `',
+      if( length( target_ivs[iv] > 0 ) )
+      {
+        tivv <- !all(duplicated(data[[target_ivs[iv]]][data[[ids]]==id])[-1L])
+        err_id['target_ivVar'] <- paste('The variance of `',
                                       target_ivs[iv], '` is ',
                                       ifelse(tivv, '> 0 ', '= 0 '),
                                       sep='')
+      }
 
       # add the target IV
       ivs.temp <- unlist(c(ivs, target_ivs[iv]))
@@ -429,6 +445,9 @@ htp.foreach <- function(data                       ,
     } # end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
+
+    message('\n\nModel fitting of the dependent variable `', dvs[dv],
+            '` took ', round((Sys.time() - start)/60,1), " minutes.\n\n")
 
     #...........................................................................
     # dis aggregate messages

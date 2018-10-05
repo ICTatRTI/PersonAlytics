@@ -179,7 +179,7 @@ t1$describe()
 (t1.lme    <- summary(t1$lme()))
 
 # parameter estimates are equal within 0.01
-warning('Are `lme` and `gamlss` results equivalent?\\n',
+message('\\n\\nAre `lme` and `gamlss` results equivalent?\\n',
 all.equal(t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01) )
 
 # now change the correlation structure and compare gamlss and lme output,
