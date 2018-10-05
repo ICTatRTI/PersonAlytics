@@ -124,26 +124,29 @@ iscorStruct <- function(x)
 #'
 #' @keywords internal
 #'
-forms <- function(data                  ,
-                  PalyticObj   = NULL   ,
-                  ids          = NULL   ,
-                  dv           = NULL   ,
-                  time         = NULL   ,
-                  phase        = NULL   ,
-                  ivs          = NULL   ,
-                  interactions = NULL   ,
-                  time_power   = NULL   ,
-                  correlation  = NULL   ,
-                  family       = NULL   ,
-                  fixed        = NULL   ,
-                  random       = NULL   ,
-                  formula      = NULL   ,
-                  method       = "REML" ,
-                  dropTime     = FALSE  ,
-                  corFromPalyticObj = TRUE)
+forms <- function(data                     ,
+                  PalyticObj   = NULL      ,
+                  ids          = NULL      ,
+                  dv           = NULL      ,
+                  time         = NULL      ,
+                  phase        = NULL      ,
+                  ivs          = NULL      ,
+                  interactions = NULL      ,
+                  time_power   = NULL      ,
+                  correlation  = NULL      ,
+                  family       = NULL      ,
+                  fixed        = NULL      ,
+                  random       = NULL      ,
+                  formula      = NULL      ,
+                  method       = "REML"    ,
+                  dropTime     = FALSE     ,
+                  corFromPalyticObj = TRUE )
 {
   # since NULL is a valid option for correlation, we must override it using
   #corFromPalyticObj
+
+  # a placeholder for (r)andom (int)ercepts designations
+  rint <- ""
 
   if(!is.null(PalyticObj))
   {
@@ -169,7 +172,11 @@ forms <- function(data                  ,
     if(!is.null(random))
     {
       random.t <- gsub(" ", "", unlist( strsplit(as.character(random), "\\|") ) )
-      time     <- random.t[2]
+      time     <- unlist( strsplit(random.t[2], '\\+') )
+      rint     <- time[1]
+      time     <- time[2]
+      if(rint=="1") dropTime <- TRUE
+      if(is.na(time)) time <- PalyticObj$time
       ids      <- random.t[3]
     }
   }
@@ -205,6 +212,7 @@ forms <- function(data                  ,
                         phase        = phase       ,
                         ivs          = ivs         ,
                         interactions = interactions,
+                        rint         = rint        ,
                         correlation  = correlation ,
                         family       = family      ,
                         dropTime     = dropTime    ,
@@ -262,6 +270,7 @@ makeForms <- function(ids          = "Mare"                   ,
                       phase        = "Phase"                  ,
                       ivs          = "iv1"                    ,
                       interactions = list(c("iv1", "Phase"))  ,
+                      rint         = ""                       ,
                       correlation  = "NULL"                   ,
                       family       = NO()                     ,
                       dropTime     = FALSE                    ,
@@ -280,15 +289,16 @@ makeForms <- function(ids          = "Mare"                   ,
   }
   fixed  <- formula( paste(dv, "~", rhs ) )
 
-
   # random
   if(!dropTime)
   {
-    random <- formula( paste("~", paste(time, collapse = '+'), "|", ids))
+    if(rint != "") temptime <- c(rint,time)
+    if(rint == "") temptime <- time
+    random   <- formula( paste("~", paste(temptime, collapse = '+'), "|", ids) )
   }
   if( dropTime)
   {
-    random <- formula( paste("~", paste(1, collapse = '+'), "|", ids))
+    random <- formula( paste("~", paste(1, collapse = '+'), "|", ids) )
   }
 
   # formula

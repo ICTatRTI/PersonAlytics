@@ -26,7 +26,11 @@ htp.foreach <- function(data                       ,
                         detectTO = TRUE            ,
                         maxOrder=3                 ,
                         sigma.formula=~1           ,
-                        debugforeach = FALSE       )
+                        debugforeach = FALSE       ,
+                        userFormula = list(
+                          fixed=NULL,
+                          random=NULL,
+                          formula=NULL)            )
 {
   library(foreach)
 
@@ -55,8 +59,28 @@ htp.foreach <- function(data                       ,
                       family=family,
                       method="ML"
                      )
+
+    # allow for formula override so that we can test intercept only and
+    # slope only models
+    if( any(unlist(lapply(userFormula, function(x) !is.null(x)))) )
+    {
+      isnnform <- function(x)
+      {
+        if( !is.null(x) )
+        {
+          return( is.formula(x) )
+        }
+        else return(FALSE)
+      }
+      if( isnnform(e$userFormula$fixed) ) t0$fixed <- userFormula$fixed
+      if( isnnform(e$userFormula$random) ) t0$random <- userFormula$random
+      if( isnnform(e$userFormula$formula) ) t0$formula <- userFormula$formula
+    }
+
+    # save the inputs as they may be overwritten by $lme, $gamlss, or $arma
     saveMethod  <- t0$method
     saveFormula <- t0$formula
+    saveRandom  <- t0$random
 
     #...........................................................................
     # get the TO and AR
@@ -191,6 +215,13 @@ htp.foreach <- function(data                       ,
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
+      # check for 0 variance
+      tivv <- !all(duplicated(data[[target_ivs[iv]]][data[[ids]]==id])[-1L])
+      err_id['target_ivVar'] <- paste('The variance of `',
+                                      target_ivs[iv], '` is ',
+                                      ifelse(tivv, '> 0 ', '= 0 '),
+                                      sep='')
+
       # add the target IV
       ivs.temp <- unlist(c(ivs, target_ivs[iv]))
       if( is.null(ivs.temp) )
@@ -386,6 +417,7 @@ htp.foreach <- function(data                       ,
 
       # clean up
       rm(t1)
+      cat('\n\n')
     } # end of foreach
     # stop the cluster
     parallel::stopCluster(cl)

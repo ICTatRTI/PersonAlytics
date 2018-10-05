@@ -168,6 +168,12 @@ t1$random
 t1$formula
 t1$correlation
 
+# summary function
+t1$summary()
+
+# descriptive statistics
+t1$describe()
+
 # compare gamlss and lme output, in which the models of the default formulae are fit
 (t1.gamlss <- summary(t1$gamlss()))
 (t1.lme    <- summary(t1$lme()))
@@ -204,15 +210,18 @@ t2$random <- formula(~0+Time|Mare)
 t2$random
 t2$formula
 
-# getTime_Power
+# automatically select the polynomial order of time with getTime_Power
 t1 <- Palytic$new(data = OvaryICT, ids='Mare',
                   dv='follicles', time='Time', phase='Phase')
 t1$getTime_Power()
 t1$time_powers
 
-# getAR_order works on one case at a time
+# automatically select the ARMA model for residual correlation getAR_order
+# this runs slow because a model is selected for each individual
+\dontrun{
 t1$getAR_order()
 t1$corStructs
+}
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}

@@ -8,7 +8,8 @@ htp.foreach(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
   interactions = NULL, time_power = 1, correlation = NULL,
   family = gamlss.dist::NO(), standardize = TRUE, package = "gamlss",
   detectAR = TRUE, PQ = c(3, 3), whichIC = "BIC", detectTO = TRUE,
-  maxOrder = 3, sigma.formula = ~1, debugforeach = FALSE)
+  maxOrder = 3, sigma.formula = ~1, debugforeach = FALSE,
+  userFormula = list(fixed = NULL, random = NULL, formula = NULL))
 }
 \description{
 high throughput

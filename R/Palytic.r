@@ -982,12 +982,14 @@ Palytic <- R6::R6Class("Palytic",
                              )
                            }
 
+                           # clean the data
                            datac <- clean(data, ids, dv, time, phase, ivs,
                                          fixed, random, formula, correlation, family,
                                          dvs=NULL, target_ivs=NULL, standardize,
                                          sortData=TRUE, alignPhase)
 
-                           frms <- forms(data,
+                           # create the formulae
+                           frms <- forms(datac,
                                          PalyticObj=NULL,
                                          ids=ids,
                                          dv=dv,
@@ -1003,9 +1005,10 @@ Palytic <- R6::R6Class("Palytic",
                                          formula=NULL,
                                          method=method)
 
+                           # check whether time is monotorically increasing
                            ismonotone <- monotone(ids, time, data)
 
-
+                           # populate private
                            private$.data        <- data
                            private$.ids         <- ids
                            private$.dv          <- dv
@@ -1108,8 +1111,8 @@ Palytic$set("public", "arma",
                      max.P=0, max.Q=0, max.d=0, max.D=0, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
-              tempData <- subset(self$datac, subgroup,
-                                 all.vars(self$formula))
+              tempData <- na.omit( subset(self$datac, subgroup,
+                                 all.vars(self$formula)) )
 
               # check that only one participant is in the data
               if( length(unique(tempData[[self$ids]])) != 1 )
@@ -1121,10 +1124,11 @@ Palytic$set("public", "arma",
               # 1. create the model.matrix RHS from self$fixed
               # 2. drop the intercept column
               xdat <- model.matrix(self$fixed, tempData)[,-1]
+              if(is.null(dim(xdat))) xdat <- matrix(xdat)
 
               # auto detect residual correlation structure here, time power
               # must be detected elsewhere or added here
-              m1 <- forecast::auto.arima(y     = tempData[[self$dv]],
+              m1 <- try( forecast::auto.arima(y     = tempData[[self$dv]],
                                          xreg  = xdat,
                                          max.p = max.p,
                                          max.q = max.q,
@@ -1132,11 +1136,11 @@ Palytic$set("public", "arma",
                                          max.Q = max.Q,
                                          max.d = max.d,
                                          max.D = max.D,
-                                         ...)
+                                         ...), silent = TRUE)
+              if( class(m1) %in% "ARIMA" ) tTable = lmtest::coeftest(m1)
+              if(!class(m1) %in% "ARIMA" ) tTable = NA
 
-
-
-              m1 <- list(arima = m1, tTable = lmtest::coeftest(m1),
+              m1 <- list(arima = m1, tTable = tTable,
                          PalyticSummary = self$summary())
               return(m1)
             },
@@ -1147,15 +1151,15 @@ Palytic$set("public", "lme",
             function(subgroup=NULL, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
-              tempData <- subset(self$datac, subgroup,
-                                 all.vars(self$formula))
+              tempData <- na.omit(subset(self$datac, subgroup,
+                                 all.vars(self$formula)))
               # github issue #1
               cor <- eval(parse(text = ifelse(!is.null(self$correlation),
                                               self$correlation,
                                               'NULL')))
               wm <- 1
               m1 <- try(nlme::lme(fixed=self$fixed,
-                                  data=na.omit(tempData),
+                                  data=tempData,
                                   random=self$random,
                                   correlation=cor,
                                   method=self$method,
@@ -1169,7 +1173,7 @@ Palytic$set("public", "lme",
                 wm <- 2
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
-                                    data=na.omit(tempData),
+                                    data=tempData,
                                     random=self$random,
                                     correlation=cor,
                                     method=self$method,
@@ -1184,7 +1188,7 @@ Palytic$set("public", "lme",
                 ctrl <- nlme::lmeControl(opt="optim")
                 self$correlation <- "NULL" # not updating
                 m1 <- try(nlme::lme(fixed=self$fixed,
-                                    data=na.omit(tempData),
+                                    data=tempData,
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
@@ -1203,7 +1207,7 @@ Palytic$set("public", "lme",
                 self$correlation <- NULL
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
-                                    data=na.omit(tempData),
+                                    data=tempData,
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
@@ -1314,6 +1318,7 @@ Palytic$set("public", "getAR_order",
 
               saveMethod  <- self$method
               saveFormula <- self$formula
+              saveRandom  <- self$random
 
               self$method <- "ML"
 
@@ -1401,6 +1406,7 @@ Palytic$set("public", "getAR_order",
                           cortemp <- gsub('\n', '', cortemp)
                           cortemp <- gsub(' ', '', cortemp)
                           self$correlation <- cortemp
+                          self$random <- saveRandom
                           corModsid[[cc]]  <- self$lme(self$datac[[self$ids]]==id)
                           #print( corModsid[[cc]]$dims$N )
                           if( any(corModsid[[cc]]=="Model did not converge") )
@@ -1440,6 +1446,7 @@ Palytic$set("public", "getAR_order",
                     #bestCors[[id]] <- "NULL"
                     return( "NULL" )
                   }
+                  cat('\n\n')
                 } # end of dopar
                 parallel::stopCluster(cl)
 
@@ -1447,6 +1454,7 @@ Palytic$set("public", "getAR_order",
                                               arma=as.character( unlist(bestCors)) )
                 self$method  <- saveMethod
                 self$formula <- saveFormula # restore formulae, incl. correlation
+                self$random <- saveRandom
               } #oef !eqspace
               #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
               message("\nAutomatic detection of the residual\n",
@@ -1464,8 +1472,9 @@ Palytic$set("public", "GroupAR_order",
                       "residual correlation structure starting...")
               start <- Sys.time()
 
-              saveMethod      <- self$method
-              saveFormula     <- self$formula
+              saveMethod  <- self$method
+              saveFormula <- self$formula
+              saveRandom  <- self$random
 
               self$method <- "ML"
               self$correlation <- "NULL"
@@ -1497,12 +1506,15 @@ Palytic$set("public", "GroupAR_order",
                   cortemp <- gsub('\n', '', cortemp)
                   cortemp <- gsub(' ', '', cortemp)
                   self$correlation <- cortemp
+                  self$random <- saveRandom
                   corMod <- self$lme(subgroup)
                   if( class(corMod) != "lme" )
                   {
                     corMod <- NULL
                   }
                   self$formula <- saveFormula # restore formulae, incl. correlation
+
+                  cat('\n\n')
 
                   return(corMod)
                 }
@@ -1532,6 +1544,7 @@ Palytic$set("public", "GroupAR_order",
 
               self$correlation <- bestCor
               self$method      <- saveMethod
+              self$random      <- saveRandom
 
               message("\nAutomatic detection of the residual\n",
                       "correlation structure took ",
@@ -1547,17 +1560,20 @@ Palytic$set("public", "getTime_Power",
                       "time/outcome relationship starting...")
               start <- Sys.time()
 
+              saveRandom  <- self$random
+              saveMethod  <- self$method
               self$method <- "ML"
               uid <- sort( as.numeric( unique(self$datac[[self$ids]]) ) )
               time_powers <- list()
               temp <- Palytic$new(self$datac, self$ids, self$dv,
-                                  self$time)
+                                  self$time, random=saveRandom)
               for(id in uid)
               {
                 aics <- list()
                 for(i in 1:maxOrder)
                 {
                   temp$time_power <- i
+                  temp$random <- saveRandom
                   mod0 <- temp$lme(self$datac[[self$ids]]==id)
                   if("lme" %in% class(mod0))
                   {
@@ -1576,6 +1592,9 @@ Palytic$set("public", "getTime_Power",
               message("\nAutomatic detection of the time/outcome\n",
                       "relationship took ",
                       round((Sys.time() - start)/60,1), " minutes.\n\n")
+
+              self$method <- saveMethod
+              self$random <- saveRandom
             },
             overwrite = TRUE)
 
@@ -1587,13 +1606,16 @@ Palytic$set("public", "GroupTime_Power",
                       "time/outcome relationship starting...")
               start <- Sys.time()
 
-              self$method <- "ML"
+              saveRandom  <- self$random
+              saveMethod  <- self$method
+              self$method <- "ML" # this overwrites the construction of random
               #temp <- Palytic$new(self$datac, self$ids, self$dv,
               #                    self$time)
               mods <- list()
               for(i in 1:maxOrder)
               {
                 self$time_power <- i
+                self$random     <- saveRandom # a more elegant solution in the active bindings is needed
                 mods[[i]] <- self$lme()
                 if(! "lme" %in% class(mods[[i]]))
                 {
@@ -1607,6 +1629,9 @@ Palytic$set("public", "GroupTime_Power",
               message("\nAutomatic detection of the time/outcome\n",
                       "relationship took ",
                       round((Sys.time() - start)/60,1), " minutes.\n\n")
+
+              self$method <- saveMethod
+              self$random <- saveRandom
             },
             overwrite = TRUE)
 

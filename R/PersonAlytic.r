@@ -309,7 +309,7 @@
 #'                       subgroup = OvaryICT$Mare==1
 #'                       )
 #' warning('Does batch run match a single run?\n', all.equal( c(t(mare1$tTable)),
-#' unname(unlist(t1[t1$Mare==1,26:41]))) )
+#' unname(unlist(t1[t1$Mare==1,29:44]))) )
 #'
 #' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
@@ -333,6 +333,12 @@
 # # if you wish to delete the automatically created csv file, run
 # #NOT IMPLEMENTED YET
 # }
+
+# non-user options allowed in ...
+# packageTest - override the package, for research purposes
+# userFormula - override the formulae, named list that can include any of
+#   fixed, random, formula
+
 
 PersonAlytic <- function(output=NULL                                       ,
                          data                                              ,
@@ -363,7 +369,7 @@ PersonAlytic <- function(output=NULL                                       ,
                          alpha = .05                                       ,
                          alignPhase = FALSE                                ,
                          debugforeach = FALSE                              ,
-                         packageTest = NULL                                )
+                         ...)
 {
   if(length(whichIC)>1) whichIC <- whichIC[1]
   if(is.null(correlation)) correlation <- "NULL"
@@ -389,10 +395,22 @@ PersonAlytic <- function(output=NULL                                       ,
     package <- 'arma'
   }
 
-  # for internal testing use only
-  if(!is.null(packageTest))
+  # for internal testing use only, allows us to compare n=1 lme models to
+  # arma models
+  if(exists('packageTest'))
   {
-    package <- packageTest
+    if(packageTest %in% c('nlme', 'gamlls', 'arma')) package <- packageTest
+    warning('package was overridden by packageTest to be `', package, '`')
+  }
+
+  # for internal testing use only, allows us to override formulae, e.g., to
+  # test random intercepts only or random slopes only models
+  if(!exists('userFormula'))
+  {
+    userFormula = list(
+      fixed=NULL,
+      random=NULL,
+      formula=NULL)
   }
 
   # call 'methods'
@@ -476,6 +494,23 @@ pa1 <- function(e=parent.frame())
                     method=e$method             ,
                     standardize=e$standardize   ,
                     alignPhase=e$alignPhase     )
+
+  # allow for formula override so that we can test intercept only and
+  # slope only models
+  if( any(unlist(lapply(e$userFormula, function(x) !is.null(x)))) )
+  {
+    isnnform <- function(x)
+    {
+      if( !is.null(x) )
+      {
+        return( is.formula(x) )
+      }
+      else return(FALSE)
+    }
+    if( isnnform(e$userFormula$fixed) ) t1$fixed <- e$userFormula$fixed
+    if( isnnform(e$userFormula$random) ) t1$random <- e$userFormula$random
+    if( isnnform(e$userFormula$formula) ) t1$formula <- e$userFormula$formula
+  }
 
   # check time order first, that way the time order carries over to
   # the AR, which should be residuals on the fullest model

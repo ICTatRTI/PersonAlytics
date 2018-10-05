@@ -6,7 +6,7 @@
 \usage{
 makeForms(ids = "Mare", dv = "follicles", time = "Time",
   phase = "Phase", ivs = "iv1", interactions = list(c("iv1", "Phase")),
-  correlation = "NULL", family = NO(), dropTime = FALSE,
+  rint = "", correlation = "NULL", family = NO(), dropTime = FALSE,
   method = "REML")
 }
 \arguments{
