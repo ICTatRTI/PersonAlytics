@@ -57,7 +57,7 @@ htp.foreach <- function(data                       ,
                       time_power=time_power,
                       correlation=correlation,
                       family=family,
-                      method="ML"
+                      method="ML" # requested method used in final estimation
                      )
 
     # allow for formula override so that we can test intercept only and
@@ -81,6 +81,7 @@ htp.foreach <- function(data                       ,
     saveMethod  <- t0$method
     saveFormula <- t0$formula
     saveRandom  <- t0$random
+    saveIVS     <- t0$ivs
 
     #...........................................................................
     # get the TO and AR
@@ -88,14 +89,16 @@ htp.foreach <- function(data                       ,
     if(dims$ID[1]!="All Cases")
     {
       if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
-      #t0$time_powers
+      #t0$time_powers # things like this should be changed to unit tests
 
-      # individual AR orders are pending deprecation -- 20181001
-      #if( detectAR) t0$getAR_order(PQ[1], PQ[2], whichIC[1])
-      #if(!detectAR) t0$corStructs <- data.frame(ids=dims$ID,
-      #                                          arma=rep(ifelse(is.null(t0$correlation),
-      #                                                      "NULL", t0$correlation),
-      #                                                   length(dims$ID)))
+      if( detectAR & package != "arma") t0$getAR_order(PQ[1], PQ[2], whichIC[1])
+      if(!detectAR)
+      {
+        t0$corStructs <- data.frame(ids=dims$ID,
+                                    arma=rep( ifelse(is.null(t0$correlation),
+                                                     "NULL", t0$correlation),
+                                                     length(dims$ID)) )
+      }
       #t0$corStructs
 
     }
@@ -104,7 +107,6 @@ htp.foreach <- function(data                       ,
       if(detectTO) t0$GroupTime_Power(maxOrder, whichIC[1])
       if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
-
 
     #...........................................................................
     # parralelization: encapsulate ivs and ids in one foreach
@@ -152,7 +154,7 @@ htp.foreach <- function(data                       ,
 
       #-------------------------------------------------------------------------
       # copy the palytic object - this may not be neccessary; the goal is to
-      # be able to relaim changes made by fitting functinos, but inheritentance
+      # be able to relaim changes made by fitting functions, but inheritentance
       # may be making changes anyways
       #-------------------------------------------------------------------------
       t1 <- t0
@@ -198,7 +200,8 @@ htp.foreach <- function(data                       ,
                                  ifelse(all(t1$monotone$monotonic), "" , "NOT"),
                                  "monotonically increasing for `", ids, "` =", id, ".")
 
-      # iv variance
+      # ivs (!target_ivs yet) and ivs variance
+      err_id['ivs']       <- toString( t1$ivs         )
       ivvs <- c(t1$ivs, t1$phase)
       wsplit <- unlist(lapply(ivvs, grepl, pattern=":"))
       if( any(wsplit) )
@@ -228,8 +231,8 @@ htp.foreach <- function(data                       ,
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
-      # check for 0 variance
-      if( length( target_ivs[iv] > 0 ) )
+      # check for 0 variance in the target iv
+      if( length( target_ivs[iv] ) > 0 )
       {
         tivv <- !all(duplicated(data[[target_ivs[iv]]][data[[ids]]==id])[-1L])
         err_id['target_ivVar'] <- paste('The variance of `',
@@ -239,6 +242,7 @@ htp.foreach <- function(data                       ,
       }
 
       # add the target IV
+      err_id['target_iv'] <- toString( target_ivs[iv] )
       ivs.temp <- unlist(c(ivs, target_ivs[iv]))
       if( is.null(ivs.temp) )
       {
@@ -248,10 +252,8 @@ htp.foreach <- function(data                       ,
       {
         t1$ivs <- gsub(" ", "", ivs.temp)
       }
-      err_id['ivs']       <- toString( t1$ivs         )
-      err_id['target_iv'] <- toString( target_ivs[iv] )
 
-      # fit models
+      # fit models with the target iv
       if(package=="gamlss")
       {
         modid <- t1$gamlss( useObs )
@@ -323,7 +325,8 @@ htp.foreach <- function(data                       ,
         if(! "coeftest"  %in%  class(modid$tTable) )
         {
           err_id['converge']   <- modid$arima
-          err_id['estimator']  <- "ML" #t1$method --- currently default in arma, REML not an option
+          #t1$method --- ML currently default in arma, REML not an option
+          err_id['estimator']  <- "ML"
           err_id['analyzed_N'] <- NA
           err_id['call'] <- paste(Reduce( paste, deparse( t1$fixed ) ),
                                   Reduce( paste, deparse( t1$random ) ),
@@ -373,7 +376,7 @@ htp.foreach <- function(data                       ,
         lrtest <- as.numeric(2*(l1-l0))
         lrtp <- pchisq(lrtest, df1-df0, lower.tail = FALSE)
       }
-      err_id[['targ_ivs_lrt_pvalue']] <- lrtp
+      err_id['targ_ivs_lrt_pvalue'] <- lrtp
 
       #-------------------------------------------------------------------------
       # descriptive statistics for target iv
@@ -405,17 +408,17 @@ htp.foreach <- function(data                       ,
           return( NA )
         }
       }
-      err_id[["target_iv"]]   = cl2(unlist(target_ivs)[iv])
-      err_id[["fixed"]]       = cln(t1$fixed)
-      err_id[["random"]]      = cln(t1$random)
-      err_id[["correlation"]] = ifelse(all(dims$ID=="All Cases"),
+      err_id["target_iv"]   = cl2(unlist(target_ivs)[iv])
+      err_id["fixed"]       = cln(t1$fixed)
+      err_id["random"]      = cln(t1$random)
+      err_id["correlation"] = ifelse(all(dims$ID=="All Cases"),
                                   cln(t1$correlation),
                                   ifelse(package=="arma",
                                          cla(modid$arima),
                                          cln(t1$corStructs[id,2])))
-      err_id[["formula"]]     = cln(t1$formula)
-      err_id[["directory"]]   = normalizePath(getwd())
-      err_id[["date"]]        = toString( Sys.time() )
+      err_id["formula"]     = cln(t1$formula)
+      err_id["directory"]   = normalizePath(getwd())
+      err_id["date"]        = toString( Sys.time() )
 
       #-------------------------------------------------------------------------
       # return messages and re-run models with REML (unless arma)
@@ -432,16 +435,24 @@ htp.foreach <- function(data                       ,
         Model <- modid
       }
 
-      return( list( Messages=err_id, Model=Model ) )
-
       # reclaim inputs in case there are inheritance issues due to $gamlss or
       # $lme dropping terms
       t0$method  <- saveMethod
       t0$formula <- saveFormula
+      t0$random  <- saveRandom
+      if(length(saveIVS) > 0)  t0$ivs <- saveIVS
+      if(length(saveIVS) == 0) t0$ivs <- NULL
 
       # clean up
       rm(t1)
       cat('\n\n')
+
+      # this line stays commented  out except for testing
+      #IDout[[i]] <- list( Messages=err_id, Model=Model )
+      
+	  # return to foreach
+      return( list( Messages=err_id, Model=Model ) )
+
     } # end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
