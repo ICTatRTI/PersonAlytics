@@ -309,7 +309,7 @@
 #'                       subgroup = OvaryICT$Mare==1
 #'                       )
 #' message('\n\nDoes batch run match a single run?\n', all.equal( c(t(mare1$tTable)),
-#' unname(unlist(t1[t1$Mare==1,29:44]))) )
+#' unname(unlist(t1[t1$Mare==1,28:43]))) )
 #'
 #' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
@@ -566,56 +566,56 @@ paHTP <- function(e=parent.frame())
   #
   if( e$individual_mods )
   {
-    DVout <- htp.foreach(data          = e$data          ,
-                         dims          = dims            ,
-                         dvs           = e$dvs           ,
-                         phase         = e$phase         ,
-                         ids           = e$ids           ,
-                         uids          = uids            ,
-                         time          = e$time          ,
-                         ivs           = e$ivs           ,
-                         target_ivs    = e$target_ivs    ,
-                         interactions  = e$interactions  ,
-                         time_power    = e$time_power    ,
-                         correlation   = e$correlation   ,
-                         family        = e$family        ,
-                         standardize   = e$standardize   ,
-                         package       = e$package       ,
-                         detectAR      = e$detectAR      ,
-                         PQ            = e$PQ            ,
-                         whichIC       = e$whichIC       ,
-                         detectTO      = e$detectTO      ,
-                         maxOrder      = e$maxOrder      ,
-                         sigma.formula = e$sigma.formula ,
-                         debugforeach  = e$debugforeach  )
+    DVout <- htp(data          = e$data          ,
+                 dims          = dims            ,
+                 dvs           = e$dvs           ,
+                 phase         = e$phase         ,
+                 ids           = e$ids           ,
+                 uids          = uids            ,
+                 time          = e$time          ,
+                 ivs           = e$ivs           ,
+                 target_ivs    = e$target_ivs    ,
+                 interactions  = e$interactions  ,
+                 time_power    = e$time_power    ,
+                 correlation   = e$correlation   ,
+                 family        = e$family        ,
+                 standardize   = e$standardize   ,
+                 package       = e$package       ,
+                 detectAR      = e$detectAR      ,
+                 PQ            = e$PQ            ,
+                 whichIC       = e$whichIC       ,
+                 detectTO      = e$detectTO      ,
+                 maxOrder      = e$maxOrder      ,
+                 sigma.formula = e$sigma.formula ,
+                 debugforeach  = e$debugforeach  )
   }
   if( !e$individual_mods )
   {
     grp.dims <- dims
     grp.dims$ID <- "All Cases"
 
-    DVout <- htp.foreach(data  = e$data                  ,
-                         dims  = grp.dims                ,
-                         dvs   = e$dvs                   ,
-                         phase = e$phase                 ,
-                         ids   = e$ids                   ,
-                         uids  = uids                    ,
-                         time  = e$time                  ,
-                         ivs   = e$ivs                   ,
-                         target_ivs    = e$target_ivs    ,
-                         interactions  = e$interactions  ,
-                         time_power    = e$time_power    ,
-                         correlation   = e$correlation   ,
-                         family        = e$family        ,
-                         standardize   = e$standardize   ,
-                         package       = e$package       ,
-                         detectAR      = e$detectAR      ,
-                         PQ            = e$PQ            ,
-                         whichIC       = e$whichIC       ,
-                         detectTO      = e$detectTO      ,
-                         maxOrder      = e$maxOrder      ,
-                         sigma.formula = e$sigma.formula ,
-                         debugforeach  = e$debugforeach  )
+    DVout <- htp(data  = e$data                  ,
+                 dims  = grp.dims                ,
+                 dvs   = e$dvs                   ,
+                 phase = e$phase                 ,
+                 ids   = e$ids                   ,
+                 uids  = uids                    ,
+                 time  = e$time                  ,
+                 ivs   = e$ivs                   ,
+                 target_ivs    = e$target_ivs    ,
+                 interactions  = e$interactions  ,
+                 time_power    = e$time_power    ,
+                 correlation   = e$correlation   ,
+                 family        = e$family        ,
+                 standardize   = e$standardize   ,
+                 package       = e$package       ,
+                 detectAR      = e$detectAR      ,
+                 PQ            = e$PQ            ,
+                 whichIC       = e$whichIC       ,
+                 detectTO      = e$detectTO      ,
+                 maxOrder      = e$maxOrder      ,
+                 sigma.formula = e$sigma.formula ,
+                 debugforeach  = e$debugforeach  )
 
   }
 

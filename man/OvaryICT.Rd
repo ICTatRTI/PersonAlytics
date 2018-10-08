@@ -36,10 +36,10 @@ message( '\\n\\nAre variance components equal?\\n',all.equal(VarCorr(t1), VarCor
 # verify estimates against known values
 message('\\n\\nAre stored values replicated?\\n',
 all.equal( summary(t1)$tTable[,1],
-c(`(Intercept)`  = 11.2100153,
-   Time          = -1.9504839,
-   Phase         = 0.9115449,
-   `Time:Phase`  = -1.9746812) ) )
+c(`(Intercept)`  = 10.6616306,
+   Time          = -0.8689801,
+   Phase         = 10.9720945,
+   `Time:Phase`  = -8.6438502) ) )
 
 # Illustrate a multiphase study, Phase alignment (To do: add visualization)
 t3 <- PersonAlytic(data=OvaryICT,
@@ -62,7 +62,7 @@ OvaryICT$Phase <- as.numeric(OvaryICT$Time > .5)
 OvaryICT$Phase2 <- factor( cut(OvaryICT$Time,
                                breaks = c(-Inf, .2, .6, 1, Inf)),
                            labels = 1:4 )
-OvaryICT$Time <- sin(2*pi*OvaryICT$Time)
+#OvaryICT$Time <- sin(2*pi*OvaryICT$Time)
 set.seed(1)
 t1 <- matrix( sample(1:4, 3*nrow(OvaryICT), replace = TRUE), ncol = 3)
 t1 <- data.frame(t1)

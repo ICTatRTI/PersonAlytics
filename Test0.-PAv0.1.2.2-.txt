@@ -1,0 +1,22 @@
+Linear mixed-effects model fit by REML
+  Data: tempData 
+  Log-restricted-likelihood: -806.0243
+  Fixed: self$fixed 
+(Intercept)        Time       Phase  Time:Phase 
+ 11.2379032  -1.9291802   0.7974388  -2.1172397 
+
+Random effects:
+ Formula: ~Time + Time | Mare
+ Structure: General positive-definite, Log-Cholesky parametrization
+            StdDev   Corr  
+(Intercept) 3.049819 (Intr)
+Time        2.073517 -0.588
+Residual    3.091012       
+
+Correlation Structure: ARMA(0,3)
+ Formula: ~1 | Mare 
+ Parameter estimate(s):
+      Theta1       Theta2       Theta3 
+-0.117299342  0.075976543  0.004732901 
+Number of Observations: 308
+Number of Groups: 11 

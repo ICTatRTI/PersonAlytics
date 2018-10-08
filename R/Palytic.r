@@ -393,18 +393,22 @@ Palytic <- R6::R6Class("Palytic",
                            if( missing(value) ) private$.phase
                            else
                            {
-                             if(! is.character(value) )
+                             if(! is.null(value))
                              {
-                               stop("`phase` must be a character variable name in the data")
+                               if(! is.character(value) )
+                               {
+                                 stop("`phase` must be a character variable name in the data")
+                               }
+                               if( is.null(private$.data[[value]]) )
+                               {
+                                 stop( paste(value, "is not in the data") )
+                               }
+                               if( ! var(self$datac[[value]], na.rm = TRUE) > 0 )
+                               {
+                                 stop( paste(value, "has zero variance") )
+                               }
                              }
-                             if( is.null(private$.data[[value]]) )
-                             {
-                               stop( paste(value, "is not in the data") )
-                             }
-                             if( ! var(self$datac[[value]], na.rm = TRUE) > 0 )
-                             {
-                               stop( paste(value, "has zero variance") )
-                             }
+
                              frms <- forms(private$.data,
                                            PalyticObj   = self,
                                            ids          = NULL,
@@ -1086,12 +1090,13 @@ Palytic$set("public", "summary",
 Palytic$set("public", "describe",
             function()
             {
-              # concatenate all the ivs
-              ivall <- list(self=self$time)
-              if(!is.null(self$phase)) ivall$phase <- self$phase
-              if(!is.null(self$ivs) & length(self$ivs)>0)
+              # concatenate all the ivs with double checks for dropped terms
+              ivall <- all.vars(self$fixed)[-1]
+
+              if(! self$time %in% ivall ) ivall <- c(ivall, self$time)
+              if(length(self$phase) > 0)
               {
-                ivall <- unname( c(unlist(ivall), unlist(self$ivs)) )
+                if(! self$phase %in% ivall ) ivall <- c(ivall, self$phase)
               }
 
               # get descriptive statistics for each from the raw data
@@ -1112,7 +1117,7 @@ Palytic$set("public", "describe",
                                       use = 'pairwise.complete.obs')
                 }
               }
-              data.frame(unlist(ivstats))
+              #data.frame(unlist(ivstats))
               return( ivstats )
             })
 
@@ -1121,8 +1126,8 @@ Palytic$set("public", "arma",
                      max.P=0, max.Q=0, max.d=0, max.D=0, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
-              tempData <- na.omit( subset(self$datac, subgroup,
-                                 all.vars(self$formula)) )
+              tempData <- data.frame( na.omit( subset(self$datac, subgroup,
+                                 all.vars(self$formula)) ) )
 
               # check that only one participant is in the data
               if( length(unique(tempData[[self$ids]])) != 1 )
@@ -1135,8 +1140,8 @@ Palytic$set("public", "arma",
               # to converge, whereas arima will 'converge' but coeftest
               # fails
               zerovar <- FALSE
-              if( any( lapply(tempData,
-                              function(x) !all(duplicated(x)[-1L])) ) )
+              if( any( unlist( lapply(tempData[,names(tempData) != self$ids],
+                              function(x) all(duplicated(x)[-1L])) ) ) )
               {
                 zerovar <- TRUE
               }

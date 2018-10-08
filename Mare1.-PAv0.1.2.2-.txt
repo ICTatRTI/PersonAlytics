@@ -1,0 +1,123 @@
+$arima
+Series: tempData[[self$dv]] 
+Regression with ARIMA(0,0,0) errors 
+
+Coefficients:
+      intercept     Time   Phase  Time:Phase
+         6.3045  -3.6390  1.8125      3.1997
+s.e.     0.6280   0.9582  0.9111      1.3657
+
+sigma^2 estimated as 4.809:  log likelihood=-61.77
+AIC=133.54   AICc=136.15   BIC=140.37
+
+$tTable
+
+z test of coefficients:
+
+           Estimate Std. Error z value  Pr(>|z|)    
+intercept   6.30445    0.62797 10.0394 < 2.2e-16 ***
+Time       -3.63895    0.95818 -3.7978  0.000146 ***
+Phase       1.81255    0.91112  1.9893  0.046663 *  
+Time:Phase  3.19967    1.36568  2.3429  0.019134 *  
+---
+Signif. codes:  0 ‘***’ 0.001 ‘**’ 0.01 ‘*’ 0.05 ‘.’ 0.1 ‘ ’ 1
+
+
+$PalyticSummary
+$PalyticSummary$ids
+[1] "Mare"
+
+$PalyticSummary$dv
+[1] "follicles"
+
+$PalyticSummary$time
+[1] "Time"
+
+$PalyticSummary$phase
+[1] "Phase"
+
+$PalyticSummary$ivs
+NULL
+
+$PalyticSummary$interactions
+NULL
+
+$PalyticSummary$time_power
+[1] 1
+
+$PalyticSummary$correlation
+NULL
+
+$PalyticSummary$family
+
+GAMLSS Family: NO Normal 
+Link function for mu   : identity 
+Link function for sigma: log 
+
+$PalyticSummary$package
+NULL
+
+$PalyticSummary$fixed
+follicles ~ Time * Phase
+<environment: 0x00000000189e0830>
+
+$PalyticSummary$random
+~Time + Time | Mare
+<environment: 0x00000000189e0830>
+
+$PalyticSummary$formula
+follicles ~ Time * Phase + re(random = ~Time + Time | Mare, method = "REML", 
+    correlation = NULL)
+<environment: 0x00000000189e0830>
+
+$PalyticSummary$method
+[1] "REML"
+
+$PalyticSummary$standardize
+$PalyticSummary$standardize$dv
+[1] FALSE
+
+$PalyticSummary$standardize$iv
+[1] FALSE
+
+$PalyticSummary$standardize$byids
+[1] FALSE
+
+
+$PalyticSummary$corStructs
+NULL
+
+$PalyticSummary$time_powers
+NULL
+
+$PalyticSummary$ismonotone
+NULL
+
+$PalyticSummary$warnings
+NULL
+
+$PalyticSummary$errors
+NULL
+
+$PalyticSummary$try_silent
+[1] TRUE
+
+$PalyticSummary$datac
+   follicles          Time                Phase             Mare       
+ Min.   : 1.00   Min.   :-1.0000000   Min.   :0.0000   Min.   : 1.000  
+ 1st Qu.: 8.00   1st Qu.:-0.5943922   1st Qu.:0.0000   1st Qu.: 3.000  
+ Median :12.00   Median : 0.0000000   Median :0.0000   Median : 6.000  
+ Mean   :12.04   Mean   : 0.0000001   Mean   :0.4838   Mean   : 6.052  
+ 3rd Qu.:15.00   3rd Qu.: 0.5943919   3rd Qu.:1.0000   3rd Qu.: 9.000  
+ Max.   :25.00   Max.   : 1.0000000   Max.   :1.0000   Max.   :11.000  
+
+$PalyticSummary$data
+   follicles          Time                Phase             Mare       
+ Min.   : 1.00   Min.   :-1.0000000   Min.   :0.0000   Min.   : 1.000  
+ 1st Qu.: 8.00   1st Qu.:-0.5943922   1st Qu.:0.0000   1st Qu.: 3.000  
+ Median :12.00   Median : 0.0000000   Median :0.0000   Median : 6.000  
+ Mean   :12.04   Mean   : 0.0000001   Mean   :0.4838   Mean   : 6.052  
+ 3rd Qu.:15.00   3rd Qu.: 0.5943919   3rd Qu.:1.0000   3rd Qu.: 9.000  
+ Max.   :25.00   Max.   : 1.0000000   Max.   :1.0000   Max.   :11.000  
+
+
