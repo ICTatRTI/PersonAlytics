@@ -442,7 +442,8 @@ Palytic <- R6::R6Class("Palytic",
                            if( missing(value) ) private$.ivs
                            else
                            {
-                             if(! all(is.character(value)) & ! is.null(value) )
+                             if( ! any( c('list', 'character', "NULL") %in%
+                                      is(value) ) )
                              {
                                stop("`ivs` must be a character list of ",
                                     "variables in the data or `NULL`.")

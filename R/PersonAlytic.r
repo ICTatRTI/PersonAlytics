@@ -433,42 +433,6 @@ PersonAlytic <- function(output=NULL                                       ,
 #' @keywords internal
 pa1 <- function(e=parent.frame())
 {
-  # if no data are given, use a test data set
-  if(is.null(e$data))
-  {
-    output          <- NULL
-    data            <- OvaryICT
-    ids             <- "Mare"
-    dvs             <- "follicles"
-    time            <- "Time"
-    phase           <- "Phase"
-    ivs             <- NULL
-    target_ivs      <- as.list(paste("Target", 1:6, sep=''))
-    interactions    <- NULL
-    time_power      <- 3
-    correlation     <- NULL
-    family          <- gamlss.dist::NO()
-    subgroup        <- NULL
-    standardize     <- list(dv=FALSE, iv=FALSE, byids=FALSE)
-    package         <- 'nlme'
-    method          <- 'REML'
-    individual_mods <- TRUE
-    PalyticObj      <- NULL
-    detectAR        <- FALSE
-    PQ              <- c(3,3)
-    whichIC         <- c("BIC", "AIC")
-    detectTO        <- FALSE
-    charSub         <- NULL
-    sigma.formula   <- ~1
-    p.method        <- "BY"
-    alpha           <- .05
-    alignPhase      <- FALSE
-    debugforeach    <- FALSE
-    maxOrder        <- 3
-    packageTest     <- NULL
-    e               <- parent.frame()
-  }
-
   if(is.null(e$output))
   {
     e$output <- gsub(":", ".", paste(Sys.time(), e$pav,
@@ -588,17 +552,6 @@ paHTP <- function(e=parent.frame())
   if(any(e$ivs %in% e$target_ivs) | any(e$target_ivs %in% e$ivs))
   {
     stop('target_ivs and ivs cannot share any variables.')
-  }
-
-  ## if no data are given, use a test data set
-  if(is.null(e$data))
-  {
-    data       <- OvaryICT
-    dvs        <- "follicles"
-    phase      <- "Phase"
-    ids        <- "Mare"
-    time       <- "Time"
-    target_ivs <- "Time"
   }
 
   # unique ids
