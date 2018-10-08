@@ -1130,6 +1130,17 @@ Palytic$set("public", "arma",
                 stop('`arma` requires n=1 data')
               }
 
+              # if the variances are zero, set escape
+              # note that this isn't needed by lme/gamlss b/c they fail
+              # to converge, whereas arima will 'converge' but coeftest
+              # fails
+              zerovar <- FALSE
+              if( any( lapply(tempData,
+                              function(x) !all(duplicated(x)[-1L])) ) )
+              {
+                zerovar <- TRUE
+              }
+
               # `xreg` requires pre-constructed interaction terms, here we
               # 1. create the model.matrix RHS from self$fixed
               # 2. drop the intercept column
@@ -1147,6 +1158,7 @@ Palytic$set("public", "arma",
                                          max.d = max.d,
                                          max.D = max.D,
                                          ...), silent = TRUE)
+              if( zerovar ) m1 <- ""
               if(  any("ARIMA" %in% class(m1)) ) tTable = lmtest::coeftest(m1)
               if(! any("ARIMA" %in% class(m1)) )
               {
