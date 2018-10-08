@@ -204,7 +204,9 @@
 #' t1$corStructs
 #' }
 
-
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+# start of Palytic function ####
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Palytic <- R6::R6Class("Palytic",
                        private = list(
                          .data        = NULL, # consider pass by reference environment
@@ -442,32 +444,36 @@ Palytic <- R6::R6Class("Palytic",
                            {
                              if(! all(is.character(value)) & ! is.null(value) )
                              {
-                               stop("`ivs` must be a character list of variables in the data (or `NULL`)")
+                               stop("`ivs` must be a character list of ",
+                                    "variables in the data or `NULL`.")
                              }
                              if( ! all(value %in% names(private$.data) ) )
                              {
                                nov <- value[ which(! value %in% names(private$.data )) ]
-                               if(length(nov)==1) stop( paste(nov, "is not in the data") )
+                               if(length(nov)==1)
+                               {
+                                 stop( paste(nov, "is not in the data") )
+                               }
                                if(length(nov)>=2)
                                {
                                  stop( paste(paste(nov, collapse=", "), "are not in the data") )
                                }
                              }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = value,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
+                             frms <- forms(private$.data        ,
+                                           PalyticObj   = self  ,
+                                           ids          = NULL  ,
+                                           dv           = NULL  ,
+                                           time         = NULL  ,
+                                           phase        = NULL  ,
+                                           ivs          = value ,
+                                           interactions = NULL  ,
+                                           time_power   = NULL  ,
+                                           correlation  = NULL  ,
+                                           family       = NULL  ,
+                                           fixed        = NULL  ,
+                                           random       = NULL  ,
+                                           formula      = NULL  ,
+                                           method       = NULL  )
                              private$.ids          <- frms$ids
                              private$.dv           <- frms$dv
                              private$.time         <- frms$time
@@ -931,6 +937,9 @@ Palytic <- R6::R6Class("Palytic",
 
                        ),
 
+                       #########################################################
+                       # initialize ####
+                       #########################################################
                        public = list(
                          initialize = function
                          (

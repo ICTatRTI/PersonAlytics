@@ -598,7 +598,7 @@ paHTP <- function(e=parent.frame())
     phase      <- "Phase"
     ids        <- "Mare"
     time       <- "Time"
-    target_ivs <- "TimeSin"
+    target_ivs <- "Time"
   }
 
   # unique ids

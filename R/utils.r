@@ -376,7 +376,7 @@ decompFormula <- function(formula=NULL)
           method = "REML", correlation = nlme::corARMA(p = 3, q = 3))) +
       X3.81_442.2293m.z + Batch + Session2 + Time2:Tx + Tx:I(Time2^2) + Tx:I(Time2^3)
 
-    formula <- 1 ~ TimeSin * Phase + re(random = ~1 | Mare, method = "REML",
+    formula <- 1 ~ Time * Phase + re(random = ~1 | Mare, method = "REML",
                                         correlation = NULL, family = )
     }
   }
