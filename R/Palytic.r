@@ -1088,7 +1088,7 @@ Palytic$set("public", "summary",
             })
 
 Palytic$set("public", "describe",
-            function()
+            function(subgroup=NULL)
             {
               # concatenate all the ivs with double checks for dropped terms
               ivall <- all.vars(self$fixed)[-1]
@@ -1099,13 +1099,17 @@ Palytic$set("public", "describe",
                 if(! self$phase %in% ivall ) ivall <- c(ivall, self$phase)
               }
 
-              # get descriptive statistics for each from the raw data
+              # subset the data
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              tempData <- self$data[subgroup, c(self$dv, ivall)]
+
+              # get descriptive statistics for each variable from the raw data
               ivstats <- list()
               for(i in ivall)
               {
-                if(is.factor(self$data[[i]]) | length(unique(self$data[[i]]))==2)
+                if(is.factor(tempData[[i]]) | length(unique(tempData[[i]]))==2)
                 {
-                  mns <- aggregate(self$data[[self$dv]], list(self$data[[i]]),
+                  mns <- aggregate(tempData[[self$dv]], list(tempData[[i]]),
                                    mean, na.rm=TRUE)
                   nms <- paste('mean', self$dv, paste(i, mns[,1],sep='_EQ_'), sep='_')
                   for(j in 1:nrow(mns)) ivstats[[nms[j]]] <- unname( mns$x[j] )
@@ -1113,8 +1117,20 @@ Palytic$set("public", "describe",
                 else
                 {
                   des <- paste('correlation', self$dv, i, sep='_')
-                  ivstats[[des]] <- cor(self$data[[self$dv]], self$data[[i]],
-                                      use = 'pairwise.complete.obs')
+                  hasVarDV <- sd(tempData[[self$dv]], na.rm=TRUE)!=0
+                  hasVarIV <- sd(tempData[[i]]      , na.rm=TRUE)!=0
+                  if(hasVarDV & hasVarIV)
+                  {
+                    ivstats[[des]] <- cor(tempData[[self$dv]], tempData[[i]],
+                                          use = 'pairwise.complete.obs')
+                  }
+                  else
+                  {
+                    ivstats[[des]] <- paste("No variance in",
+                                            ifelse(!hasVarDV, self$dv, ""),
+                                            ifelse(!hasVarIV, i      , ""),
+                                            sep=": ")
+                  }
                 }
               }
               #data.frame(unlist(ivstats))

@@ -205,7 +205,7 @@ htp <- function(data                       ,
       #-------------------------------------------------------------------------
       # descriptive statistics for target iv
       #-------------------------------------------------------------------------
-      err_id <- c(err_id, t0$describe())
+      err_id <- c(err_id, t0$describe(useObs))
 
       #-------------------------------------------------------------------------
       # re-fit models with REML (unless arma)
@@ -603,7 +603,7 @@ fitWithTargetIVarma <- function(t0, useObs, dims, PQ)
   {
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- "ML" #modid$PalyticSummary$method
-    err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
+    err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
     err_id['call'] <- paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
                              Reduce( paste, deparse(modid$PalyticSummary$random) ),
                              modid$PalyticSummary$correlation,
