@@ -1188,7 +1188,8 @@ Palytic$set("public", "arma",
               }
 
               m1 <- list(arima = m1, tTable = tTable,
-                         PalyticSummary = self$summary())
+                         PalyticSummary = self$summary(),
+                         xregs = colnames(xdat) )
               return(m1)
             },
             overwrite = TRUE # is this causing the inheritance issues?

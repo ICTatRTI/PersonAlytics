@@ -604,10 +604,11 @@ fitWithTargetIVarma <- function(t0, useObs, dims, PQ)
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- "ML" #modid$PalyticSummary$method
     err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
-    err_id['call'] <- paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
-                             Reduce( paste, deparse(modid$PalyticSummary$random) ),
-                             modid$PalyticSummary$correlation,
-                             sep='; ')
+    armaOrder <- arimaorder(modid$arima)
+    err_id['call'] <- paste( "auto.arima(y=", t0$dv,
+                             ", order=c(", armaOrder[1], 0, armaOrder[3],
+                             "), xreg=rxeg) where `xreg` includes ",
+                             modid$xregs, ".")
   }
   return( list(err_id = err_id, modid = modid) )
 }
