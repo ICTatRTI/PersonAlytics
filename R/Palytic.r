@@ -1653,21 +1653,20 @@ Palytic$set("public", "GroupTime_Power",
                       "time/outcome relationship starting...")
               start <- Sys.time()
 
-              saveRandom  <- self$random
-              saveMethod  <- self$method
-              self$method <- "ML" # this overwrites the construction of random
-              #temp <- Palytic$new(self$datac, self$ids, self$dv,
-              #                    self$time)
               mods <- list()
               for(i in 1:maxOrder)
               {
-                self$time_power <- i
-                self$random     <- saveRandom # a more elegant solution in the active bindings is needed
-                mods[[i]] <- self$lme()
+                clone <- self$clone(deep=TRUE)
+
+                clone$method     <- "ML"
+                clone$time_power <- i
+
+                mods[[i]] <- clone$lme()
                 if(! "lme" %in% class(mods[[i]]))
                 {
                   mods[[i]] <- NULL
                 }
+                rm(clone)
               }
               if(whichIC=="BIC") bestMods <- unlist( lapply(mods, BIC) )
               if(whichIC=="AIC") bestMods <- unlist( lapply(mods, AIC) )
@@ -1677,8 +1676,6 @@ Palytic$set("public", "GroupTime_Power",
                       "relationship took: ",
                       capture.output(Sys.time() - start), ".\n\n")
 
-              self$method <- saveMethod
-              self$random <- saveRandom
             },
             overwrite = TRUE)
 
