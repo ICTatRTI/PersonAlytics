@@ -1093,7 +1093,7 @@ Palytic$set("public", "describe",
               # concatenate all the ivs with double checks for dropped terms
               ivall <- all.vars(self$fixed)[-1]
 
-              if(! self$time %in% ivall ) ivall <- c(ivall, self$time)
+              if(! self$time[1] %in% ivall ) ivall <- c(ivall, self$time[1])
               if(length(self$phase) > 0)
               {
                 if(! self$phase %in% ivall ) ivall <- c(ivall, self$phase)
@@ -1608,13 +1608,12 @@ Palytic$set("public", "getTime_Power",
                       "time/outcome relationship starting...")
               start <- Sys.time()
 
-              saveRandom  <- self$random
-              saveMethod  <- self$method
-              self$method <- "ML"
               uid <- sort( as.numeric( unique(self$datac[[self$ids]]) ) )
               time_powers <- list()
+
+              # prevent inheritance with a new object
               temp <- Palytic$new(self$datac, self$ids, self$dv,
-                                  self$time, random=saveRandom)
+                                  self$time, random=self$random, method="ML")
               for(id in uid)
               {
                 aics <- list()
@@ -1638,11 +1637,8 @@ Palytic$set("public", "getTime_Power",
               self$time_powers <- data.frame(ids=uid, time_power=unlist(time_powers))
 
               message("\nAutomatic detection of the time/outcome\n",
-                      "relationship took ",
-                      round((Sys.time() - start)/60,1), " minutes.\n\n")
-
-              self$method <- saveMethod
-              self$random <- saveRandom
+                      "relationship took: ",
+                      capture.output(Sys.time() - start), ".\n\n")
             },
             overwrite = TRUE)
 

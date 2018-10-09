@@ -140,6 +140,8 @@ htp <- function(data                       ,
     #for(i in 1:nrow(DIM))
     {
       #id=DIM$ID[i]; iv=DIM$IV[i]
+
+
       #-------------------------------------------------------------------------
       # for the current id, select rows
       #-------------------------------------------------------------------------
@@ -155,15 +157,16 @@ htp <- function(data                       ,
       }
 
       #-------------------------------------------------------------------------
-      # accumulate inputs and errors for the output
-      #-------------------------------------------------------------------------
-      err_id <- htpErrors(t0, id, dims, useObs)
-
-      #-------------------------------------------------------------------------
       # fit the model w/o target ivs
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
+      t0$time_power <- t0$time_powers[id,2]
       mod1 <- fitWithTargetIV(t0, package, useObs, dims, PQ=PQ)
+
+      #-------------------------------------------------------------------------
+      # accumulate inputs and errors for the output
+      #-------------------------------------------------------------------------
+      err_id <- htpErrors(t0, id, dims, package, useObs)
 
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
@@ -203,9 +206,9 @@ htp <- function(data                       ,
       }
 
       #-------------------------------------------------------------------------
-      # descriptive statistics for target iv
+      # descriptive statistics
       #-------------------------------------------------------------------------
-      err_id <- c(err_id, t0$describe(useObs))
+      descr_id <- t0$describe(useObs)
 
       #-------------------------------------------------------------------------
       # re-fit models with REML (unless arma)
@@ -227,6 +230,7 @@ htp <- function(data                       ,
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
+      #TODO(Stephen): extract to a function
       #-------------------------------------------------------------------------
       err_id["target_iv"]   = nullString(unlist(target_ivs)[iv])
       err_id["fixed"]       = rmSpecChar(t0$fixed)
@@ -261,7 +265,7 @@ htp <- function(data                       ,
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
       #IDout[[i]] <- list( Messages=err_id, Model=Model )
-      return( list( Messages=err_id, Model=Model ) )
+      return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
 
     } # end of foreach
     # stop the cluster
@@ -271,10 +275,16 @@ htp <- function(data                       ,
             '` took: ', capture.output(Sys.time() - start), ".\n\n")
 
     #...........................................................................
-    # dis aggregate messages
+    # disaggregate messages
     #...........................................................................
     IDmsg <- lapply( IDout, function(x) data.frame(x$Messages) )
     IDmsg <- plyr::rbind.fill(IDmsg)
+
+    #...........................................................................
+    # disaggregate depcriptive statistics
+    #...........................................................................
+    IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
+    IDdesc <- plyr::rbind.fill(IDdesc)
 
     #...........................................................................
     # post-estimation model extraction
@@ -309,9 +319,8 @@ htp <- function(data                       ,
     IDoutSumm <- lapply(IDoutSum, rcm, target_ivs=target_ivs)
     IDoutSumm <- plyr::rbind.fill(IDoutSumm)
 
-    DVout[[dvs[[dv]]]] <- data.frame(IDmsg, IDoutSumm)
+    DVout[[dvs[[dv]]]] <- data.frame(IDmsg, IDdesc, IDoutSumm)
   } # end of dv loops
-
 
   # final post-processing
   outmat <- plyr::rbind.fill(DVout)
@@ -321,7 +330,7 @@ htp <- function(data                       ,
 
 #' htpErrors: accumulate inputs and errors
 #' @keywords internal
-htpErrors <- function(t0, id, dims, useObs)
+htpErrors <- function(t0, id, dims, package, useObs)
 {
   err_id <- list()
 
@@ -336,7 +345,7 @@ htpErrors <- function(t0, id, dims, useObs)
   err_id['ids']          <- t0$ids
   err_id['dvs']          <- t0$dvs
   err_id['family']       <- t0$family[[1]][2]
-  err_id['package']      <- t0$package
+  err_id['package']      <- package
   err_id['time']         <- t0$time[1]
   err_id['phase']        <- t0$phase
   err_id['interactions'] <- toString( t0$interactions )
@@ -353,30 +362,36 @@ htpErrors <- function(t0, id, dims, useObs)
                                    paste(' for ', t0$ids, ' = ', id, '.', sep='')),
                             sep='')
   # time should be monotonically increasing
-  err_id['timeVar'] <- paste("`", t0$time, "` is",
+  err_id['timeVar'] <- paste("`", t0$time[1], "` is",
                              ifelse(all(t0$monotone$monotonic), "" , "NOT"),
                              "monotonically increasing for `", t0$ids, "` =", id, ".")
 
   # ivs (!target_ivs yet) and ivs variance
-  err_id['ivs']       <- toString( t0$ivs         )
-  ivvs <- c(t0$ivs, t0$phase)
-  wsplit <- unlist(lapply(ivvs, grepl, pattern=":"))
-  if( any(wsplit) )
+  err_id['ivs'] <- NA
+  err_id['ivVar'] <- "There are no variables in `ivs`."
+  if( length(t0$ivs) > 0)
   {
-    ivvs <- unique( c(ivvs[!wsplit], unlist( strsplit(unlist(ivvs[wsplit]), ":") ) ) )
+    err_id['ivs']       <- toString( t0$ivs )
+    ivvs <- c(t0$ivs, t0$phase)
+    wsplit <- unlist(lapply(ivvs, grepl, pattern=":"))
+    if( any(wsplit) )
+    {
+      ivvs <- unique( c(ivvs[!wsplit], unlist( strsplit(unlist(ivvs[wsplit]), ":") ) ) )
+    }
+    wsplit <- unlist(lapply(ivvs, grepl, pattern="\\*"))
+    if( any(wsplit) )
+    {
+      ivvs <- unique( c(ivvs[!wsplit],
+                        unlist( strsplit(unlist(ivvs[wsplit]), "\\*") ) ) )
+    }
+    ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
+    ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
+                           function(x) !all(duplicated(x)[-1L])) )
+
+    err_id['ivVar'] <- paste( paste('The variance of `', ivvs, '` is ',
+                                    ifelse(ivv, '> 0 ', '= 0 '),
+                                    sep=''), collapse='; ')
   }
-  wsplit <- unlist(lapply(ivvs, grepl, pattern="\\*"))
-  if( any(wsplit) )
-  {
-    ivvs <- unique( c(ivvs[!wsplit],
-                      unlist( strsplit(unlist(ivvs[wsplit]), "\\*") ) ) )
-  }
-  ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
-  ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
-                         function(x) !all(duplicated(x)[-1L])) )
-  err_id['ivVar'] <- paste( paste('The variance of `', ivvs, '` is ',
-                                  ifelse(ivv, '> 0 ', '= 0 '),
-                                  sep=''), collapse='; ')
 
   return(err_id)
 }
@@ -470,7 +485,7 @@ gerARIMAorder <- function(x)
   if( "Arima" %in% class(x) )
   {
     ao <- forecast::arimaorder(x)
-    return( paste('auto.arima::ARMA(p=', ao[1],
+    return( paste('arima(p=', ao[1], ", d=0",
                   ', q=', ao[2], ')', sep='') )
   }
   if(! "Arima" %in% class(x) )
@@ -561,10 +576,7 @@ fitWithTargetIVlme <- function(t0, useObs, dims)
     err_id['converge']   <- modid
     err_id['estimator']  <- t0$method
     err_id['analyzed_N'] <- NA
-    err_id['call'] <- paste(Reduce( paste, deparse( t0$fixed ) ),
-                            Reduce( paste, deparse( t0$random ) ),
-                            t0$correlation,
-                            sep='; ')
+    err_id['call'] <- NA
     # here is a placeholder for getting error messsages from lme
     # which needs to be updated in the error handling for
     # lme in Palytic
@@ -594,10 +606,7 @@ fitWithTargetIVarma <- function(t0, useObs, dims, PQ)
     #t0$method --- ML currently default in arma, REML not an option
     err_id['estimator']  <- "ML"
     err_id['analyzed_N'] <- NA
-    err_id['call'] <- paste(Reduce( paste, deparse( t0$fixed ) ),
-                            Reduce( paste, deparse( t0$random ) ),
-                            t0$correlation,
-                            sep='; ')
+    err_id['call'] <- NA
   }
   if(  "coeftest"  %in%  class(modid$tTable) )
   {
@@ -605,10 +614,14 @@ fitWithTargetIVarma <- function(t0, useObs, dims, PQ)
     err_id['estimator']  <- "ML" #modid$PalyticSummary$method
     err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
     armaOrder <- arimaorder(modid$arima)
-    err_id['call'] <- paste( "auto.arima(y=", t0$dv,
-                             ", order=c(", armaOrder[1], 0, armaOrder[3],
-                             "), xreg=rxeg) where `xreg` includes ",
-                             modid$xregs, ".")
+    err_id['call'] <- paste( "arima(y=", t0$dv,
+                             ", order=c(",
+                             armaOrder[1], ",",
+                             armaOrder[2], ",",
+                             armaOrder[3], "), ",
+                             "xreg=rxeg) where `xreg` includes: ",
+                             paste(modid$xregs, collapse=", "),
+                             ".")
   }
   return( list(err_id = err_id, modid = modid) )
 }
@@ -626,6 +639,7 @@ fitWithTargetIVgamlss <- function(t0, useObs, dims)
     err_id['re_estimator']     <- NA
     err_id['gamlss_estimator'] <- NA
     err_id['analyzed_N']       <- NA
+    err_id['call']             <- NA
   }
   if(  "gamlss"  %in%  class(modid) )
   {

@@ -629,26 +629,10 @@ paHTP <- function(e=parent.frame())
     }
   }
 
-  # some columns are actually lists, fix that
-  nnull <- function(x)
-  {
-    if(is.list(x))
-    {
-      if( any(as.character(x)=="NULL") )
-      {
-        return( unlist(as.character(x)) )
-      }
-      if(!any(as.character(x)=="NULL") )
-      {
-        return( unlist(x) )
-      }
-    }
-    if(!is.list(x))
-    {
-      return( unlist(x) )
-    }
-  }
+  # fix columns that are lists and reorder the columns
   DVout <- do.call(data.frame, lapply(DVout, nnull))
+
+  # save the output
   write.csv(DVout, file=paste(e$output, '.csv', sep=''), row.names=FALSE)
 
   return(DVout)
@@ -659,5 +643,27 @@ paHTP <- function(e=parent.frame())
                     rawdata=e$data,
                     method=e$p.method,
                     alpha=e$alpha), silent = TRUE )
+  }
+}
+
+
+#' nnull - fix columns that are actually lists
+#' @keywords internal
+nnull <- function(x)
+{
+  if(is.list(x))
+  {
+    if( any(as.character(x)=="NULL") )
+    {
+      return( unlist(as.character(x)) )
+    }
+    if(!any(as.character(x)=="NULL") )
+    {
+      return( unlist(x) )
+    }
+  }
+  if(!is.list(x))
+  {
+    return( unlist(x) )
   }
 }
