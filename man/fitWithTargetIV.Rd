@@ -4,7 +4,7 @@
 \alias{fitWithTargetIV}
 \title{fit models with the target iv & calculate LRT}
 \usage{
-fitWithTargetIV(t0, package, useObs, dims, mod1 = NULL, PQ = c(3, 3))
+fitWithTargetIV(t1, package, useObs, dims, mod1 = NULL, PQ = c(3, 3))
 }
 \description{
 fit models with the target iv & calculate LRT

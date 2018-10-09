@@ -4,7 +4,7 @@
 \alias{fitWithTargetIVlme}
 \title{fitWithTargetIVlme}
 \usage{
-fitWithTargetIVlme(t0, useObs, dims)
+fitWithTargetIVlme(t1, useObs, dims)
 }
 \description{
 fitWithTargetIVlme

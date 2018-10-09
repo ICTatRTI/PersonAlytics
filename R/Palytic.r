@@ -1600,6 +1600,7 @@ Palytic$set("public", "GroupAR_order",
             },
             overwrite = TRUE)
 
+#TODO(Stephen): use a deep clone in the *get* methods
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "getTime_Power",
             function(maxOrder=3, whichIC="BIC")
@@ -1610,6 +1611,8 @@ Palytic$set("public", "getTime_Power",
 
               uid <- sort( as.numeric( unique(self$datac[[self$ids]]) ) )
               time_powers <- list()
+
+              saveRandom <- self$random
 
               # prevent inheritance with a new object
               temp <- Palytic$new(self$datac, self$ids, self$dv,

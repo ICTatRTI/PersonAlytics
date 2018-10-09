@@ -4,7 +4,7 @@
 \alias{fitWithTargetIVarma}
 \title{fitWithTargetIVarma}
 \usage{
-fitWithTargetIVarma(t0, useObs, dims, PQ)
+fitWithTargetIVarma(t1, useObs, dims, PQ)
 }
 \description{
 fitWithTargetIVarma
