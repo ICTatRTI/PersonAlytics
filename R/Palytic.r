@@ -1489,8 +1489,8 @@ Palytic$set("public", "getAR_order",
               } #oef !eqspace
               #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
               message("\nAutomatic detection of the residual\n",
-                      "correlation structure took ",
-                      round((Sys.time() - start)/60,1), " minutes.\n\n")
+                      "correlation structure took: ",
+                      capture.output(Sys.time() - start), ".\n\n")
             },
             overwrite = TRUE)
 
@@ -1578,8 +1578,8 @@ Palytic$set("public", "GroupAR_order",
               self$random      <- saveRandom
 
               message("\nAutomatic detection of the residual\n",
-                      "correlation structure took ",
-                      round((Sys.time() - start)/60,1), " minutes.\n\n")
+                      "correlation structure took: ",
+                      capture.output(Sys.time() - start), ".\n\n")
             },
             overwrite = TRUE)
 
@@ -1658,8 +1658,8 @@ Palytic$set("public", "GroupTime_Power",
               self$time_power <- which.min( bestMods )
 
               message("\nAutomatic detection of the time/outcome\n",
-                      "relationship took ",
-                      round((Sys.time() - start)/60,1), " minutes.\n\n")
+                      "relationship took: ",
+                      capture.output(Sys.time() - start), ".\n\n")
 
               self$method <- saveMethod
               self$random <- saveRandom

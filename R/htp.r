@@ -268,13 +268,13 @@ htp <- function(data                       ,
     parallel::stopCluster(cl)
 
     message('\n\nModel fitting of the dependent variable `', dvs[dv],
-            '` took ', round((Sys.time() - start)/60,1), " minutes.\n\n")
+            '` took: ', capture.output(Sys.time() - start), ".\n\n")
 
     #...........................................................................
     # dis aggregate messages
     #...........................................................................
-    IDmsg <- lapply( IDout, function(x) x$Messages )
-    IDmsg <- data.frame( do.call(rbind, IDmsg) )
+    IDmsg <- lapply( IDout, function(x) data.frame(x$Messages) )
+    IDmsg <- plyr::rbind.fill(IDmsg)
 
     #...........................................................................
     # post-estimation model extraction
