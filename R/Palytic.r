@@ -1351,6 +1351,7 @@ Palytic$set("public", "gamlss",
 )
 
 ###### 20181002 -- slated for deprecation --
+# ---- scratch that, we still need it to compare arma and lme
 # this will only be applied to one participant at a time
 # whichIC can take on AIC or BIC
 Palytic$set("public", "getAR_order",
@@ -1364,6 +1365,7 @@ Palytic$set("public", "getAR_order",
                       "residual correlation structure starting.")
               start <- Sys.time()
 
+              #TODO(Stephen): use deep copy in clone
               saveMethod  <- self$method
               saveFormula <- self$formula
               saveRandom  <- self$random
@@ -1520,13 +1522,6 @@ Palytic$set("public", "GroupAR_order",
                       "residual correlation structure starting...")
               start <- Sys.time()
 
-              saveMethod  <- self$method
-              saveFormula <- self$formula
-              saveRandom  <- self$random
-
-              self$method <- "ML"
-              self$correlation <- "NULL"
-
               nullMod <- self$lme(subgroup)
 
               if( "lme" %in% class(nullMod) )
@@ -1546,21 +1541,23 @@ Palytic$set("public", "GroupAR_order",
                 opts <- list(progress = progress)
 
                 corMods <- foreach(p=DIMS$p, q=DIMS$q, .packages = pkgs,
-                                   .options.snow = opts)  %dopar%
+                                   .options.snow = opts,
+                                   .export = c("self"))  %dopar%
                 {
+                  clone             <- self$clone(deep=TRUE)
+                  clone$method      <- "ML"
+                  clone$correlation <- "NULL"
 
                   cortemp <- paste("nlme::corARMA(p=", p, ",
                                  q=", q, ")", sep="")
                   cortemp <- gsub('\n', '', cortemp)
                   cortemp <- gsub(' ', '', cortemp)
-                  self$correlation <- cortemp
-                  self$random <- saveRandom
-                  corMod <- self$lme(subgroup)
+                  clone$correlation <- cortemp
+                  corMod <- clone$lme(subgroup)
                   if( class(corMod) != "lme" )
                   {
                     corMod <- NULL
                   }
-                  self$formula <- saveFormula # restore formulae, incl. correlation
 
                   cat('\n\n')
 
@@ -1590,10 +1587,6 @@ Palytic$set("public", "GroupAR_order",
                 bestCor <- "NULL"
               }
 
-              self$correlation <- bestCor
-              self$method      <- saveMethod
-              self$random      <- saveRandom
-
               message("\nAutomatic detection of the residual\n",
                       "correlation structure took: ",
                       capture.output(Sys.time() - start), ".\n\n")
@@ -1612,19 +1605,17 @@ Palytic$set("public", "getTime_Power",
               uid <- sort( as.numeric( unique(self$datac[[self$ids]]) ) )
               time_powers <- list()
 
-              saveRandom <- self$random
-
-              # prevent inheritance with a new object
-              temp <- Palytic$new(self$datac, self$ids, self$dv,
-                                  self$time, random=self$random, method="ML")
               for(id in uid)
               {
                 aics <- list()
                 for(i in 1:maxOrder)
                 {
-                  temp$time_power <- i
-                  temp$random <- saveRandom
-                  mod0 <- temp$lme(self$datac[[self$ids]]==id)
+                  clone <- self$clone(deep=TRUE)
+
+                  clone$method     <- "ML"
+                  clone$time_power <- i
+
+                  mod0 <- clone$lme(self$datac[[self$ids]]==id)
                   if("lme" %in% class(mod0))
                   {
                     aics[[i]] <- AIC( mod0 )
