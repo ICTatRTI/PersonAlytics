@@ -225,6 +225,7 @@ forms <- function(data                     ,
   ivs.test <- unlist(lapply(ivs, strsplit, ":"))
   vars <- unique( c(ids, dv, time, phase, ivs.test,
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
+  vars <- as.character( vars )
   vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, '\\*|\\+'), unlist))) )
   wi <- which( substr(vars, 1, 2) == "I(" )
   vars[wi] <- unlist(strsplit(gsub("\\I|\\(|\\)", "", vars[wi]), "\\^"))[1]

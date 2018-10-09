@@ -38,7 +38,7 @@ htp <- function(data                       ,
   # parralelization: encapsulate ivs and ids in one foreach
   ##############################################################################
   DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
-  funcs <- c()
+  funcs <- c('fitWithTargetIV')
   pkgs  <- c("gamlss", "nlme")
   pb <- txtProgressBar(max = nrow(DIM), style = 3)
   progress <- function(n) setTxtProgressBar(pb, n)
@@ -66,7 +66,7 @@ htp <- function(data                       ,
                       family=family,
                       method="ML" # requested method used in final estimation
                      )
-    cat("line 69", toString(t0$fixed), "\n\n", file="fixed.txt")
+    #cat("line 69", toString(t0$fixed), "\n\n", file="fixed.txt")
 
     # allow for formula override so that we can test intercept only and
     # slope only models
@@ -101,7 +101,7 @@ htp <- function(data                       ,
       if(detectTO) t0$GroupTime_Power(maxOrder, whichIC[1])
       if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
-    cat("line 104", toString(t0$fixed), "\n\n", file="fixed.txt", append=TRUE)
+    #cat("line 104", toString(t0$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
     #...........................................................................
     # start parralelization run
@@ -135,7 +135,7 @@ htp <- function(data                       ,
       # deep clone
       #-------------------------------------------------------------------------
       t1 <- t0$clone(deep=TRUE)
-      cat("line 138", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      #cat("line 138", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
       # for the current id, select rows
@@ -156,9 +156,9 @@ htp <- function(data                       ,
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
       t1$time_power <- t1$time_powers[id,2]
-      cat("line 159", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      #cat("line 159", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
       mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
-      cat("line 161", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      #cat("line 161", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
       # accumulate inputs and errors for the output
@@ -206,7 +206,7 @@ htp <- function(data                       ,
       # descriptive statistics
       #-------------------------------------------------------------------------
       descr_id <- t1$describe(useObs)
-      cat("line 209", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      #cat("line 209", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
       # re-fit models with REML (unless arma)
@@ -225,7 +225,7 @@ htp <- function(data                       ,
       {
         Model <- modid
       }
-      cat("line 228", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      #cat("line 228", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
@@ -601,7 +601,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, PQ)
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- "ML" #modid$PalyticSummary$method
     err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
-    armaOrder <- arimaorder(modid$arima)
+    armaOrder <- forecast::arimaorder(modid$arima)
     err_id['call'] <- paste( "arima(y=", t1$dv,
                              ", order=c(",
                              armaOrder[1], ",",

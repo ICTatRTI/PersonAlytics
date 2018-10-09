@@ -458,7 +458,7 @@ pa1 <- function(e=parent.frame())
                     method=e$method             ,
                     standardize=e$standardize   ,
                     alignPhase=e$alignPhase     )
-  cat("line 461: ", toString(t1$fixed), "\n\n", file="fixed.txt")
+  #cat("line 461: ", toString(t1$fixed), "\n\n", file="fixed.txt")
 
   # allow for formula override so that we can test intercept only and
   # slope only models
@@ -476,7 +476,7 @@ pa1 <- function(e=parent.frame())
     if( isnnform(e$userFormula$random) ) t1$random <- e$userFormula$random
     if( isnnform(e$userFormula$formula) ) t1$formula <- e$userFormula$formula
   }
-  cat("line 479: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+  #cat("line 479: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
   # check time order first, that way the time order carries over to
   # the AR, which should be residuals on the fullest model
@@ -484,21 +484,21 @@ pa1 <- function(e=parent.frame())
   if(e$detectTO) t1$GroupTime_Power(e$maxOrder, e$whichIC[1])
   # t1$time_power
   # t1$formula
-  cat("line 487: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+  #cat("line 487: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
   if(e$detectAR & e$package!="arma") t1$GroupAR_order(P = e$PQ[1]  ,
                                       Q = e$PQ[2]  ,
                                       whichIC= e$whichIC[1]  )
   # t1$correlation
   # t1$formula
-  cat("line 494: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+  #cat("line 494: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
   # fit the models
   if(e$package=="gamlss") Grp.out <- t1$gamlss(e$subgroup)
   if(e$package=="nlme")   Grp.out <- t1$lme(e$subgroup)
   if(e$package=="arma")   Grp.out <- t1$arma(e$subgroup)
 
-  cat("line 501: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+  #cat("line 501: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
   sink(file=e$output)
   print( Grp.out )
