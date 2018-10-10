@@ -38,8 +38,7 @@ htp <- function(data                       ,
   # parralelization: encapsulate ivs and ids in one foreach
   ##############################################################################
   DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
-  funcs <- c('fitWithTargetIV')
-  pkgs  <- c("gamlss", "nlme")
+  pkgs  <- c("gamlss", "nlme", "foreach")
   pb <- txtProgressBar(max = nrow(DIM), style = 3)
   progress <- function(n) setTxtProgressBar(pb, n)
   opts <- list(progress = progress)
@@ -98,7 +97,7 @@ htp <- function(data                       ,
     }
     if(dims$ID[1]=="All Cases")
     {
-      if(detectTO) t0$GroupTime_Power(maxOrder, whichIC[1])
+      if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
       if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
     #cat("line 104", toString(t0$fixed), "\n\n", file="fixed.txt", append=TRUE)
@@ -121,7 +120,7 @@ htp <- function(data                       ,
 
     # these must be rerun after each call to stopCluster
     cl <- snow::makeCluster(parallel::detectCores(), type="SOCK")
-    snow::clusterExport(cl, funcs)
+    snow::clusterExport(cl, c())
     doSNOW::registerDoSNOW(cl)
 
     #IDout <- list()
@@ -191,7 +190,8 @@ htp <- function(data                       ,
         }
 
         #TODO(Stephen): override correlation search for ARMA?
-        fitOutput <- fitWithTargetIV(t1, package, useObs, dims, mod1$modid, PQ)
+        fitOutput <- fitWithTargetIV(t1, package, useObs,
+                                                    dims, mod1$modid, PQ)
         err_id <- c(err_id, fitOutput$err_id)
         modid  <- fitOutput$modid
         rm(fitOutput)
@@ -472,7 +472,7 @@ gerARIMAorder <- function(x)
 {
   if( "Arima" %in% class(x) )
   {
-    ao <- forecast::arimaorder(x)
+    ao <- arimaorder(x)
     return( paste('arima(p=', ao[1], ", d=0",
                   ', q=', ao[2], ')', sep='') )
   }
@@ -601,7 +601,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, PQ)
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- "ML" #modid$PalyticSummary$method
     err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
-    armaOrder <- forecast::arimaorder(modid$arima)
+    armaOrder <- arimaorder(modid$arima)
     err_id['call'] <- paste( "arima(y=", t1$dv,
                              ", order=c(",
                              armaOrder[1], ",",

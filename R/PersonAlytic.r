@@ -309,7 +309,7 @@
 #'                       subgroup = OvaryICT$Mare==1
 #'                       )
 #' message('\n\nDoes batch run match a single run?\n', all.equal( c(t(mare1$tTable)),
-#' unname(unlist(t1[t1$Mare==1,29:60]))) )
+#' unname(unlist(t1[t1$Mare==1,29:48]))) )
 #'
 #' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
@@ -484,7 +484,7 @@ pa1 <- function(e=parent.frame())
   # check time order first, that way the time order carries over to
   # the AR, which should be residuals on the fullest model
 
-  if(e$detectTO) t1$GroupTime_Power(e$maxOrder, e$whichIC[1])
+  if(e$detectTO) t1$GroupTime_Power(e$subgroup, e$maxOrder, e$whichIC[1])
   # t1$time_power
   # t1$formula
   #cat("line 487: ", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)

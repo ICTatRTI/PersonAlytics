@@ -1166,6 +1166,10 @@ Palytic$set("public", "arma",
               xdat <- model.matrix(self$fixed, tempData)[,-1]
               if(is.null(dim(xdat))) xdat <- matrix(xdat)
 
+              tm<-gsub(":", ".", toString(Sys.time()))
+              write.csv(data.frame(tempData, xdat),
+                        file=paste(tm,'armaDat.csv',sep='_'))
+
               # auto detect residual correlation structure here, time power
               # must be detected elsewhere or added here
               m1 <- try( forecast::auto.arima(y     = tempData[[self$dv]],
@@ -1591,7 +1595,6 @@ Palytic$set("public", "GroupAR_order",
             },
             overwrite = TRUE)
 
-#TODO(Stephen): use a deep clone in the *get* methods
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "getTime_Power",
             function(maxOrder=3, whichIC="BIC")
@@ -1636,8 +1639,11 @@ Palytic$set("public", "getTime_Power",
 
 # hard coded lme at this point, option for gamlss later
 Palytic$set("public", "GroupTime_Power",
-            function(maxOrder=3, whichIC="BIC")
+            function(subgroup=NULL, maxOrder=3, whichIC="BIC")
             {
+
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "time/outcome relationship starting...")
               start <- Sys.time()
@@ -1650,7 +1656,7 @@ Palytic$set("public", "GroupTime_Power",
                 clone$method     <- "ML"
                 clone$time_power <- i
 
-                mods[[i]] <- clone$lme()
+                mods[[i]] <- clone$lme(subgroup)
                 if(! "lme" %in% class(mods[[i]]))
                 {
                   mods[[i]] <- NULL
