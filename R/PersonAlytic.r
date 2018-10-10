@@ -530,7 +530,7 @@ paHTP <- function(e=parent.frame())
   # check that dvs, target_ivs are lists, if not, force
   if( ! "list" %in% class(e$dvs) ) e$dvs <- as.list(e$dvs)
   if( ! "list" %in% class(e$ivs) ) e$ivs <- as.list(e$ivs)
-  if( ! "list" %in% class(e$target_ivs) ) e$ivs <- as.list(e$target_ivs)
+  if( ! "list" %in% class(e$target_ivs) ) e$target_ivs <- as.list(e$target_ivs)
 
   # check that inputs conform. This is also done when creating a Palytic
   # object, but we do it early on here to avoid problems after loops start.
@@ -570,7 +570,8 @@ paHTP <- function(e=parent.frame())
 
   # dimensions for loops
   ID <- uids
-  IV <- 1:length(e$target_ivs); if(is.null(e$target_ivs)) IV <- 1
+  IV <- 1:length(e$target_ivs)
+  if(is.null(e$target_ivs) | length(e$target_ivs)==0) IV <- 1
   DV <- 1:length(e$dvs)
   dims <- list(ID=ID, IV=IV, DV=DV)
 

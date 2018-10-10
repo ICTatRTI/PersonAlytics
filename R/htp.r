@@ -169,10 +169,10 @@ htp <- function(data                                                ,
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
       err_id['target_ivVar'] <- "No target_ivs"
-      if( length( target_ivs[iv] ) > 0 )
+      if( length( unlist(target_ivs[iv]) ) > 0 )
       {
         # check for 0 variance in the target iv
-        tivv <- !all(duplicated(data[[target_ivs[iv]]][data[[ids]]==id])[-1L])
+        tivv <- !all(duplicated(data[[unlist(target_ivs[iv])]][data[[ids]]==id])[-1L])
         err_id['target_ivVar'] <- paste('The variance of `',
                                       target_ivs[iv], '` is ',
                                       ifelse(tivv, '> 0 ', '= 0 '),
@@ -197,7 +197,7 @@ htp <- function(data                                                ,
         modid  <- fitOutput$modid
         rm(fitOutput)
       }
-      if( length( target_ivs[iv] ) == 0 )
+      if( length( unlist(target_ivs[iv]) ) == 0 )
       {
         modid <- mod1$modid
         err_id <- c(err_id, mod1$err_id)
@@ -253,7 +253,7 @@ htp <- function(data                                                ,
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
-      IDout[[i]] <- list( Messages=err_id, Model=Model )
+      IDout[[i]] <- list( Messages=err_id, Model=Model, Describe=descr_id )
       #return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
 
     } # end of foreach
@@ -427,10 +427,10 @@ rcn <- function(x, target_ivs)
       w <- which(lapply(Rns, length) > 0)
       if( length(w) > 0 )
       {
-        if( is.factor(data[[target_ivs[[w]]]]) )
+        if( is.factor(data[[unlist(target_ivs[[w]])]]) )
         {
-          uT     <- levels(data[[target_ivs[[w]]]])
-          comCat <- unlist( strsplit(Tnms, target_ivs[[w]]) )
+          uT     <- levels(data[[unlist(target_ivs[[w]])]])
+          comCat <- unlist( strsplit(Tnms, unlist(target_ivs[[w]])) )
           comCat <- comCat[comCat != ""]
           refCat <- uT[! uT %in% comCat]
           NewNms <- paste('Targ', comCat, 'vs', refCat, sep='_')
