@@ -169,7 +169,7 @@ pstand <- function(data, standardize, dv, ivs, family, ids)
     if(!dogroup) data[[i]] <- scale(data[[i]])
     if( dogroup)
     {
-      data[[i]] <- unlist( by(data[[i]], data[[ids]], scale))
+      data[[i]] <- unlist( by(as.numeric( data[[i]] ), data[[ids]], scale))
     }
   }
 

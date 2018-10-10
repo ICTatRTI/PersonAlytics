@@ -447,6 +447,7 @@ pa1 <- function(e=parent.frame())
 
   # concatenate ivs
   ivs <- c(e$ivs, e$target_ivs)
+  ivs <- ivs[!duplicated(ivs)]
 
   t1 <- Palytic$new(data=e$data                 ,
                     ids=e$ids                   ,
@@ -529,6 +530,7 @@ paHTP <- function(e=parent.frame())
   # check that dvs, target_ivs are lists, if not, force
   if( ! "list" %in% class(e$dvs) ) e$dvs <- as.list(e$dvs)
   if( ! "list" %in% class(e$ivs) ) e$ivs <- as.list(e$ivs)
+  if( ! "list" %in% class(e$target_ivs) ) e$ivs <- as.list(e$target_ivs)
 
   # check that inputs conform. This is also done when creating a Palytic
   # object, but we do it early on here to avoid problems after loops start.

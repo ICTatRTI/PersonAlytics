@@ -5,28 +5,28 @@
 # the current state of using Palytic is to create one object for
 # loops across individuals, but overwrite the the Palytic object
 # for loops across dvs/ivs
-htp <- function(data                       ,
-                dims                       ,
-                dvs                        ,
-                phase                      ,
-                ids                        ,
-                uids                       ,
-                time                       ,
-                ivs                        ,
-                target_ivs                 ,
-                interactions=NULL          ,
-                time_power=1               ,
-                correlation=NULL           ,
-                family = gamlss.dist::NO() ,
-                standardize=TRUE           ,
-                package='gamlss'           ,
-                detectAR = TRUE            ,
-                PQ = c(3, 3)               ,
-                whichIC = "BIC"            ,
-                detectTO = TRUE            ,
-                maxOrder=3                 ,
-                sigma.formula=~1           ,
-                debugforeach = FALSE       ,
+htp <- function(data                                                ,
+                dims                                                ,
+                dvs                                                 ,
+                phase                                               ,
+                ids                                                 ,
+                uids                                                ,
+                time                                                ,
+                ivs                                                 ,
+                target_ivs                                          ,
+                interactions=NULL                                   ,
+                time_power=1                                        ,
+                correlation=NULL                                    ,
+                family = gamlss.dist::NO()                          ,
+                standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
+                package='gamlss'                                    ,
+                detectAR = TRUE                                     ,
+                PQ = c(3, 3)                                        ,
+                whichIC = "BIC"                                     ,
+                detectTO = TRUE                                     ,
+                maxOrder=3                                          ,
+                sigma.formula=~1                                    ,
+                debugforeach = FALSE                                ,
                 userFormula = list(
                 fixed=NULL,
                 random=NULL,
@@ -60,6 +60,7 @@ htp <- function(data                       ,
                       phase=phase,
                       ivs=ivs, # target_ivs added later
                       interactions=interactions,
+                      standardize=standardize,
                       time_power=time_power,
                       correlation=correlation,
                       family=family,
@@ -123,12 +124,12 @@ htp <- function(data                       ,
     snow::clusterExport(cl, c())
     doSNOW::registerDoSNOW(cl)
 
-    #IDout <- list()
-    IDout <- foreach( id=DIM$ID, iv=DIM$IV,
-            .packages = pkgs, .options.snow = opts) %dopar%
-    #for(i in 1:nrow(DIM))
+    IDout <- list()
+    #IDout <- foreach( id=DIM$ID, iv=DIM$IV,
+    #        .packages = pkgs, .options.snow = opts) %dopar%
+    for(i in 1:nrow(DIM))
     {
-      #id=DIM$ID[i]; iv=DIM$IV[i]
+      id=DIM$ID[i]; iv=DIM$IV[i]
 
       #-------------------------------------------------------------------------
       # deep clone
@@ -252,8 +253,8 @@ htp <- function(data                       ,
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
-      #IDout[[i]] <- list( Messages=err_id, Model=Model )
-      return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
+      IDout[[i]] <- list( Messages=err_id, Model=Model )
+      #return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
 
     } # end of foreach
     # stop the cluster
