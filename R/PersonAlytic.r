@@ -445,12 +445,15 @@ pa1 <- function(e=parent.frame())
 
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
 
+  # concatenate ivs
+  ivs <- c(e$ivs, e$target_ivs)
+
   t1 <- Palytic$new(data=e$data                 ,
                     ids=e$ids                   ,
-                    dv=e$dvs                    ,
+                    dv=e$dvs[[1]]               ,
                     time=e$time                 ,
                     phase=e$phase               ,
-                    ivs=e$ivs                   ,
+                    ivs=ivs                     ,
                     interactions=e$interactions ,
                     time_power=e$time_power     ,
                     correlation=e$correlation   ,
