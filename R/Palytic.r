@@ -1018,7 +1018,7 @@ Palytic <- R6::R6Class("Palytic",
                                          method=method             )
 
                            # check whether time is monotorically increasing
-                           ismonotone <- monotone(ids, time, data)
+                           ismonotone <- monotone(ids, time, datac)
 
                            # populate private
                            private$.data        <- data
@@ -1166,9 +1166,9 @@ Palytic$set("public", "arma",
               xdat <- model.matrix(self$fixed, tempData)[,-1]
               if(is.null(dim(xdat))) xdat <- matrix(xdat)
 
-              tm<-gsub(":", ".", toString(Sys.time()))
-              write.csv(data.frame(tempData, xdat),
-                        file=paste(tm,'armaDat.csv',sep='_'))
+              #tm<-gsub(":", ".", toString(Sys.time()))
+              #write.csv(data.frame(tempData, xdat),
+              #          file=paste(tm,'armaDat.csv',sep='_'))
 
               # auto detect residual correlation structure here, time power
               # must be detected elsewhere or added here

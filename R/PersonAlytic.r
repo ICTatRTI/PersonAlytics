@@ -413,6 +413,12 @@ PersonAlytic <- function(output=NULL                                       ,
       formula=NULL)
   }
 
+  # override
+  if(individual_mods==TRUE & length(dvs)==1 & length(target_ivs)<=1)
+  {
+    individual_mods <- FALSE
+  }
+
   # call 'methods'
   if(individual_mods==FALSE & length(dvs)==1 & length(target_ivs)<=1)
   {
@@ -428,6 +434,9 @@ PersonAlytic <- function(output=NULL                                       ,
   while( sink.number() > 0 ) sink()
 }
 
+#TODO(Stephen): individual_mods = FALSE is yielding different results than
+#if running via htp (which can be forced), see the example in
+#R:\PaCCT\02 Clients\curelator\Analyses\20181004\20181004 Curelator Analyses PersonAlytics_v0.1.2.2.r
 #' pa1
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #' @keywords internal
@@ -530,7 +539,7 @@ paHTP <- function(e=parent.frame())
   # check that dvs, target_ivs are lists, if not, force
   if( ! "list" %in% class(e$dvs) ) e$dvs <- as.list(e$dvs)
   if( ! "list" %in% class(e$ivs) ) e$ivs <- as.list(e$ivs)
-  if( ! "list" %in% class(e$target_ivs) ) e$target_ivs <- as.list(e$target_ivs)
+  #if( ! "list" %in% class(e$target_ivs) ) e$target_ivs <- as.list(e$target_ivs)
 
   # check that inputs conform. This is also done when creating a Palytic
   # object, but we do it early on here to avoid problems after loops start.

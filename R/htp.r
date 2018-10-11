@@ -124,12 +124,12 @@ htp <- function(data                                                ,
     snow::clusterExport(cl, c())
     doSNOW::registerDoSNOW(cl)
 
-    IDout <- list()
-    #IDout <- foreach( id=DIM$ID, iv=DIM$IV,
-    #        .packages = pkgs, .options.snow = opts) %dopar%
-    for(i in 1:nrow(DIM))
+    #IDout <- list()
+    IDout <- foreach( id=DIM$ID, iv=DIM$IV,
+            .packages = pkgs, .options.snow = opts) %dopar%
+    #for(i in 1:nrow(DIM))
     {
-      id=DIM$ID[i]; iv=DIM$IV[i]
+      #id=DIM$ID[i]; iv=DIM$IV[i]
 
       #-------------------------------------------------------------------------
       # deep clone
@@ -138,7 +138,8 @@ htp <- function(data                                                ,
       #cat("line 138", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
-      # for the current id, select rows
+      # for the current id, select potential rows, useObs will be updated
+      # based on missing data determined by htpErrors()
       #-------------------------------------------------------------------------
       if(dims$ID[1]!="All Cases")
       {
@@ -152,32 +153,26 @@ htp <- function(data                                                ,
       }
 
       #-------------------------------------------------------------------------
+      # accumulate inputs and errors for the output, results are used in
+      # row selection `useObs`
+      #-------------------------------------------------------------------------
+      err_id <- htpErrors(t1, id, dims, package, useObs, target_ivs[iv])
+      tivv   <- err_id$tivv
+      err_id <- err_id$err_id
+
+      #-------------------------------------------------------------------------
       # fit the model w/o target ivs
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
-      t1$time_power <- t1$time_powers[id,2]
-      #cat("line 159", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      t1$time_power     <- t1$time_powers[id,2]
+      err_id$time_power <- t1$time_powers[id,2]
       mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
-      #cat("line 161", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
-
-      #-------------------------------------------------------------------------
-      # accumulate inputs and errors for the output
-      #-------------------------------------------------------------------------
-      err_id <- htpErrors(t1, id, dims, package, useObs)
 
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
-      err_id['target_ivVar'] <- "No target_ivs"
-      if( length( unlist(target_ivs[iv]) ) > 0 )
+      if( length( unlist(target_ivs[iv]) ) > 0 & !is.na(tivv) & tivv )
       {
-        # check for 0 variance in the target iv
-        tivv <- !all(duplicated(data[[unlist(target_ivs[iv])]][data[[ids]]==id])[-1L])
-        err_id['target_ivVar'] <- paste('The variance of `',
-                                      target_ivs[iv], '` is ',
-                                      ifelse(tivv, '> 0 ', '= 0 '),
-                                      sep='')
-
         # add the target IV
         err_id['target_iv'] <- toString( target_ivs[iv] )
         ivs.temp <- unlist(c(ivs, target_ivs[iv]))
@@ -197,7 +192,8 @@ htp <- function(data                                                ,
         modid  <- fitOutput$modid
         rm(fitOutput)
       }
-      if( length( unlist(target_ivs[iv]) ) == 0 )
+      #TODO(Stephen): may need more info if !tivv
+      if( length( unlist(target_ivs[iv]) ) == 0 | !tivv )
       {
         modid <- mod1$modid
         err_id <- c(err_id, mod1$err_id)
@@ -226,23 +222,11 @@ htp <- function(data                                                ,
       {
         Model <- modid
       }
-      #cat("line 228", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
-      #TODO(Stephen): extract to a function
       #-------------------------------------------------------------------------
-      err_id["target_iv"]   = nullString(unlist(target_ivs)[iv])
-      err_id["fixed"]       = rmSpecChar(t1$fixed)
-      err_id["random"]      = rmSpecChar(t1$random)
-      err_id["correlation"] = ifelse(all(dims$ID=="All Cases"),
-                                     rmSpecChar(t1$correlation),
-                                     ifelse(package=="arma",
-                                            gerARIMAorder(modid$arima),
-                                            rmSpecChar(t1$corStructs[id,2])))
-      err_id["formula"]     = rmSpecChar(t1$formula)
-      err_id["directory"]   = normalizePath(getwd())
-      err_id["date"]        = toString( Sys.time() )
+      err_id <- c(err_id, htpForms(t1, dims, package, modid))
 
       #-------------------------------------------------------------------------
       # for a clean print after the progress bar
@@ -253,8 +237,8 @@ htp <- function(data                                                ,
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
-      IDout[[i]] <- list( Messages=err_id, Model=Model, Describe=descr_id )
-      #return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
+      #IDout[[i]] <- list( Messages=err_id, Model=Model, Describe=descr_id )
+      return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
 
     } # end of foreach
     # stop the cluster
@@ -305,6 +289,7 @@ htp <- function(data                                                ,
     #...........................................................................
     # turn the numeric output into vectors & rbind them together
     #...........................................................................
+    cat(toString(target_ivs), file='htpLine308')
     IDoutSumm <- lapply(IDoutSum, rcm, target_ivs=target_ivs)
     IDoutSumm <- plyr::rbind.fill(IDoutSumm)
 
@@ -317,15 +302,30 @@ htp <- function(data                                                ,
   return( outmat )
 }
 
+#' htpForms: accumulate formula information
+#' @keywords internal
+htpForms <- function(t1, dims, package, modid)
+{
+  err_id["fixed"]       = rmSpecChar(t1$fixed)
+  err_id["random"]      = rmSpecChar(t1$random)
+  err_id$correlation    = ifelse(all(dims$ID=="All Cases"),
+                                 rmSpecChar(t1$correlation),
+                                 ifelse(package=="arma",
+                                        gerARIMAorder(modid$arima),
+                                        rmSpecChar(t1$corStructs[id,2])))
+  err_id["formula"]     = rmSpecChar(t1$formula)
+  err_id["directory"]   = normalizePath(getwd())
+  err_id["date"]        = toString( Sys.time() )
+}
+
 #' htpErrors: accumulate inputs and errors
 #' @keywords internal
-htpErrors <- function(t1, id, dims, package, useObs)
+htpErrors <- function(t1, id, dims, package, useObs, target_iv)
 {
   err_id <- list()
 
   # temporary data for checking valid cases
-  temp   <- t1$data[useObs, all.vars(t1$formula)]
-  nrt    <- nrow(temp)
+  temp   <- na.omit( t1$datac[useObs, c(all.vars(t1$formula), target_iv)] )
 
   # identify rows
   err_id[t1$ids] <- id
@@ -333,30 +333,38 @@ htpErrors <- function(t1, id, dims, package, useObs)
   # identify inputs
   err_id['ids']          <- t1$ids
   err_id['dvs']          <- t1$dvs
-  err_id['family']       <- t1$family[[1]][2]
-  err_id['package']      <- package
   err_id['time']         <- t1$time[1]
   err_id['phase']        <- t1$phase
+  err_id['ivs']          <- toString( t1$ivs )
+  err_id['target_iv']    <- toString( target_iv )
   err_id['interactions'] <- toString( t1$interactions )
-  err_id['time_power']   <- t1$time_power
+  err_id['time_power']   <- t1$time_power # updated later
+  err_id['correlation']  <- t1$correlation # updated later if arma
+  err_id['family']       <- t1$family[[1]][2]
+  err_id['standardize']  <- paste(paste(names(t1$standardize),
+                                        t1$standardize, sep='='), collapse=', ')
+  err_id['method']       <- t1$method
+  err_id['package']      <- package
 
-  # adequate data
-  err_id['Nobs'] <- paste('There are', nrow(na.omit(temp)),
-                          'observations with complete data.')
+  # chec for adequate data
+  nrt            <- nrow(temp)
+  err_id['Nobs'] <- paste('There are', nrt,
+                          'time points with complete data.')
 
   # outcome variance
-  err_id['dvVar'] <- paste( 'The variance of `', t1$dv, '` is ',
-                            round(var(temp[[t1$dv]], na.rm = TRUE),3),
+  dvVar <- round(var(temp[[t1$dv]], na.rm = TRUE),3)
+  err_id['dvVar'] <- paste( 'The variance of `', t1$dv, '` is ', dvVar,
                             ifelse(all(dims$ID=="All Cases"), ".",
                                    paste(' for ', t1$ids, ' = ', id, '.', sep='')),
                             sep='')
+
   # time should be monotonically increasing
   err_id['timeVar'] <- paste("`", t1$time[1], "` is",
-                             ifelse(all(t1$monotone$monotonic), "" , "NOT"),
-                             "monotonically increasing for `", t1$ids, "` =", id, ".")
+                             ifelse(t1$monotone$monotonic[id], "" , "NOT"),
+                             "monotonically increasing for `",
+                             t1$ids, "` =", id, ".")
 
-  # ivs (!target_ivs yet) and ivs variance
-  err_id['ivs'] <- NA
+  # ivs and ivs variance
   err_id['ivVar'] <- "There are no variables in `ivs`."
   if( length(t1$ivs) > 0)
   {
@@ -382,7 +390,21 @@ htpErrors <- function(t1, id, dims, package, useObs)
                                     sep=''), collapse='; ')
   }
 
-  return(err_id)
+  # target iv and target iv variance
+  err_id['target_ivVar'] <- "No target_ivs"
+  tivv <- NA
+
+  # check for 0 variance in the target iv
+  if(!is.null(target_iv))
+  {
+    tivv <- !all(duplicated(temp[[target_ivs[iv]]])[-1L])
+    err_id['target_ivVar'] <- paste('The variance of `',
+                                    target_ivs[iv], '` is ',
+                                    ifelse(tivv, '> 0 ', '= 0 '),
+                                    sep='')
+  }
+
+  return( list(err_id=err_id, tivv=tivv) )
 }
 
 #' rcm: function to force values to data.frame vectors for later stacking
@@ -427,10 +449,15 @@ rcn <- function(x, target_ivs)
       w <- which(lapply(Rns, length) > 0)
       if( length(w) > 0 )
       {
-        if( is.factor(data[[unlist(target_ivs[[w]])]]) )
+        cat(toString(target_ivs), file = "htpLine431.txt")
+        cat(capture.output(target_ivs), '\n',
+            capture.output(target_ivs[[w]]), '\n',
+            capture.output(is.factor(data[[target_ivs[[w]]]])),
+            file = "htpLine431.txt")
+        if( is.factor(data[[target_ivs[[w]]]]) )
         {
-          uT     <- levels(data[[unlist(target_ivs[[w]])]])
-          comCat <- unlist( strsplit(Tnms, unlist(target_ivs[[w]])) )
+          uT     <- levels(data[[target_ivs[[w]]]])
+          comCat <- unlist( strsplit(Tnms, target_ivs[[w]]) )
           comCat <- comCat[comCat != ""]
           refCat <- uT[! uT %in% comCat]
           NewNms <- paste('Targ', comCat, 'vs', refCat, sep='_')
@@ -473,7 +500,7 @@ gerARIMAorder <- function(x)
 {
   if( "Arima" %in% class(x) )
   {
-    ao <- arimaorder(x)
+    ao <- forecast::arimaorder(x)
     return( paste('arima(p=', ao[1], ", d=0",
                   ', q=', ao[2], ')', sep='') )
   }
@@ -602,7 +629,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, PQ)
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- "ML" #modid$PalyticSummary$method
     err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
-    armaOrder <- arimaorder(modid$arima)
+    armaOrder <- forecast::arimaorder(modid$arima)
     err_id['call'] <- paste( "arima(y=", t1$dv,
                              ", order=c(",
                              armaOrder[1], ",",
