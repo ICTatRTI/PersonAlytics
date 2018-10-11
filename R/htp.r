@@ -126,7 +126,8 @@ htp <- function(data                                                ,
 
     #IDout <- list()
     IDout <- foreach( id=DIM$ID, iv=DIM$IV,
-            .packages = pkgs, .options.snow = opts) %dopar%
+            .packages = pkgs, .options.snow = opts,
+            .export = c("target_ivs")) %dopar%
     #for(i in 1:nrow(DIM))
     {
       #id=DIM$ID[i]; iv=DIM$IV[i]
@@ -156,9 +157,10 @@ htp <- function(data                                                ,
       # accumulate inputs and errors for the output, results are used in
       # row selection `useObs`
       #-------------------------------------------------------------------------
-      err_id <- htpErrors(t1, id, dims, package, useObs, target_ivs[iv])
-      tivv   <- err_id$tivv
-      err_id <- err_id$err_id
+      htpErr <- htpErrors(t1, id, dims, package, useObs, target_ivs[iv])
+      tivv   <- htpErr$tivv
+      err_id <- htpErr$err_id
+      rm(htpErr)
 
       #-------------------------------------------------------------------------
       # fit the model w/o target ivs
@@ -226,7 +228,7 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
       #-------------------------------------------------------------------------
-      err_id <- c(err_id, htpForms(t1, dims, package, modid))
+      err_id <- htpForms(err_id, t1, dims, package, modid)
 
       #-------------------------------------------------------------------------
       # for a clean print after the progress bar
@@ -304,7 +306,7 @@ htp <- function(data                                                ,
 
 #' htpForms: accumulate formula information
 #' @keywords internal
-htpForms <- function(t1, dims, package, modid)
+htpForms <- function(err_id, t1, dims, package, modid)
 {
   err_id["fixed"]       = rmSpecChar(t1$fixed)
   err_id["random"]      = rmSpecChar(t1$random)
@@ -316,6 +318,7 @@ htpForms <- function(t1, dims, package, modid)
   err_id["formula"]     = rmSpecChar(t1$formula)
   err_id["directory"]   = normalizePath(getwd())
   err_id["date"]        = toString( Sys.time() )
+  return(err_id)
 }
 
 #' htpErrors: accumulate inputs and errors
@@ -397,9 +400,9 @@ htpErrors <- function(t1, id, dims, package, useObs, target_iv)
   # check for 0 variance in the target iv
   if(!is.null(target_iv))
   {
-    tivv <- !all(duplicated(temp[[target_ivs[iv]]])[-1L])
+    tivv <- !all(duplicated(temp[[target_iv]])[-1L])
     err_id['target_ivVar'] <- paste('The variance of `',
-                                    target_ivs[iv], '` is ',
+                                    target_iv, '` is ',
                                     ifelse(tivv, '> 0 ', '= 0 '),
                                     sep='')
   }

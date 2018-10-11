@@ -309,7 +309,7 @@
 #'                       subgroup = OvaryICT$Mare==1
 #'                       )
 #' message('\n\nDoes batch run match a single run?\n', all.equal( c(t(mare1$tTable)),
-#' unname(unlist(t1[t1$Mare==1,29:48]))) )
+#' unname(unlist(t1[t1$Mare==1,31:50]))) )
 #'
 #' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
@@ -413,8 +413,10 @@ PersonAlytic <- function(output=NULL                                       ,
       formula=NULL)
   }
 
-  # override
-  if(individual_mods==TRUE & length(dvs)==1 & length(target_ivs)<=1)
+  # override individual_mods if only 1 id, 1 dv, <= 1 target_iv
+  luid <- length(unique(data[[ids]]))
+  if(individual_mods==TRUE & luid==1 &
+     length(dvs)==1 & length(target_ivs)<=1)
   {
     individual_mods <- FALSE
   }
