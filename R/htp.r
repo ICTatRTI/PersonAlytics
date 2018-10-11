@@ -100,6 +100,7 @@ htp <- function(data                                                ,
       if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
       if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
+    #cat("line 104", toString(t0$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
     #...........................................................................
     # start parralelization run
@@ -132,7 +133,8 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # deep clone
       #-------------------------------------------------------------------------
-      t1 <- t0$clone(deep=TRUE)      
+      t1 <- t0$clone(deep=TRUE)
+      #cat("line 138", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
       # for the current id, select potential rows, useObs will be updated
@@ -202,6 +204,7 @@ htp <- function(data                                                ,
         err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
       }
 
+      if(is.na(dvVar)) dvVar <- 0
       if(dvVar==0)
       {
         modid <- NA
