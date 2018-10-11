@@ -1167,10 +1167,6 @@ Palytic$set("public", "arma",
               if(is.null(dim(xdat))) xdat <- matrix(xdat)
               if(ncol(xdat)==1) colnames(xdat) <- all.vars(self$fixed)[-1]
 
-              #tm<-gsub(":", ".", toString(Sys.time()))
-              #write.csv(data.frame(tempData, xdat),
-              #          file=paste(tm,'armaDat.csv',sep='_'))
-
               # auto detect residual correlation structure here, time power
               # must be detected elsewhere or added here
               m1 <- try( forecast::auto.arima(y     = tempData[[self$dv]],
@@ -1182,6 +1178,9 @@ Palytic$set("public", "arma",
                                          max.d = max.d,
                                          max.D = max.D,
                                          ...), silent = TRUE)
+              # TODO() refitting
+
+              # output
               if( zerovar ) m1 <- ""
               if(  any("ARIMA" %in% class(m1)) ) tTable = lmtest::coeftest(m1)
               if(! any("ARIMA" %in% class(m1)) )

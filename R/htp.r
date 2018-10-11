@@ -100,7 +100,6 @@ htp <- function(data                                                ,
       if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
       if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
-    #cat("line 104", toString(t0$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
     #...........................................................................
     # start parralelization run
@@ -133,8 +132,7 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # deep clone
       #-------------------------------------------------------------------------
-      t1 <- t0$clone(deep=TRUE)
-      #cat("line 138", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      t1 <- t0$clone(deep=TRUE)      
 
       #-------------------------------------------------------------------------
       # for the current id, select potential rows, useObs will be updated
@@ -155,9 +153,10 @@ htp <- function(data                                                ,
       # accumulate inputs and errors for the output, results are used in
       # row selection `useObs`
       #-------------------------------------------------------------------------
-      htpErr <- htpErrors(t1=t1, id=id, dv=dv, dims=dims, package=package,
+      htpErr <- htpErrors(t1=t1, id=id, dv=dvs[dv], dims=dims, package=package,
                           useObs=useObs, target_iv=target_ivs[iv])
       tivv   <- htpErr$tivv
+      dvVar  <- htpErr$dvVar
       err_id <- htpErr$err_id
       rm(htpErr)
 
@@ -172,7 +171,7 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
-      if( length( unlist(target_ivs[iv]) ) > 0 & !is.na(tivv) & tivv )
+      if( length( unlist(target_ivs[iv]) ) > 0 & !is.na(tivv) & tivv & dvVar>0 )
       {
         # add the target IV
         ivs.temp <- unlist(c(ivs, target_ivs[iv]))
@@ -192,22 +191,31 @@ htp <- function(data                                                ,
         modid  <- fitOutput$modid
         rm(fitOutput)
       }
-      #TODO(Stephen): may need more info if !tivv
+
       if( length( unlist(target_ivs[iv]) ) == 0 | !tivv )
       {
-        modid <- NA # this may cause problems
-        err_id$convergence <- paste('No variance in `', target_ivs[iv], '`.')
-        err_id$estimator   <- NA
+        modid <- NA
+        err_id$converge    <- paste('No variance in `', target_ivs[iv], '`.')
+        err_id$estimator   <- toString( NA )
         err_id$analyzed_N  <- "0 cases were analyzed."
-        err_id$call        <- NA
-        err_id$targ_ivs_lrt_pvalue <- NA
+        err_id$call        <- toString( NA )
+        err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
+      }
+
+      if(dvVar==0)
+      {
+        modid <- NA
+        err_id$converge    <- paste('No variance in `', dvs[dv], '`.')
+        err_id$estimator   <- toString( NA )
+        err_id$analyzed_N  <- "0 cases were analyzed."
+        err_id$call        <- toString( NA )
+        err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
       }
 
       #-------------------------------------------------------------------------
       # descriptive statistics
       #-------------------------------------------------------------------------
       descr_id <- t1$describe(useObs)
-      #cat("line 209", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
 
       #-------------------------------------------------------------------------
       # re-fit models with REML (unless arma)
@@ -222,7 +230,7 @@ htp <- function(data                                                ,
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
         if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
       }
-      if(!is.na(modid))
+      if(!any(is.na(modid)))
       {
         if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
         {
@@ -296,15 +304,18 @@ htp <- function(data                                                ,
     #...........................................................................
     # turn the numeric output into vectors & rbind them together
     #...........................................................................
-    cat(toString(target_ivs), file='htpLine308')
     IDoutSumm <- lapply(IDoutSum, rcm, target_ivs=target_ivs)
     IDoutSumm <- plyr::rbind.fill(IDoutSumm)
 
-    DVout[[dvs[[dv]]]] <- data.frame(IDmsg, IDdesc, IDoutSumm)
+    DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
   } # end of dv loops
 
   # final post-processing
-  outmat <- plyr::rbind.fill(DVout)
+  IDmsg     <- plyr::rbind.fill( lapply(DVout, function(x) x$IDmsg) )
+  IDdesc    <- plyr::rbind.fill( lapply(DVout, function(x) x$IDdesc) )
+  IDoutSumm <- plyr::rbind.fill( lapply(DVout, function(x) x$IDoutSumm) )
+
+  outmat <- cbind(IDmsg, IDdesc, IDoutSumm)
   row.names(outmat) <- NULL
   return( outmat )
 }
@@ -314,20 +325,22 @@ htp <- function(data                                                ,
 htpForms <- function(err_id, t1, dims, package, modid)
 {
 
-  err_id["fixed"]     <- NA
-  err_id["random"]    <- NA
-  err_id["formula"]   <- NA
+  err_id["fixed"]     <- toString( NA )
+  err_id["random"]    <- toString( NA )
+  err_id["formula"]   <- toString( NA )
 
-  if(!is.na(modid))
+  if(!any(is.na(modid)))
   {
-    err_id["fixed"]       = rmSpecChar(t1$fixed)
-    err_id["random"]      = rmSpecChar(t1$random)
+    err_id["fixed"]       = rmSpecChar(modid$PalyticSummary$fixed)
+    err_id["random"]      = rmSpecChar(modid$PalyticSummary$random)
     err_id$correlation    = ifelse(all(dims$ID=="All Cases"),
-                                   rmSpecChar(t1$correlation),
+                                   rmSpecChar(modid$PalyticSummary$correlation),
                                    ifelse(package=="arma",
-                                          gerARIMAorder(modid$arima),
+                                          #TODO() this doesn't get the ride order
+                                          #gerARIMAorder(modid$arima),
+                                          err_id$correlation, # placeholder
                                           rmSpecChar(t1$corStructs[id,2])))
-    err_id["formula"]     = rmSpecChar(t1$formula)
+    err_id["formula"]     = rmSpecChar(modid$PalyticSummary$formula)
   }
 
   err_id["directory"]   = normalizePath(getwd())
@@ -350,7 +363,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
 
   # identify inputs
   err_id['ids']          <- t1$ids
-  err_id['dvs']          <- t1$dvs[dv]
+  err_id['dv']           <- dv #TODO(Stephen) column not appearing in output??
   err_id['time']         <- t1$time[1]
   err_id['phase']        <- t1$phase
   err_id['ivs']          <- toString( t1$ivs )
@@ -384,6 +397,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
                              t1$ids, "` =", id, ".")
 
   # ivs and ivs variance
+  #TODO() add value pass for iv variances and add to output
   err_id['ivVar'] <- "There are no variables in `ivs`."
   if( length(t1$ivs) > 0)
   {
@@ -423,7 +437,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
                                     sep='')
   }
 
-  return( list(err_id=err_id, tivv=tivv) )
+  return( list(err_id=err_id, tivv=tivv, dvVar=dvVar) )
 }
 
 #' rcm: function to force values to data.frame vectors for later stacking
@@ -566,7 +580,7 @@ fitWithTargetIV <- function(t1, package, useObs, dims, mod1=NULL, PQ=c(3,3))
   if(!is.null(mod1))
   {
     # LRT for target iv ####
-    lrtp <- NA
+    lrtp <- as.numeric(NA)
     if(any(c("gamlss", "lme") %in% class(mod1) ) &
        any(c("gamlss", "lme") %in% class(modid)) &
        length(dims$IV) > 0
@@ -609,7 +623,7 @@ fitWithTargetIVlme <- function(t1, useObs, dims)
   if(! "lme"  %in%  class(modid) )
   {
     err_id['converge']   <- modid
-    err_id['estimator']  <- t1$method
+    err_id['estimator']  <- toString( t1$method )
     err_id['analyzed_N'] <- NA
     err_id['call'] <- NA
     # here is a placeholder for getting error messsages from lme
@@ -619,7 +633,7 @@ fitWithTargetIVlme <- function(t1, useObs, dims)
   if(  "lme"  %in%  class(modid) )
   {
     err_id['converge']   <- 'Convergence is `TRUE`'
-    err_id['estimator']  <- modid$PalyticSummary$method
+    err_id['estimator']  <- toString( modid$PalyticSummary$method )
     err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
     err_id['call'] <- paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
                              Reduce( paste, deparse(modid$PalyticSummary$random) ),
@@ -639,14 +653,14 @@ fitWithTargetIVarma <- function(t1, useObs, dims, PQ)
   {
     err_id['converge']   <- modid$arima
     #t1$method --- ML currently default in arma, REML not an option
-    err_id['estimator']  <- "ML"
+    err_id['estimator']  <- toString( "ML" )
     err_id['analyzed_N'] <- NA
     err_id['call'] <- NA
   }
   if(  "coeftest"  %in%  class(modid$tTable) )
   {
     err_id['converge']   <- 'Convergence is `TRUE`'
-    err_id['estimator']  <- "ML" #modid$PalyticSummary$method
+    err_id['estimator']  <- toString( "ML" )
     err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
     armaOrder <- forecast::arimaorder(modid$arima)
     err_id['call'] <- paste( "arima(y=", t1$dv,
@@ -671,10 +685,10 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims)
   if(! "gamlss"  %in%  class(modid) )
   {
     err_id['converge']         <- "Model failed to converge"
-    err_id['re_estimator']     <- NA
-    err_id['gamlss_estimator'] <- NA
-    err_id['analyzed_N']       <- NA
-    err_id['call']             <- NA
+    err_id['re_estimator']     <- toString( NA )
+    err_id['gamlss_estimator'] <- toString( NA )
+    err_id['analyzed_N']       <- toString( NA )
+    err_id['call']             <- toString( NA )
   }
   if(  "gamlss"  %in%  class(modid) )
   {
@@ -690,7 +704,7 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims)
     }
     if(!any(has_method)) err_id['re_estimator'] <- "Cannot be determined"
 
-    err_id['gamlss_estimator'] <- modid$PalyticSummary$method
+    err_id['gamlss_estimator'] <- toString( modid$PalyticSummary$method )
     err_id['analyzed_N'] <- paste(modid$N, 'cases were analyzed.')
     err_id['call'] <- modid$PalyticSummary$formula
   }
