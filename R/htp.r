@@ -66,7 +66,6 @@ htp <- function(data                                                ,
                       family=family,
                       method="ML" # requested method used in final estimation
                      )
-    #cat("line 69", toString(t0$fixed), "\n\n", file="fixed.txt")
 
     # allow for formula override so that we can test intercept only and
     # slope only models
@@ -126,8 +125,7 @@ htp <- function(data                                                ,
 
     #IDout <- list()
     IDout <- foreach( id=DIM$ID, iv=DIM$IV,
-            .packages = pkgs, .options.snow = opts,
-            .export = c("target_ivs")) %dopar%
+            .packages = pkgs, .options.snow = opts) %dopar%
     #for(i in 1:nrow(DIM))
     {
       #id=DIM$ID[i]; iv=DIM$IV[i]
@@ -157,7 +155,8 @@ htp <- function(data                                                ,
       # accumulate inputs and errors for the output, results are used in
       # row selection `useObs`
       #-------------------------------------------------------------------------
-      htpErr <- htpErrors(t1, id, dims, package, useObs, target_ivs[iv])
+      htpErr <- htpErrors(t1=t1, id=id, dv=dv, dims=dims, package=package,
+                          useObs=useObs, target_iv=target_ivs[iv])
       tivv   <- htpErr$tivv
       err_id <- htpErr$err_id
       rm(htpErr)
@@ -176,7 +175,6 @@ htp <- function(data                                                ,
       if( length( unlist(target_ivs[iv]) ) > 0 & !is.na(tivv) & tivv )
       {
         # add the target IV
-        err_id['target_iv'] <- toString( target_ivs[iv] )
         ivs.temp <- unlist(c(ivs, target_ivs[iv]))
         if( is.null(ivs.temp) )
         {
@@ -189,7 +187,7 @@ htp <- function(data                                                ,
 
         #TODO(Stephen): override correlation search for ARMA?
         fitOutput <- fitWithTargetIV(t1, package, useObs,
-                                                    dims, mod1$modid, PQ)
+                                     dims, mod1$modid, PQ)
         err_id <- c(err_id, fitOutput$err_id)
         modid  <- fitOutput$modid
         rm(fitOutput)
@@ -197,8 +195,12 @@ htp <- function(data                                                ,
       #TODO(Stephen): may need more info if !tivv
       if( length( unlist(target_ivs[iv]) ) == 0 | !tivv )
       {
-        modid <- mod1$modid
-        err_id <- c(err_id, mod1$err_id)
+        modid <- NA # this may cause problems
+        err_id$convergence <- paste('No variance in `', target_ivs[iv], '`.')
+        err_id$estimator   <- NA
+        err_id$analyzed_N  <- "0 cases were analyzed."
+        err_id$call        <- NA
+        err_id$targ_ivs_lrt_pvalue <- NA
       }
 
       #-------------------------------------------------------------------------
@@ -213,22 +215,25 @@ htp <- function(data                                                ,
       # fitWithTargetIV unless the REML fit leads to a different model than
       # the ML fit
       #-------------------------------------------------------------------------
-      Model = "NA"
+      Model = NA
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
         t1$method <- "REML"
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
         if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
       }
-      if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
+      if(!is.na(modid))
       {
-        Model <- modid
+        if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
+        {
+          Model <- modid
+        }
       }
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
       #-------------------------------------------------------------------------
-      err_id <- htpForms(err_id, t1, dims, package, modid)
+      err_id <- htpForms(err_id, t1, dims, package, modid=Model)
 
       #-------------------------------------------------------------------------
       # for a clean print after the progress bar
@@ -308,22 +313,32 @@ htp <- function(data                                                ,
 #' @keywords internal
 htpForms <- function(err_id, t1, dims, package, modid)
 {
-  err_id["fixed"]       = rmSpecChar(t1$fixed)
-  err_id["random"]      = rmSpecChar(t1$random)
-  err_id$correlation    = ifelse(all(dims$ID=="All Cases"),
-                                 rmSpecChar(t1$correlation),
-                                 ifelse(package=="arma",
-                                        gerARIMAorder(modid$arima),
-                                        rmSpecChar(t1$corStructs[id,2])))
-  err_id["formula"]     = rmSpecChar(t1$formula)
+
+  err_id["fixed"]     <- NA
+  err_id["random"]    <- NA
+  err_id["formula"]   <- NA
+
+  if(!is.na(modid))
+  {
+    err_id["fixed"]       = rmSpecChar(t1$fixed)
+    err_id["random"]      = rmSpecChar(t1$random)
+    err_id$correlation    = ifelse(all(dims$ID=="All Cases"),
+                                   rmSpecChar(t1$correlation),
+                                   ifelse(package=="arma",
+                                          gerARIMAorder(modid$arima),
+                                          rmSpecChar(t1$corStructs[id,2])))
+    err_id["formula"]     = rmSpecChar(t1$formula)
+  }
+
   err_id["directory"]   = normalizePath(getwd())
   err_id["date"]        = toString( Sys.time() )
+
   return(err_id)
 }
 
 #' htpErrors: accumulate inputs and errors
 #' @keywords internal
-htpErrors <- function(t1, id, dims, package, useObs, target_iv)
+htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
 {
   err_id <- list()
 
@@ -335,14 +350,15 @@ htpErrors <- function(t1, id, dims, package, useObs, target_iv)
 
   # identify inputs
   err_id['ids']          <- t1$ids
-  err_id['dvs']          <- t1$dvs
+  err_id['dvs']          <- t1$dvs[dv]
   err_id['time']         <- t1$time[1]
   err_id['phase']        <- t1$phase
   err_id['ivs']          <- toString( t1$ivs )
   err_id['target_iv']    <- toString( target_iv )
   err_id['interactions'] <- toString( t1$interactions )
   err_id['time_power']   <- t1$time_power # updated later
-  err_id['correlation']  <- t1$correlation # updated later if arma
+  err_id['correlation']  <- ifelse(package=="arma", "See 'call' column'",
+                                   t1$correlation)
   err_id['family']       <- t1$family[[1]][2]
   err_id['standardize']  <- paste(paste(names(t1$standardize),
                                         t1$standardize, sep='='), collapse=', ')

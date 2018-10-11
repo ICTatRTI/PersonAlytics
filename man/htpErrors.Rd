@@ -4,7 +4,7 @@
 \alias{htpErrors}
 \title{htpErrors: accumulate inputs and errors}
 \usage{
-htpErrors(t1, id, dims, package, useObs, target_iv)
+htpErrors(t1, id, dv, dims, package, useObs, target_iv)
 }
 \description{
 htpErrors: accumulate inputs and errors

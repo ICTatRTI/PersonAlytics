@@ -1165,7 +1165,7 @@ Palytic$set("public", "arma",
               # 2. drop the intercept column
               xdat <- model.matrix(self$fixed, tempData)[,-1]
               if(is.null(dim(xdat))) xdat <- matrix(xdat)
-              colnames(xdat) <- all.vars(self$fixed)[-1]
+              if(ncol(xdat)==1) colnames(xdat) <- all.vars(self$fixed)[-1]
 
               #tm<-gsub(":", ".", toString(Sys.time()))
               #write.csv(data.frame(tempData, xdat),
