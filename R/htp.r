@@ -42,6 +42,9 @@ htp <- function(data                                                ,
   pb <- txtProgressBar(max = nrow(DIM), style = 3)
   progress <- function(n) setTxtProgressBar(pb, n)
   opts <- list(progress = progress)
+  exports <- c("htpForms", "htpErrors", "fitWithTargetIV",
+               "fitWithTargetIVlme", "fitWithTargetIVarma",
+               "fitWithTargetIVgamlss")
 
 
   ##############################################################################
@@ -100,8 +103,6 @@ htp <- function(data                                                ,
       if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
       if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
-    #cat("line 104", toString(t0$fixed), "\n\n", file="fixed.txt", append=TRUE)
-
     #...........................................................................
     # start parralelization run
     #...........................................................................
@@ -124,6 +125,7 @@ htp <- function(data                                                ,
     doSNOW::registerDoSNOW(cl)
 
     #IDout <- list()
+    #,    .export = exports
     IDout <- foreach( id=DIM$ID, iv=DIM$IV,
             .packages = pkgs, .options.snow = opts) %dopar%
     #for(i in 1:nrow(DIM))
@@ -134,7 +136,7 @@ htp <- function(data                                                ,
       # deep clone
       #-------------------------------------------------------------------------
       t1 <- t0$clone(deep=TRUE)
-      cat(paste(dv, id, iv, sep=', '), file="line137.txt")
+      #cat(paste(dv, id, iv, sep=', '), file="line137.txt")
 
       #-------------------------------------------------------------------------
       # for the current id, select potential rows, useObs will be updated
@@ -150,7 +152,7 @@ htp <- function(data                                                ,
         useObs <- rep(TRUE, nrow(t1$data))
         wid    <- 1:nrow(t1$data)
       }
-      cat(paste(dv, id, iv, sep=', '), file="line153.txt")
+      #cat(paste(dv, id, iv, sep=', '), file="line153.txt")
 
       #-------------------------------------------------------------------------
       # accumulate inputs and errors for the output, results are used in
@@ -162,16 +164,15 @@ htp <- function(data                                                ,
       dvVar  <- htpErr$dvVar
       err_id <- htpErr$err_id
       rm(htpErr)
-      cat(paste(dv, id, iv, sep=', '), file="line165.txt")
+      #cat(paste(dv, id, iv, sep=', '), file="line165.txt")
 
       #-------------------------------------------------------------------------
       # fit the model w/o target ivs
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
-      t1$time_power     <- as.numeric( t1$time_powers[wid,2] )
-      err_id$time_power <- t1$time_powers[wid,2]
-      mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
-      cat(paste(dv, id, iv, sep=', '), file="line174.txt")
+      t1$time_power     <- as.numeric( t1$time_powers[id,2] )
+      err_id$time_power <- t1$time_powers[id,2]
+      mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)      
 
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
@@ -217,13 +218,11 @@ htp <- function(data                                                ,
         err_id$call        <- toString( NA )
         err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
       }
-      cat(paste(dv, id, iv, sep=', '), file="line220.txt")
 
       #-------------------------------------------------------------------------
       # descriptive statistics
       #-------------------------------------------------------------------------
       descr_id <- t1$describe(useObs)
-      cat(paste(dv, id, iv, sep=', '), file="line226.txt")
 
       #-------------------------------------------------------------------------
       # re-fit models with REML (unless arma)
@@ -245,13 +244,11 @@ htp <- function(data                                                ,
           Model <- modid
         }
       }
-      cat(paste(dv, id, iv, sep=', '), file="line248.txt")
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
       #-------------------------------------------------------------------------
       err_id <- htpForms(err_id, t1, dims, package, modid=Model)
-      cat(paste(dv, id, iv, sep=', '), file="line254.txt")
 
       #-------------------------------------------------------------------------
       # for a clean print after the progress bar
@@ -259,45 +256,18 @@ htp <- function(data                                                ,
       cat('\n\n')
 
       #-------------------------------------------------------------------------
-      # Memory status
-      #-------------------------------------------------------------------------
-      sizes <- lapply(as.list(ls()), function(x){
-        data.frame(x, as.numeric(pryr::object_size(get(x))))
-      } )
-      sizes <- data.frame(do.call(rbind, sizes))
-      names(sizes) <- c('Objects', 'Size')
-      sizes <- sizes[order(sizes$Size, decreasing = TRUE),]
-      cat(paste(dv, id, iv, sep=', '), file="line270.txt")
-
-      #-------------------------------------------------------------------------
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
       #IDout[[i]] <- list( Messages=err_id, Model=Model, Describe=descr_id )
-      return( list( Messages=err_id, Model=Model, Describe=descr_id, Size=sizes ) )
+      return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
 
-      # garbage collection
-      gc()
     } # end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
 
     message('\n\nModel fitting of the dependent variable `', dvs[dv],
             '` took: ', capture.output(Sys.time() - start), ".\n\n")
-
-    #...........................................................................
-    # memory usage
-    #...........................................................................
-    sink(paste(dvs[dv], 'Memory.txt', sep='.'))
-    for(i in 1:nrow(DIM))
-    {
-      cat(unlist(dvs[dv]), ',', ids, '=', DIM$ID[i], ',',
-          target_ivs[DIM$IV[i]], '\n')
-      cat('Total Size: ', prettyNum(sum(IDout[[i]]$Size$Size), big.mark = ","), '\n')
-      print(IDout[[i]]$Size[1:6,])
-      cat('\n\n')
-    }
-    while( sink.number() > 0 ) sink()
 
     #...........................................................................
     # disaggregate messages
@@ -347,6 +317,7 @@ htp <- function(data                                                ,
     DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
+	gc()
   } # end of dv loops
 
   # final post-processing

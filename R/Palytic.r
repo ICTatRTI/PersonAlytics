@@ -1115,8 +1115,13 @@ Palytic$set("public", "describe",
                 else
                 {
                   des <- paste('correlation', self$dv, i, sep='_')
+
                   hasVarDV <- sd(tempData[[self$dv]], na.rm=TRUE)!=0
                   hasVarIV <- sd(tempData[[i]]      , na.rm=TRUE)!=0
+
+                  if(is.na(hasVarDV)) hasVarDV <- FALSE
+                  if(is.na(hasVarIV)) hasVarIV <- FALSE
+
                   if(hasVarDV & hasVarIV)
                   {
                     ivstats[[des]] <- cor(tempData[[self$dv]], tempData[[i]],

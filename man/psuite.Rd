@@ -4,7 +4,8 @@
 \alias{psuite}
 \title{psuite - apply p.adjust and add output and graphics}
 \usage{
-psuite(DVout, method = "BY", nbest = 25, alpha = 0.05, rawdata = NULL)
+psuite(DVout, ids, method = "BY", nbest = 25, alpha = 0.05,
+  rawdata = NULL)
 }
 \arguments{
 \item{DVout}{A data frame created by \code{\link{PersonAlytic}}.}

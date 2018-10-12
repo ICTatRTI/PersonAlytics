@@ -375,8 +375,10 @@ PersonAlytic <- function(output=NULL                                       ,
   if(is.null(correlation)) correlation <- "NULL"
   pav <- paste("-PAv", packageVersion("PersonAlytics"), "-", sep='')
 
-  if(!is.logical(subgroup)) stop('`subgroup` must be a logical vector with ",
-                                   "TRUE/FALSE values.')
+  if(!is.logical(subgroup) & !is.null(subgroup))
+  {
+    stop('`subgroup` must be a logical vector with TRUE/FALSE values.')
+  }
 
   # override user defaults if there is a data/package/individual_mods mismatch
   if( length(unique(data[[ids]][subgroup])) == 1 & package != "arma" )
