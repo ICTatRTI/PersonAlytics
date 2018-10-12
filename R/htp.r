@@ -38,6 +38,7 @@ htp <- function(data                                                ,
   # parralelization: encapsulate ivs and ids in one foreach
   ##############################################################################
   DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
+  if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
   pkgs  <- c("gamlss", "nlme", "foreach")
   pb <- txtProgressBar(max = nrow(DIM), style = 3)
   progress <- function(n) setTxtProgressBar(pb, n)
@@ -139,7 +140,6 @@ htp <- function(data                                                ,
       # deep clone
       #-------------------------------------------------------------------------
       t1 <- t0$clone(deep=TRUE)
-      #cat(paste(dv, id, iv, sep=', '), file="line137.txt")
 
       #-------------------------------------------------------------------------
       # for the current id, select potential rows, useObs will be updated
@@ -160,8 +160,9 @@ htp <- function(data                                                ,
       # accumulate inputs and errors for the output, results are used in
       # row selection `useObs`
       #-------------------------------------------------------------------------
-      htpErr <- htpErrors(t1=t1, id=id, dv=dvs[dv], dims=dims, package=package,
-                          useObs=useObs, target_iv=target_ivs[iv])
+      htpErr <- htpErrors(t1=t1, id=id, dv=dvs[[dv]], dims=dims,
+                          package=package, useObs=useObs,
+                          target_iv=target_ivs[[iv]])
       tivv   <- htpErr$tivv
       dvVar  <- htpErr$dvVar
       err_id <- htpErr$err_id
