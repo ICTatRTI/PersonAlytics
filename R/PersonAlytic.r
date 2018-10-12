@@ -309,7 +309,7 @@
 #'                       subgroup = OvaryICT$Mare==1
 #'                       )
 #' message('\n\nDoes batch run match a single run?\n', all.equal( c(t(mare1$tTable)),
-#' unname(unlist(t1[t1$Mare==1,31:50]))) )
+#' unname(unlist(t1[t1$Mare==1,32:51]))) )
 #'
 #' # delete the output if this was run in the development directory
 #' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")

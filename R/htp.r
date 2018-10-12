@@ -103,10 +103,10 @@ htp <- function(data                                                ,
       if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
       if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
     }
-    #...........................................................................
-    # start parralelization run
-    #...........................................................................
 
+    #...........................................................................
+    # parralelization message and timing
+    #...........................................................................
     message('\n\nFitting models of the dependent variable `', dvs[dv],
             '` for ',
             ifelse( length(dims$ID)>0,
@@ -119,6 +119,9 @@ htp <- function(data                                                ,
             )
     start <- Sys.time()
 
+    #...........................................................................
+    # start parralelization run
+    #...........................................................................
     # these must be rerun after each call to stopCluster
     cl <- snow::makeCluster(parallel::detectCores(), type="SOCK")
     snow::clusterExport(cl, c())
@@ -152,7 +155,6 @@ htp <- function(data                                                ,
         useObs <- rep(TRUE, nrow(t1$data))
         wid    <- 1:nrow(t1$data)
       }
-      #cat(paste(dv, id, iv, sep=', '), file="line153.txt")
 
       #-------------------------------------------------------------------------
       # accumulate inputs and errors for the output, results are used in
@@ -164,15 +166,14 @@ htp <- function(data                                                ,
       dvVar  <- htpErr$dvVar
       err_id <- htpErr$err_id
       rm(htpErr)
-      #cat(paste(dv, id, iv, sep=', '), file="line165.txt")
 
       #-------------------------------------------------------------------------
       # fit the model w/o target ivs
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
-      t1$time_power     <- as.numeric( t1$time_powers[id,2] )
-      err_id$time_power <- t1$time_powers[id,2]
-      mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)      
+      t1$time_power     <- as.numeric( t1$time_powers[wid,2] )
+      err_id$time_power <- t1$time_powers[wid,2]
+      mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
 
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
@@ -197,8 +198,9 @@ htp <- function(data                                                ,
         modid  <- fitOutput$modid
         rm(fitOutput)
       }
-
-      if( length( unlist(target_ivs[iv]) ) == 0 | !tivv )
+      # the target iv variance was 0
+      if( is.na(tivv) ) tivv <- FALSE
+      if( length( unlist(target_ivs[iv]) ) != 0 & !tivv )
       {
         modid <- NA
         err_id$converge    <- paste('No variance in `', target_ivs[iv], '`.')
@@ -208,6 +210,20 @@ htp <- function(data                                                ,
         err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
       }
 
+      #-------------------------------------------------------------------------
+      # if there was no target IV, make modid mod1
+      #-------------------------------------------------------------------------
+      if( length( unlist(target_ivs[iv]) ) == 0 | !tivv )
+      {
+        modid  <- mod1$modid
+        err_id <- c(err_id, mod1$err_id)
+        rm(mod1)
+        #gc() - !!!! gc() closes connections, don't use it in foreachloops !!!
+      }
+
+      #-------------------------------------------------------------------------
+      # if the dv variance was 0
+      #-------------------------------------------------------------------------
       if(is.na(dvVar)) dvVar <- 0
       if(dvVar==0)
       {
