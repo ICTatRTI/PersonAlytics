@@ -656,7 +656,7 @@ paHTP <- function(e=parent.frame())
 
   if(!is.null(e$p.method) & length(e$target_ivs) > 1)
   {
-    DVout <- try( psuite(DVout,
+    DVout <- try( psuite(DVout, e$ids,
                     rawdata=e$data,
                     method=e$p.method,
                     alpha=e$alpha), silent = TRUE )

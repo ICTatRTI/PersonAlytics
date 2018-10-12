@@ -166,8 +166,8 @@ htp <- function(data                                                ,
       # fit the model w/o target ivs
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
-      t1$time_power     <- t1$time_powers[id,2]
-      err_id$time_power <- t1$time_powers[id,2]
+      t1$time_power     <- t1$time_powers[wid,2]
+      err_id$time_power <- t1$time_powers[wid,2]
       mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
 
       #-------------------------------------------------------------------------
@@ -252,18 +252,44 @@ htp <- function(data                                                ,
       cat('\n\n')
 
       #-------------------------------------------------------------------------
+      # Memory status
+      #-------------------------------------------------------------------------
+      sizes <- lapply(as.list(ls()), function(x){
+        data.frame(x, as.numeric(pryr::object_size(get(x))))
+      } )
+      sizes <- data.frame(do.call(rbind, sizes))
+      names(sizes) <- c('Objects', 'Size')
+      sizes <- sizes[order(sizes$Size, decreasing = TRUE),]
+
+      #-------------------------------------------------------------------------
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
       #IDout[[i]] <- list( Messages=err_id, Model=Model, Describe=descr_id )
-      return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
+      return( list( Messages=err_id, Model=Model, Describe=descr_id, Size=sizes ) )
 
+      # garbage collection
+      gc()
     } # end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
 
     message('\n\nModel fitting of the dependent variable `', dvs[dv],
             '` took: ', capture.output(Sys.time() - start), ".\n\n")
+
+    #...........................................................................
+    # memory usage
+    #...........................................................................
+    sink(paste(dvs[dv], 'Memory.txt', sep='.'))
+    for(i in 1:nrow(DIM))
+    {
+      cat(unlist(dvs[dv]), ',', ids, '=', DIM$ID[i], ',',
+          target_ivs[DIM$IV[i]], '\n')
+      cat('Total Size: ', prettyNum(sum(IDout[[i]]$Size$Size), big.mark = ","), '\n')
+      print(IDout[[i]]$Size[1:6,])
+      cat('\n\n')
+    }
+    while( sink.number() > 0 ) sink()
 
     #...........................................................................
     # disaggregate messages
@@ -311,6 +337,8 @@ htp <- function(data                                                ,
     IDoutSumm <- plyr::rbind.fill(IDoutSumm)
 
     DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
+
+    rm(t0, IDoutSumm, IDmsg, IDdesc )
   } # end of dv loops
 
   # final post-processing
@@ -322,6 +350,7 @@ htp <- function(data                                                ,
   row.names(outmat) <- NULL
   return( outmat )
 }
+
 
 #' htpForms: accumulate formula information
 #' @keywords internal
