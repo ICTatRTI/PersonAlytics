@@ -169,11 +169,22 @@ htp <- function(data                                                ,
       rm(htpErr)
 
       #-------------------------------------------------------------------------
+      # populate time_power
+      #-------------------------------------------------------------------------
+      if(dims$ID[1]!="All Cases")
+      {
+        t1$time_power     <- as.numeric( t1$time_powers[wid,2] )
+        err_id$time_power <- t1$time_powers[wid,2]
+      }
+      if(dims$ID[1]=="All Cases")
+      {
+        err_id$time_power <- t1$time_power
+      }
+
+      #-------------------------------------------------------------------------
       # fit the model w/o target ivs
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
-      t1$time_power     <- as.numeric( t1$time_powers[wid,2] )
-      err_id$time_power <- t1$time_powers[wid,2]
       mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
 
       #-------------------------------------------------------------------------
@@ -214,7 +225,7 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # if there was no target IV, make modid mod1
       #-------------------------------------------------------------------------
-      if( length( unlist(target_ivs[iv]) ) == 0 | !tivv )
+      if( length( target_ivs[[iv]] ) == 0 | !tivv )
       {
         modid  <- mod1$modid
         err_id <- c(err_id, mod1$err_id)
@@ -261,11 +272,19 @@ htp <- function(data                                                ,
           Model <- modid
         }
       }
+      rm(modid)
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
       #-------------------------------------------------------------------------
       err_id <- htpForms(err_id, t1, dims, package, modid=Model)
+
+      #-------------------------------------------------------------------------
+      # reduce the size of Model
+      #TODO(Stephen) move to function if possible
+      #-------------------------------------------------------------------------
+      IDoutSum <- getParameters(Model, package, target_ivs[[iv]])
+      rm(Model)
 
       #-------------------------------------------------------------------------
       # for a clean print after the progress bar
@@ -277,7 +296,7 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
       #IDout[[i]] <- list( Messages=err_id, Model=Model, Describe=descr_id )
-      return( list( Messages=err_id, Model=Model, Describe=descr_id ) )
+      return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
 
     } # end of foreach
     # stop the cluster
@@ -299,42 +318,19 @@ htp <- function(data                                                ,
     IDdesc <- plyr::rbind.fill(IDdesc)
 
     #...........................................................................
-    # post-estimation model extraction
+    # parameter estimates
     #...........................................................................
-    IDout <- lapply( IDout, function(x) x$Model )
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
-    if(package=='gamlss')
-    {
-      IDoutSum <- lapply( IDout, function(x)
-        {
-          if(package %in% class(x))
-          {
-            capture.output( temp <- summary(x), file='NUL' )
-          }
-          if( all( x == "NA" ) ) temp <- NA
-          return(temp)
-        } )
-    }
-    if(package=='nlme') # can't use if(package %in% class(x)) b/c lme!=nlme
-    {
-      IDoutSum <- lapply( IDout, function(x){ if("lme" %in% class(x)){
-        summary(x)$tTable} else NA})
-    }
-    if(package=="arma")
-    {
-      IDoutSum <- lapply( IDout, getARMAtbl)
-    }
+    IDoutSum <- lapply( IDout, function(x) x$IDoutSum)
+    IDoutSumm <- plyr::rbind.fill(IDoutSum)
 
     #...........................................................................
-    # turn the numeric output into vectors & rbind them together
+    # put outputs in a list, to be aggregated outside of the dv loop
     #...........................................................................
-    IDoutSumm <- lapply(IDoutSum, rcm, target_ivs=target_ivs)
-    IDoutSumm <- plyr::rbind.fill(IDoutSumm)
-
     DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
-	gc()
+	  gc()
   } # end of dv loops
 
   # final post-processing
@@ -345,6 +341,41 @@ htp <- function(data                                                ,
   outmat <- cbind(IDmsg, IDdesc, IDoutSumm)
   row.names(outmat) <- NULL
   return( outmat )
+}
+
+#' getParameters: extract parameter table, the `Model` variable is too big
+#' @keywords internal
+getParameters <- function(Model, package, target_iv)
+{
+  IDoutSum <- NA
+  if(!all(is.na(Model)))
+  {
+    if(package=='gamlss')
+    {
+      if(! "gamlss" %in% class(Model)) IDoutSum <- NA
+      if(  "gamlss" %in% class(Model))
+      {
+        IDoutSum <- rcm( capture.output( temp <- summary(x), file='NUL' ), target_iv)
+      }
+    }
+    if(package=='nlme')
+    {
+      if(! "lme" %in% class(Model)) IDoutSum <- NA
+      if(  "lme" %in% class(Model))
+      {
+        IDoutSum <- rcm(summary(Model)$tTable, target_iv)
+      }
+    }
+    if(package=="arma")
+    {
+      if(! "coeftest"  %in%  class(Model$tTable)) IDoutSum <- NA
+      if(  "coeftest"  %in%  class(Model$tTable))
+      {
+        IDoutSum <- rcm(getARMAtbl(Model), target_iv)
+      }
+    }
+  }
+  return(IDoutSum)
 }
 
 
