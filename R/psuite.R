@@ -18,7 +18,7 @@
 #' @param rawdata The raw data for plotting.
 #'
 
-psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
+psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
                    rawdata=NULL)
 {
   library(gridExtra)
@@ -28,32 +28,36 @@ psuite <- function(DVout, method="BY", nbest=25, alpha=.05,
 
   if(! method %in% p.adjust.methods)
   {
-    stop("`method` must be one of", p.adjust.methods)
+    stop("`method` must be one of: ", paste(p.adjust.methods, collapse = ', '))
   }
 
   # find all the p-value columns
-  wc <- which(! lapply( strsplit(names(DVout), '.p.value'),
-                        function(DVout) paste(DVout, collapse='')) == names(DVout))
+  wc <- which( names(DVout) == 'targ_ivs_lrt_pvalue')
 
+  # note that with missing data, the parameter `n` in p.adjust will be
+  # length(temp), not length(na.omit(temp)). If the latter is use, results
+  # will be more conservative, i.e., adjusting for the number of converged
+  # analyses rather than the total number of analyses
   adjuster <- function(x, wc, method)
   {
     temp <- x[,wc]
     adj.ps <- lapply(temp, function(x) p.adjust(x, method=method))
-    names(adj.ps) <- paste(names(x)[wc], method, sep='_')
-    return(data.frame(x, adj.ps))
+    output <- data.frame(temp, unlist(adj.ps))
+    names(output) <- c(paste(names(x)[wc], 'raw', sep='_'),
+                       paste(names(x)[wc], method, 'FDR', sep='_'))
+    return(output)
   }
-  DVoutadj <- do.call(rbind, as.list(by(DVout, DVout$dv,
-                                        adjuster, wc=wc, method=method)))
 
-  tn <- which(names(DVoutadj)=='target_iv')
-  te <- which(grepl("TargetPredictor.Value", names(DVoutadj)))
-  tp <- which(grepl(glob2rx("TargetPredictor*p.value*"), names(DVoutadj)))
-
-  if(length(tp)<1) stop('TargetPredictor p.values not found.')
+  # apply the adjustments by ids and dvs, if
+  # - group based, byVariable will be dvs only
+  # - only 1 dv, we still get ids within dv
+  byVariable <- paste(DVout$dv, DVout[[ids]], sep="_")
+  DVoutadj   <- do.call(rbind, as.list(by(data = DVout, INDICES = byVariable,
+                                        FUN = adjuster, wc=wc, method=method)))
 
   st <- unlist( strsplit(as.character( Sys.time()), " ") )
   st[2] <- gsub(":", "-", st[2])
-  st <- paste(st, collapse="_")
+  st <- paste(st, collapse=".")
 
   dn <- paste('PersonAlytics p-value report for', st)
   if(!dir.exists((dn)))  dir.create(dn)

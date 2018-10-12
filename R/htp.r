@@ -134,7 +134,7 @@ htp <- function(data                                                ,
       # deep clone
       #-------------------------------------------------------------------------
       t1 <- t0$clone(deep=TRUE)
-      #cat("line 138", toString(t1$fixed), "\n\n", file="fixed.txt", append=TRUE)
+      cat(paste(dv, id, iv, sep=', '), file="line137.txt")
 
       #-------------------------------------------------------------------------
       # for the current id, select potential rows, useObs will be updated
@@ -150,6 +150,7 @@ htp <- function(data                                                ,
         useObs <- rep(TRUE, nrow(t1$data))
         wid    <- 1:nrow(t1$data)
       }
+      cat(paste(dv, id, iv, sep=', '), file="line153.txt")
 
       #-------------------------------------------------------------------------
       # accumulate inputs and errors for the output, results are used in
@@ -161,14 +162,16 @@ htp <- function(data                                                ,
       dvVar  <- htpErr$dvVar
       err_id <- htpErr$err_id
       rm(htpErr)
+      cat(paste(dv, id, iv, sep=', '), file="line165.txt")
 
       #-------------------------------------------------------------------------
       # fit the model w/o target ivs
       # TODO (Stphen): escape if no variance, this may increase speed
       #-------------------------------------------------------------------------
-      t1$time_power     <- t1$time_powers[wid,2]
+      t1$time_power     <- as.numeric( t1$time_powers[wid,2] )
       err_id$time_power <- t1$time_powers[wid,2]
       mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
+      cat(paste(dv, id, iv, sep=', '), file="line174.txt")
 
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
@@ -214,11 +217,13 @@ htp <- function(data                                                ,
         err_id$call        <- toString( NA )
         err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
       }
+      cat(paste(dv, id, iv, sep=', '), file="line220.txt")
 
       #-------------------------------------------------------------------------
       # descriptive statistics
       #-------------------------------------------------------------------------
       descr_id <- t1$describe(useObs)
+      cat(paste(dv, id, iv, sep=', '), file="line226.txt")
 
       #-------------------------------------------------------------------------
       # re-fit models with REML (unless arma)
@@ -240,11 +245,13 @@ htp <- function(data                                                ,
           Model <- modid
         }
       }
+      cat(paste(dv, id, iv, sep=', '), file="line248.txt")
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
       #-------------------------------------------------------------------------
       err_id <- htpForms(err_id, t1, dims, package, modid=Model)
+      cat(paste(dv, id, iv, sep=', '), file="line254.txt")
 
       #-------------------------------------------------------------------------
       # for a clean print after the progress bar
@@ -260,6 +267,7 @@ htp <- function(data                                                ,
       sizes <- data.frame(do.call(rbind, sizes))
       names(sizes) <- c('Objects', 'Size')
       sizes <- sizes[order(sizes$Size, decreasing = TRUE),]
+      cat(paste(dv, id, iv, sep=', '), file="line270.txt")
 
       #-------------------------------------------------------------------------
 	    # return to foreach

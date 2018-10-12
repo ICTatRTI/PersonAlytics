@@ -1144,7 +1144,7 @@ Palytic$set("public", "arma",
                                  all.vars(self$formula)) ) )
 
               # check that only one participant is in the data
-              if( length(unique(tempData[[self$ids]])) != 1 )
+              if( length(unique(tempData[[self$ids]])) != 1 & nrow(tempData) > 0 )
               {
                 stop('`arma` requires n=1 data')
               }
