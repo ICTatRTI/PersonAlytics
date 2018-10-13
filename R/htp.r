@@ -330,7 +330,7 @@ htp <- function(data                                                ,
     DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
-	  gc()
+	  #gc() # causing scoping problems
   } # end of dv loops
 
   # final post-processing
@@ -347,7 +347,7 @@ htp <- function(data                                                ,
 #' @keywords internal
 getParameters <- function(Model, package, target_iv)
 {
-  IDoutSum <- NA
+  IDoutSum <- data.frame(NA)
   if(!all(is.na(Model)))
   {
     if(package=='gamlss')
