@@ -134,7 +134,7 @@ htp <- function(data                                                ,
             .packages = pkgs, .options.snow = opts) %dopar%
     #for(i in 1:nrow(DIM))
     {
-      #id=DIM$ID[i]; iv=DIM$IV[i]
+      #id<-DIM$ID[i]; iv<-DIM$IV[i]
 
       #-------------------------------------------------------------------------
       # deep clone
@@ -258,7 +258,7 @@ htp <- function(data                                                ,
       # fitWithTargetIV unless the REML fit leads to a different model than
       # the ML fit
       #-------------------------------------------------------------------------
-      Model = NA
+      Model <- NA
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
         t1$method <- "REML"
@@ -283,7 +283,7 @@ htp <- function(data                                                ,
       # reduce the size of Model
       #TODO(Stephen) move to function if possible
       #-------------------------------------------------------------------------
-      IDoutSum <- getParameters(Model, package, target_ivs[[iv]])
+      IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac)
       rm(Model)
 
       #-------------------------------------------------------------------------
@@ -344,8 +344,15 @@ htp <- function(data                                                ,
 }
 
 #' getParameters: extract parameter table, the `Model` variable is too big
+#'
+#' @param Model Statistical model output from \code{\link{Palytic}} methods
+#' \code{$lme}, \code{$gamlss}, or \code{$arma}
+#' @param package See \code{package} in \code{\link{PersonAlytic}}
+#' @param target_ivs See \code{targe_ivs} in \code{\link{PersonAlytic}}
+#' @param data A data.frame, for now only pass t1$datac in \code{\link{htp}}
+#'
 #' @keywords internal
-getParameters <- function(Model, package, target_iv)
+getParameters <- function(Model, package, target_iv, data)
 {
   IDoutSum <- data.frame(NA)
   if(!all(is.na(Model)))
@@ -355,7 +362,8 @@ getParameters <- function(Model, package, target_iv)
       if(! "gamlss" %in% class(Model)) IDoutSum <- NA
       if(  "gamlss" %in% class(Model))
       {
-        IDoutSum <- rcm( capture.output( temp <- summary(x), file='NUL' ), target_iv)
+        IDoutSum <- rcm( capture.output( temp <- summary(Model), file='NUL' ),
+                         target_iv, data)
       }
     }
     if(package=='nlme')
@@ -363,7 +371,7 @@ getParameters <- function(Model, package, target_iv)
       if(! "lme" %in% class(Model)) IDoutSum <- NA
       if(  "lme" %in% class(Model))
       {
-        IDoutSum <- rcm(summary(Model)$tTable, target_iv)
+        IDoutSum <- rcm(summary(Model)$tTable, target_iv, data)
       }
     }
     if(package=="arma")
@@ -371,7 +379,7 @@ getParameters <- function(Model, package, target_iv)
       if(! "coeftest"  %in%  class(Model$tTable)) IDoutSum <- NA
       if(  "coeftest"  %in%  class(Model$tTable))
       {
-        IDoutSum <- rcm(getARMAtbl(Model), target_iv)
+        IDoutSum <- rcm(getARMAtbl(Model), target_iv, data)
       }
     }
   }
@@ -390,20 +398,20 @@ htpForms <- function(err_id, t1, dims, package, modid)
 
   if(!any(is.na(modid)))
   {
-    err_id["fixed"]       = rmSpecChar(modid$PalyticSummary$fixed)
-    err_id["random"]      = rmSpecChar(modid$PalyticSummary$random)
-    err_id$correlation    = ifelse(all(dims$ID=="All Cases"),
+    err_id["fixed"]       <- rmSpecChar(modid$PalyticSummary$fixed)
+    err_id["random"]      <- rmSpecChar(modid$PalyticSummary$random)
+    err_id$correlation    <- ifelse(all(dims$ID=="All Cases"),
                                    rmSpecChar(modid$PalyticSummary$correlation),
                                    ifelse(package=="arma",
                                           #TODO() this doesn't get the ride order
                                           #gerARIMAorder(modid$arima),
                                           err_id$correlation, # placeholder
                                           rmSpecChar(t1$corStructs[id,2])))
-    err_id["formula"]     = rmSpecChar(modid$PalyticSummary$formula)
+    err_id["formula"]     <- rmSpecChar(modid$PalyticSummary$formula)
   }
 
-  err_id["directory"]   = normalizePath(getwd())
-  err_id["date"]        = toString( Sys.time() )
+  err_id["directory"]   <- normalizePath(getwd())
+  err_id["date"]        <- toString( Sys.time() )
 
   return(err_id)
 }
@@ -501,14 +509,19 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
 
 #' rcm: function to force values to data.frame vectors for later stacking
 #'
+#' @param x is a matrix-like ANOVA-like table from lme, gamlss, or coeftest in
+#' arima
+#' @param target_ivs See \code{targe_ivs} in \code{\link{PersonAlytic}}
+#' @param data A data.frame, for now only pass t1$datac in \code{\link{htp}}
+#'
 #' @keywords internal
-rcm <- function(x, target_ivs)
+rcm <- function(x, target_ivs, data)
 {
   if(is.matrix(x))
   {
     xo <- data.frame( t(as.vector(t(x)) ) )
     row.names(xo) <- NULL
-    colnames(xo)  <- rcn(x, target_ivs)
+    colnames(xo)  <- rcn(x, target_ivs, data)
   }
   if(!is.matrix(x))
   {
@@ -519,8 +532,12 @@ rcm <- function(x, target_ivs)
 
 #' rcn: function to prep row names
 #'
+#' @param x See `x` for \code{\link{rcm}}
+#' @param target_ivs See \code{targe_ivs} in \code{\link{PersonAlytic}}
+#' @param data A data.frame, for now only pass t1$datac in \code{\link{htp}}
+#'
 #' @keywords internal
-rcn <- function(x, target_ivs)
+rcn <- function(x, target_ivs, data)
 {
   if(is.matrix(x))
   {
@@ -536,16 +553,16 @@ rcn <- function(x, target_ivs)
         row.names(x)[ which(row.names(x) %in% Tnms) ] <- 'Targ'
       }
 
-      # if target predicor is a factor variable, get the reference category
+      # if target predictor is a factor variable, get the reference category
       # and set the names
       w <- which(lapply(Rns, length) > 0)
       if( length(w) > 0 )
       {
-        cat(toString(target_ivs), file = "htpLine431.txt")
-        cat(capture.output(target_ivs), '\n',
-            capture.output(target_ivs[[w]]), '\n',
-            capture.output(is.factor(data[[target_ivs[[w]]]])),
-            file = "htpLine431.txt")
+        #cat(toString(target_ivs), file = "htpLine431.txt")
+        #cat(capture.output(target_ivs), '\n',
+        #    capture.output(target_ivs[[w]]), '\n',
+        #    capture.output(is.factor(data[[target_ivs[[w]]]])),
+        #    file = "htpLine431.txt")
         if( is.factor(data[[target_ivs[[w]]]]) )
         {
           uT     <- levels(data[[target_ivs[[w]]]])
@@ -610,6 +627,7 @@ getARMAtbl <- function(x)
   {
     if("ARIMA" %in% class(x$arima)) return(x$tTable)
   }
+  #TOTO() what kind of NA should it return? data.frame? character?
   else return(NA)
 }
 
