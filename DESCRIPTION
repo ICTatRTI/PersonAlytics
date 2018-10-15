@@ -1,10 +1,11 @@
 Package: PersonAlytics
 Type: Package
 Title: PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
-Version: 0.1.2.2
+Version: 0.2.0
 Authors@R: person("Stephen", "Tueller", email = "stueller@rti.org", role = c("aut", "cre"))
-Description: Tools and Illustrations for fitting idiographic trial data using gamlsst and nlme.
-License: RTI
+Description: Tools and illustrations for fitting idiographic trial data using gamlss and nlme,
+or ARMA models for n=1 studies.
+License: RTI, see https://personalytics.rti.org/
 Encoding: UTF-8
 LazyData: true		
 Depends:
