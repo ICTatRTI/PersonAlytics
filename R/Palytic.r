@@ -87,55 +87,80 @@
 #'
 #' @section Methods:
 #' \describe{
+#'
 #'   \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
 #'   and the raw data.}
+#'
 #'   \item{\code{describe}}{This method gives the correlation between \code{dv} and
 #'   each continuous variable in \code{ivs} (as well as the \code{time} variable), or,
 #'   if variablse are factors (including \code{phase}), the mean of \code{dv} is given
 #'   for each factor level of each variable.}
-#'   \item{\code{lme(subgroup = NULL)}}{This method fits the linear mixed effects
+#'
+#'   \item{\code{lme(subgroup = NULL, dropVars = NULL)}}{This method fits the
+#'   linear mixed effects
 #'    \code{lme} model implied by the \code{Palytic} fields \code{ids},
-#'    \code{dv}, \code{phase}, \code{time}, and optionally \code{ivs}, \code{time_power}
+#'    \code{dv}, \code{phase}, \code{time}, and optionally \code{ivs},
+#'    \code{time_power}
 #'    \code{correlation}. The default formula can be overridden by specifying
-#'    \code{fixed} and \code{random} and optionally \code{method} and \code{correlation}.
-#'    The see \code{\link{lme}}
-#'   for the parameter \code{subgroup}. }
-#'   \item{\code{gamlss(subgroup = NULL)}}{This method fits the \code{lme} model implied
+#'    \code{fixed} and \code{random} and optionally \code{method} and
+#'    \code{correlation}. The see \code{\link{lme}} for the parameter
+#'    \code{subgroup}. The \code{dropVars} parameter indicates which fixed
+#'    effects should be dropped for a likelihood ration test (LRT). This is
+#'    used by \code{\link{PersonAlytic}} to test \code{target_ivs}.}
+#'
+#'   \item{\code{gamlss(subgroup = NULL, sigma.formula = ~1, family = NULL,
+#'   dropVars = NULL)}}{This method fits the \code{lme} model implied
 #'   by the \code{Palytic} fields \code{ids}, \code{dv}, \code{phase}, \code{time}
 #'   and optionally \code{ivs}, \code{time_power}, \code{correlation}. The default
 #'   formula can be overridden by specifying \code{formula} and
 #'   optionally \code{method}, \code{correlation}, and \code{family} (which can be
 #'   used to specify generalized linear mixed effects models,
 #'   see \code{\link{gamlss.family}}).
-#'   The parameter \code{subgroup} operates as in \code{\link{lme}}.}
-#'   \item{\code{arma}}{For individual level models, random intercepts and random slopes are not defined.
-#'   In this situatation, an \code{ARMA(p,q)} should be used. This is implemented using the \code{xreg}
+#'   The parameter \code{subgroup} operates as in \code{\link{lme}}. The parameter
+#'   \code{sigma.formula} and \code{family} are desribed in \code{\link{gammlss}}.
+#'    The \code{dropVars} parameter indicates which fixed
+#'    effects should be dropped for a likelihood ration test (LRT). This is
+#'    used by \code{\link{PersonAlytic}} to test \code{target_ivs}.}
+#'
+#'   \item{\code{arma(subgroup=NULL, max.p=3, max.q=3, dropVars=NULL,
+#'   max.P=0, max.Q=0, max.d=0, max.D=0)}}{For individual level models,
+#'   random intercepts and
+#'   random slopes are not defined. In this situatation, an \code{ARMA(p,q)}
+#'   should be used. This is implemented using the \code{xreg}
 #'   option of \code{\link{arima}}. The residual correlation search is achieved using
-#'   \code{\link{auto.arima}}.}
+#'   \code{\link{auto.arima}}.  The \code{dropVars} parameter indicates which fixed
+#'    effects (in \code{xreg}) should be dropped for a likelihood ration test
+#'    (LRT). This is used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
+#'   The other parameters are as in \code{\link{auto.arima}}.}
+#'
 #'   \item{\code{getAR_order(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{
 #'   --- slated for deprication, superceded by \code{arma}. ---
-#'   This method automates the task of determining the correlation structure for each case in
-#'   \code{ids} (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}).
-#'   \code{P} and \code{Q} set the highest autoregressive and moving
-#'   average parameters to be tested. If the time variable is approximatetly equally spaced,
-#'   \code{whichIC} is the criterion used for determining the correlation structure for each
-#'   \code{ids} using the \code{\link{auto.arima}} function. If the time variable is unequally
-#'   spaced, \code{whichIC} as also the criterion for
-#'   model selection via mixed effects models using \code{\link{lme}} if \code{lrt=FALSE}.
-#'   If \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
-#'   method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0 and only AR
-#'   models are considered since AR and MA models are not nested. Calling \code{getAR_order}
-#'   populates the
-#'   \code{corStructs} field of a \code{Palytic} object. For usage, see the examples.}
+#'   This method automates the task of determining the correlation structure for
+#'   each case in \code{ids} (see \code{\link{PersonAlytic} or
+#'   \code{\link{PersonAlytic}}}). \code{P} and \code{Q} set the highest
+#'   autoregressive and moving average parameters to be tested. If the time
+#'   variable is approximatetly equally spaced, \code{whichIC} is the criterion
+#'   used for determining the correlation structure for each \code{ids} using
+#'   the \code{\link{auto.arima}} function. If the time variable is unequally
+#'   spaced, \code{whichIC} as also the criterion for model selection via mixed
+#'   effects models using \code{\link{lme}} if \code{lrt=FALSE}. If
+#'   \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
+#'   method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0
+#'   and only AR models are considered since AR and MA models are not nested.
+#'   Calling \code{getAR_order} populates the \code{corStructs} field of a
+#'   \code{Palytic} object. For usage, see the examples.}
+#'
 #'   \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{The
 #'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
 #'   (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}). For example,
-#'   if \code{getTime_Power} returns \code{time_power=3}, then \code{time + time^2 + time^3}
+#'   if \code{getTime_Power} returns \code{time_power=3},
+#'   then \code{time + time^2 + time^3}
 #'   will be added to the fixed effects of the model.
 #'   Calling \code{getTime_Power} populates the
 #'   \code{GroupTime_power} field of a \code{Palytic} object. For usage, see the examples.}
+#'
 #'   \item{\code{groupTime_Power(subset, maxOrder)}}{The same as \code{getTime_power} when
 #'   the polynomial of time is desired for the full sample.}
 #' }
@@ -1141,7 +1166,7 @@ Palytic$set("public", "describe",
             })
 
 Palytic$set("public", "arma",
-            function(subgroup=NULL, max.p=3, max.q=3,
+            function(subgroup=NULL, max.p=3, max.q=3, dropVars=NULL,
                      max.P=0, max.Q=0, max.d=0, max.D=0, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
@@ -1183,7 +1208,37 @@ Palytic$set("public", "arma",
                                          max.d = max.d,
                                          max.D = max.D,
                                          ...), silent = TRUE)
-              # TODO() refitting
+              # TODO() refitting if there are convergence issues
+
+              # if dropVars is provided, fit the sub-model and estimate LRT
+              wasLRTrun <- FALSE
+              lrtp <- as.numeric(NA)
+              if(!is.null(dropVars))
+              {
+                xdat0 <- xdat[,-(! colnames(xdat) %in% dropVars)]
+                m0 <- try( forecast::auto.arima(y     = tempData[[self$dv]],
+                                              xreg  = xdat0,
+                                              max.p = max.p,
+                                              max.q = max.q,
+                                              max.P = max.P,
+                                              max.Q = max.Q,
+                                              max.d = max.d,
+                                              max.D = max.D,
+                                              ...), silent = TRUE)
+                if( any("ARIMA" %in% class(m0) ) &
+                    any("ARIMA" %in% class(m1) ) )
+                {
+                  l0 <- logLik(m0)
+                  l1 <- logLik(m1)
+                  df0 <- strsplit( unlist( strsplit(capture.output(l0), "=") )[2] , ")")
+                  df1 <- strsplit( unlist( strsplit(capture.output(l1), "=") )[2] , ")")
+                  df0 <- as.numeric( unlist(df0) )
+                  df1 <- as.numeric( unlist(df1) )
+                  lrtest <- as.numeric(2*(l1-l0))
+                  lrtp <- pchisq(lrtest, df1-df0, lower.tail = FALSE)
+                  wasLRTrun <- TRUE
+                }
+              }
 
               # output
               if( zerovar ) m1 <- ""
@@ -1196,14 +1251,15 @@ Palytic$set("public", "arma",
 
               m1 <- list(arima = m1, tTable = tTable,
                          PalyticSummary = self$summary(),
-                         xregs = colnames(xdat) )
+                         xregs = colnames(xdat),
+                         lrt = list(wasLRTrun=wasLRTrun, lrtp=lrtp) )
               return(m1)
             },
-            overwrite = TRUE # is this causing the inheritance issues?
-              )
+            overwrite = TRUE
+)
 
 Palytic$set("public", "lme",
-            function(subgroup=NULL, ...)
+            function(subgroup=NULL, dropVars=NULL, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
@@ -1293,7 +1349,8 @@ Palytic$set("public", "lme",
 #   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
 # -- this will be done in Palytic augmentations in .Palytic
 Palytic$set("public", "gamlss",
-            function(subgroup=NULL, sigma.formula = ~1, family=NULL, ...)
+            function(subgroup=NULL, sigma.formula = ~1, family=NULL,
+                     dropVars=NULL, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit( subset(self$datac, subgroup,

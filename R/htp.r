@@ -181,11 +181,15 @@ htp <- function(data                                                ,
         err_id$time_power <- t1$time_power
       }
 
+      # deprecate this - palytic methods are being updated
       #-------------------------------------------------------------------------
       # fit the model w/o target ivs
-      # TODO (Stphen): escape if no variance, this may increase speed
+      # TODO (Stphen): this should be moved to the Palytic methods or after the
+      # model with the target iv to ensure that [1] the sample size is the same
+      # and [2] that the same residual correlation structure is used. Otherwise
+      # the lrt is invalid.
       #-------------------------------------------------------------------------
-      mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
+      #mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
 
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
@@ -641,7 +645,7 @@ isNullOrForm <- function(x)
   else return(FALSE)
 }
 
-#TODO(Stephen): add ... to these functions
+#TODO(Stephen): add ... to these functions to pass to Palytic methods
 #' fit models with the target iv & calculate LRT
 #' @keywords internal
 fitWithTargetIV <- function(t1, package, useObs, dims, mod1=NULL, PQ=c(3,3))
