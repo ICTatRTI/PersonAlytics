@@ -673,12 +673,19 @@ paHTP <- function(e=parent.frame())
 
   return(DVout)
 
+  # attempt adjusted p-values
   if(!is.null(e$p.method) & length(e$target_ivs) > 1)
   {
+    ncolDVout <- ncol(DVout)
     DVout <- try( psuite(DVout, e$ids,
                     rawdata=e$data,
                     method=e$p.method,
                     alpha=e$alpha), silent = TRUE )
+    # save the output
+    if( ncol(DVout) == ncolDVout+length(e$p.method)+1 )
+    {
+      write.csv(DVout, file=e$output, row.names=FALSE)
+    }
   }
 }
 

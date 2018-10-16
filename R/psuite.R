@@ -36,8 +36,9 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
   # - group based, byVariable will be dvs only
   # - only 1 dv, we still get ids within dv
   byVariable <- paste(DVout$dv, DVout[[ids]], sep="_")
-  DVoutadj   <- plyr::rbind.fill(as.list(by(data = DVout, INDICES = byVariable,
-                                 FUN = adjuster, wc=wc, method=method)))
+  DVoutadj   <- plyr::rbind.fill(as.list(by(data = DVout['targ_ivs_lrt_pvalue'],
+                                            INDICES = byVariable,
+                                            FUN = adjuster, method=method)))
   DVoutadj   <- data.frame(DVout, DVoutadj)
   rm(DVout)
 
@@ -45,8 +46,8 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
   st[2] <- gsub(":", "-", st[2])
   st <- paste(st, collapse=".")
 
-  dn <- paste('PersonAlytics p-value report for', st)
-  if(!dir.exists((dn)))  dir.create(dn)
+  #dn <- paste('PersonAlytics p-value report for', st)
+  #if(!dir.exists((dn)))  dir.create(dn)
 
   fn <- paste(paste("./", dn, "/", sep=""),
               paste("Best", nbest, 'pvalues', sep="_"), sep="")
@@ -144,13 +145,12 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
 #' length(temp), not length(na.omit(temp)). If the latter is used, results
 #' will be more conservative, i.e., adjusting for the number of converged
 #' analyses rather than the total number of analyses
-adjuster <- function(x, wc, method)
+adjuster <- function(x, method="BY")
 {
-  temp <- x[,wc]
-  adj.ps <- lapply(temp, function(x) p.adjust(x, method=method))
-  output <- data.frame(temp, unlist(adj.ps))
-  names(output) <- c(paste(names(x)[wc], 'raw', sep='_'),
-                     paste(names(x)[wc], method, 'FDR', sep='_'))
+  adj.ps <- lapply(x, function(x) p.adjust(x, method=method))
+  output <- data.frame(x, unlist(adj.ps))
+  names(output) <- c(paste(names(x), 'raw', sep='_'),
+                     paste(names(x), method, 'FDR', sep='_'))
   return(output)
 }
 
