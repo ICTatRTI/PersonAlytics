@@ -181,23 +181,13 @@ htp <- function(data                                                ,
         err_id$time_power <- t1$time_power
       }
 
-      # deprecate this - palytic methods are being updated
-      #-------------------------------------------------------------------------
-      # fit the model w/o target ivs
-      # TODO (Stphen): this should be moved to the Palytic methods or after the
-      # model with the target iv to ensure that [1] the sample size is the same
-      # and [2] that the same residual correlation structure is used. Otherwise
-      # the lrt is invalid.
-      #-------------------------------------------------------------------------
-      #mod1 <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
-
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
       if( length( unlist(target_ivs[iv]) ) > 0 & !is.na(tivv) & tivv & dvVar>0 )
       {
         # add the target IV
-        ivs.temp <- unlist(c(ivs, target_ivs[iv]))
+        ivs.temp <- unlist(c(ivs, target_ivs[[iv]]))
         if( is.null(ivs.temp) )
         {
           t1$ivs <- ivs.temp
@@ -208,8 +198,8 @@ htp <- function(data                                                ,
         }
 
         #TODO(Stephen): override correlation search for ARMA?
-        fitOutput <- fitWithTargetIV(t1, package, useObs,
-                                     dims, mod1$modid, PQ)
+        fitOutput <- fitWithTargetIV(t1, package, useObs, dims,
+                                     dropVars=target_ivs[[iv]], PQ)
         err_id <- c(err_id, fitOutput$err_id)
         modid  <- fitOutput$modid
         rm(fitOutput)
@@ -231,6 +221,7 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       if( length( target_ivs[[iv]] ) == 0 | !tivv )
       {
+        mod1   <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
         modid  <- mod1$modid
         err_id <- c(err_id, mod1$err_id)
         rm(mod1)
@@ -648,65 +639,31 @@ isNullOrForm <- function(x)
 #TODO(Stephen): add ... to these functions to pass to Palytic methods
 #' fit models with the target iv & calculate LRT
 #' @keywords internal
-fitWithTargetIV <- function(t1, package, useObs, dims, mod1=NULL, PQ=c(3,3))
+fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3))
 {
   # fit model with targe iv
-  if(package=="nlme")   modid <- fitWithTargetIVlme(t1, useObs, dims)
-  if(package=="arma")   modid <- fitWithTargetIVarma(t1, useObs, dims, PQ)
-  if(package=="gamlss") modid <- fitWithTargetIVgamlss(t1, useObs, dims)
+  if(package=="nlme")   modid <- fitWithTargetIVlme(t1, useObs, dims, dropVars)
+  if(package=="arma")   modid <- fitWithTargetIVarma(t1, useObs, dims, dropVars, PQ)
+  if(package=="gamlss") modid <- fitWithTargetIVgamlss(t1, useObs, dims, dropVars)
 
   err_id <- modid$err_id
-  modid <- modid$modid
-
-  if(!is.null(mod1))
-  {
-    # LRT for target iv ####
-    lrtp <- as.numeric(NA)
-    if(any(c("gamlss", "lme") %in% class(mod1) ) &
-       any(c("gamlss", "lme") %in% class(modid)) &
-       length(dims$IV) > 0
-    )
-    {
-      mod1$call$fixed    <- mod1$PalyticSummary$fixed
-      modid$call$fixed   <- modid$PalyticSummary$fixed
-      mod1$call$formula  <- mod1$PalyticSummary$formula
-      modid$call$formula <- modid$PalyticSummary$formula
-      lrt  <- anova(mod1, modid)
-      if(nrow(lrt)==2 & "p-value" %in% names(lrt))
-      {
-        lrtp <- lrt$"p-value"[2]
-      }
-    }
-    if( any(c("ARIMA", "Arima") %in% class(mod1$arima) ) &
-        any(c("ARIMA", "Arima") %in% class(modid$arima))  )
-    {
-      l0 <- logLik(mod1$arima)
-      l1 <- logLik(modid$arima)
-      df0 <- strsplit( unlist( strsplit(capture.output(l0), "=") )[2] , ")")
-      df1 <- strsplit( unlist( strsplit(capture.output(l1), "=") )[2] , ")")
-      df0 <- as.numeric( unlist(df0) )
-      df1 <- as.numeric( unlist(df1) )
-      lrtest <- as.numeric(2*(l1-l0))
-      lrtp <- pchisq(lrtest, df1-df0, lower.tail = FALSE)
-    }
-    err_id['targ_ivs_lrt_pvalue'] <- lrtp
-  }
+  modid  <- modid$modid
 
   return( list(err_id = err_id, modid = modid) )
 }
 
 #' fitWithTargetIVlme
 #' @keywords internal
-fitWithTargetIVlme <- function(t1, useObs, dims)
+fitWithTargetIVlme <- function(t1, useObs, dims, dropVars)
 {
   err_id <- list()
-  modid <- t1$lme( useObs )
+  modid  <- t1$lme( useObs, dropVars )
   if(! "lme"  %in%  class(modid) )
   {
     err_id['converge']   <- modid
     err_id['estimator']  <- toString( t1$method )
     err_id['analyzed_N'] <- NA
-    err_id['call'] <- NA
+    err_id['call']       <- NA
     # here is a placeholder for getting error messsages from lme
     # which needs to be updated in the error handling for
     # lme in Palytic
@@ -721,15 +678,17 @@ fitWithTargetIVlme <- function(t1, useObs, dims)
                              modid$PalyticSummary$correlation,
                              sep='; ')
   }
+	err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   return( list(err_id = err_id, modid = modid) )
 }
 
 #' fitWithTargetIVarma
 #' @keywords internal
-fitWithTargetIVarma <- function(t1, useObs, dims, PQ)
+fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
 {
   err_id <- list()
-  modid <- t1$arma( useObs, max.p=PQ[1], max.q=PQ[2] )
+  modid <- t1$arma( useObs, max.p=PQ[1], max.q=PQ[2], dropVars )
   if(! "coeftest"  %in%  class(modid$tTable) )
   {
     err_id['converge']   <- modid$arima
@@ -753,15 +712,17 @@ fitWithTargetIVarma <- function(t1, useObs, dims, PQ)
                              paste(modid$xregs, collapse=", "),
                              ".")
   }
+  	err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   return( list(err_id = err_id, modid = modid) )
 }
 
 #' fitWithTargetIVgamlss
 #' @keywords internal
-fitWithTargetIVgamlss <- function(t1, useObs, dims)
+fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
 {
   err_id <- list()
-  modid <- t1$gamlss( useObs )
+  modid <- t1$gamlss( useObs, dropVars=dropVars )
 
   if(! "gamlss"  %in%  class(modid) )
   {
@@ -789,6 +750,8 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims)
     err_id['analyzed_N'] <- paste(modid$N, 'cases were analyzed.')
     err_id['call'] <- modid$PalyticSummary$formula
   }
+  	err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   return( list(err_id = err_id, modid = modid) )
 }
 

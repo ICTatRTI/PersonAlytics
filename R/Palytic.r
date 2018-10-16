@@ -1326,10 +1326,30 @@ Palytic$set("public", "lme",
                                     ...),
                           silent = TRUE)
               }
+
+              # lrt
+              wasLRTrun <- FALSE
+              lrtp <- as.numeric(NA)
+              if( "lme" %in% class(m1) & !is.null(dropVars) )
+              {
+                frm0 <- all.vars(self$fixed)[-1]
+                frm0 <- frm0[! frm0 %in% dropVars]
+                frm0 <- formula( paste(self$dv, '~', paste(frm0, collapse = '+')) )
+                m0   <- update(m1, frm0)
+                lrt  <- anova(m1, m0)
+                if(nrow(lrt)==2 & "p-value" %in% names(lrt))
+                {
+                  lrtp <- lrt$"p-value"[2]
+                }
+                wasLRTrun <- TRUE
+              }
+
+              # return
               if( "lme" %in% class(m1) )
               {
                 m1$PalyticSummary  <- self$summary()
                 m1$whichPalyticMod <- paste('Palytic lme model #', wm)
+                m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
                 return(m1)
               }
               else
@@ -1369,9 +1389,10 @@ Palytic$set("public", "gamlss",
                                        ...),
                         silent = self$try_silent)
 
+              # default model with increased n.cyc
               if( "try-error" %in% class(m1) )# | !eds(m1) )
               {
-                wm <- 2 # default model with increased n.cyc
+                wm <- 2
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                sigma.formula = sigma.formula,
@@ -1399,10 +1420,32 @@ Palytic$set("public", "gamlss",
                                                ...)),
                           silent = self$try_silent)
               }
+
+              # lrt
+              # TODO: this is untested
+              # TODO: this is the same in lme and gamlss, move to separate function
+              wasLRTrun <- FALSE
+              lrtp <- as.numeric(NA)
+              if( "lme" %in% class(m1) & !is.null(dropVars) )
+              {
+                frm0 <- all.vars(self$fixed)[-1]
+                frm0 <- frm0[! frm0 %in% dropVars]
+                frm0 <- formula( paste(self$dv, '~', paste(frm0, collapse = '+')) )
+                m0   <- update(m1, frm0)
+                lrt  <- anova(m1, m0)
+                if(nrow(lrt)==2 & "p-value" %in% names(lrt))
+                {
+                  lrtp <- lrt$"p-value"[2]
+                }
+                wasLRTrun <- TRUE
+              }
+
+              # output
               if("gamlss" %in% class(m1))
               {
                 m1$PalyticSummary  <- self$summary()
                 m1$whichPalyticMod <- paste('Palytic gamlss model #', wm)
+                m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
                 return(m1)
               }
               if("try-error" %in% class(m1))

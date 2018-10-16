@@ -5,7 +5,7 @@
 #'
 #' @export
 #' @import gridExtra
-#' @import ggplot2
+#' @import plyr
 #'
 #' @description
 #' Apply p.adjust and add output and graphics
@@ -21,8 +21,6 @@
 psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
                    rawdata=NULL)
 {
-  library(gridExtra)
-  library(ggplot2)
 
   pav <- paste("-PAv", packageVersion("PersonAlytics"), "-", sep='')
 
@@ -31,29 +29,17 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
     stop("`method` must be one of: ", paste(p.adjust.methods, collapse = ', '))
   }
 
-  # find all the p-value columns
+  # find the lrt p-value columns
   wc <- which( names(DVout) == 'targ_ivs_lrt_pvalue')
-
-  # note that with missing data, the parameter `n` in p.adjust will be
-  # length(temp), not length(na.omit(temp)). If the latter is use, results
-  # will be more conservative, i.e., adjusting for the number of converged
-  # analyses rather than the total number of analyses
-  adjuster <- function(x, wc, method)
-  {
-    temp <- x[,wc]
-    adj.ps <- lapply(temp, function(x) p.adjust(x, method=method))
-    output <- data.frame(temp, unlist(adj.ps))
-    names(output) <- c(paste(names(x)[wc], 'raw', sep='_'),
-                       paste(names(x)[wc], method, 'FDR', sep='_'))
-    return(output)
-  }
 
   # apply the adjustments by ids and dvs, if
   # - group based, byVariable will be dvs only
   # - only 1 dv, we still get ids within dv
   byVariable <- paste(DVout$dv, DVout[[ids]], sep="_")
-  DVoutadj   <- do.call(rbind, as.list(by(data = DVout, INDICES = byVariable,
-                                        FUN = adjuster, wc=wc, method=method)))
+  DVoutadj   <- plyr::rbind.fill(as.list(by(data = DVout, INDICES = byVariable,
+                                 FUN = adjuster, wc=wc, method=method)))
+  DVoutadj   <- data.frame(DVout, DVoutadj)
+  rm(DVout)
 
   st <- unlist( strsplit(as.character( Sys.time()), " ") )
   st[2] <- gsub(":", "-", st[2])
@@ -64,82 +50,108 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
 
   fn <- paste(paste("./", dn, "/", sep=""),
               paste("Best", nbest, 'pvalues', sep="_"), sep="")
-  print(fn)
 
-  sink(file = paste(fn, pav, "txt", sep=".") )
-  ln <- paste("\n", paste(rep("-", 80), collapse=""), "\n\n", sep = "")
-  for(d in unique(DVoutadj$dv))
+  targColumns <- which( grepl(pattern = 'Targ.', x = names(DVoutadj)) )
+
+  #TODO(Stephen) this worked for the metabolomics data b/c we had a large number
+  # of continuous covariates. For curelator, this is more challegenging b/c
+  # some covariates are factors and some are continuous. This is on hold for
+  # now b/c curelator doesn't need it. When yo uhave time to fix it, turn it
+  # into a separate function.
+  if(1==2)
   {
-    temp <- DVoutadj[DVoutadj$dv==d,]
-    for(i in 1:length(tp))
+    sink(file = paste(fn, pav, "txt", sep=".") )
+    ln <- paste("\n", paste(rep("-", 80), collapse=""), "\n\n", sep = "")
+    for(d in levels(DVoutadj$dv))
     {
-      # method
-      if(i==1) mthd <- "Unadjusted"
-      if(i >1) mthd <- method[i-1]
-
-      fn <- paste(paste("./", dn, "/", sep=""),
-                  paste("Best", nbest, mthd, 'pvalues_for', d, sep="_"), sep="")
-
-      # section stats
-      ss <- mean(temp[,tp[i]]<alpha, na.rm=TRUE)
-
-      # section title
-      cat(ln, nbest, "largest effects for `", d, "` with the", mthd, "p-value.\n\n",
-          'Proportion p < alpha = ', alpha, ": ", ss, '\n',
-          ln)
-      # select p < alpha
-      best <- temp[temp[,tp[i]]<alpha,c(tn,te,tp[i])]
-      # select the nbest best
-      nbestr <- nbest; if(nbest > nrow(best)) nbestr <- nrow(best)
-      if(nbestr > 0)
+      temp <- DVoutadj[DVoutadj$dv==d,]
+      for(i in 1:(length(method)+1))
       {
-        best <- best[order(abs(best[,2]), decreasing = TRUE),][1:nbestr,]
-      }
-      best <- data.frame(best)
-      row.names(best) <- NULL
-      if(!all(is.na(best)))
-      {
-        print( best )
+        # method
+        if(i==1) mthd <- "Unadjusted"
+        if(i >1) mthd <- method[i-1]
 
-        # graphics
-        if(!is.null(rawdata))
+        fn <- paste(paste("./", dn, "/", sep=""),
+                    paste("Best", nbest, mthd, 'pvalues_for', d, sep="_"), sep="")
+
+        # summary stats
+        ss <- mean(temp[,wc]<alpha, na.rm=TRUE)
+
+        # section title
+        cat(ln, nbest, "largest effects for `", d, "` with the", mthd, "p-value.\n\n",
+            'Proportion p < alpha = ', alpha, ": ", ss, '\n',
+            ln)
+        # select p < alpha
+        best <- temp[temp[,wc]<alpha,targColumns]
+        # select the nbest best
+        nbestr <- nbest
+        if(nbest > nrow(best)) nbestr <- nrow(best)
+        if(nbestr > 0)
         {
-          # add foreach %dopar% here
-          bestplots <- list()
-          for(p in 1:nrow(best))
-          {
-            w  <- which(temp$target_iv==best$target_iv[p])
-            iv <- unlist( strsplit( toString(temp$ivs[w]), ", " ) )
-            g  <- try(trajplot(data=rawdata                                         ,
-                               ids=toString(temp$ids[w])                            ,
-                               dv=toString(temp$dv[w])                              ,
-                               time=toString(temp$time[w])                          ,
-                               phase=toString(temp$phase[w])                        ,
-                               ivs=ifelse(length(iv)>1, iv[1:(length(iv)-1)], NULL) ,
-                               target_iv=iv[length(iv)]                             ,
-                               target_nm=toString(temp$target_iv[w])
-            ), TRUE)
-            if(! "try-error" %in% class(g) ) bestplots[[p]] <- g
-
-          }
-          pdf(paste(fn, pav, "pdf", sep="."), onefile = TRUE)
-          lapply(bestplots, grid.arrange)
-          dev.off()
+          best <- best[order(abs(best[,2]), decreasing = TRUE),][1:nbestr,]
         }
-      }
-      if(all(is.na(best)))
-      {
-        cat("All p-values are >", alpha, "\n\n\n")
-      }
+        best <- data.frame(best)
+        row.names(best) <- NULL
+        if(!all(is.na(best)))
+        {
+          print( best )
 
-      write.csv(best,  paste(fn, pav, "csv", sep="."))
+          # graphics
+          if(!is.null(rawdata))
+          {
+            # add foreach %dopar% here
+            bestplots <- list()
+            for(p in 1:nrow(best))
+            {
+              w  <- which(temp$target_iv==best$target_iv[p])
+              iv <- unlist( strsplit( toString(temp$ivs[w]), ", " ) )
+              g  <- try(trajplot(data=rawdata                                         ,
+                                 ids=toString(temp$ids[w])                            ,
+                                 dv=toString(temp$dv[w])                              ,
+                                 time=toString(temp$time[w])                          ,
+                                 phase=toString(temp$phase[w])                        ,
+                                 ivs=ifelse(length(iv)>1, iv[1:(length(iv)-1)], NULL) ,
+                                 target_iv=iv[length(iv)]                             ,
+                                 target_nm=toString(temp$target_iv[w])
+              ), TRUE)
+              if(! "try-error" %in% class(g) ) bestplots[[p]] <- g
+
+            }
+            pdf(paste(fn, pav, "pdf", sep="."), onefile = TRUE)
+            lapply(bestplots, gridExtra::grid.arrange)
+            dev.off()
+          }
+        }
+        if(all(is.na(best)))
+        {
+          cat("All p-values are >", alpha, "\n\n\n")
+        }
+
+        write.csv(best,  paste(fn, pav, "csv", sep="."))
+      }
     }
+    while( sink.number() > 0 ) sink()
   }
-  sink()
 
-  while( sink.number() > 0 ) sink()
 
   return( DVoutadj )
+}
+
+#' adjuster - a function to adjust p-values for a given column `wc` in the data
+#' `x`.
+#'
+#' note that with missing data, the parameter `n` in p.adjust will be
+#' length(temp), not length(na.omit(temp)). If the latter is used, results
+#' will be more conservative, i.e., adjusting for the number of converged
+#' analyses rather than the total number of analyses
+adjuster <- function(x, wc, method)
+{
+  temp <- x[,wc]
+  adj.ps <- lapply(temp, function(x) p.adjust(x, method=method))
+  output <- data.frame(temp, unlist(adj.ps))
+  names(output) <- c(paste(names(x)[wc], 'raw', sep='_'),
+                     paste(names(x)[wc], method, 'FDR', sep='_'))
+  return(output)
 }
 
 ### metabolomics version, updates needed include
@@ -151,7 +163,6 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
 #' @export
-#' @import gridExtra
 #' @import ggplot2
 #'
 #' @description

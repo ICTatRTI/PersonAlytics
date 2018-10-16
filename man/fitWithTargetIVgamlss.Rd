@@ -4,7 +4,7 @@
 \alias{fitWithTargetIVgamlss}
 \title{fitWithTargetIVgamlss}
 \usage{
-fitWithTargetIVgamlss(t1, useObs, dims)
+fitWithTargetIVgamlss(t1, useObs, dims, dropVars)
 }
 \description{
 fitWithTargetIVgamlss

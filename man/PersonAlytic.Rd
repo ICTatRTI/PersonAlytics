@@ -321,16 +321,11 @@ mare1 <- PersonAlytic(output   = 'Mare1'          ,
 message('\\n\\nDoes batch run match a single run?\\n', all.equal( c(t(mare1$tTable)),
 unname(unlist(t1[t1$Mare==1,32:51]))) )
 
-# delete the output if this was run in the development directory
-if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
-{
-  file.remove( dir(getwd(), glob2rx("*.txt")) )
-  file.remove( dir(getwd(), glob2rx("*.csv")) )
-}
+
 
 # gamlss with two distributions - features not implemented
 #OvaryICT$follicles01 <- to01(OvaryICT$follicles)
-#t3 <- PersonAlytic(data=OvaryICT,
+#t2 <- PersonAlytic(data=OvaryICT,
 #                 ids="Mare",
 #                 dvs=list("follicles", "follicles01"),
 #                 phase="Phase",
@@ -338,4 +333,23 @@ if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
 #                 family=c(NO(), BEINF()),
 #                 package='gamlss')
 
+\dontrun{
+# individual models with target variables
+t3 <- PersonAlytic(output          = 'TargetIVStest'       ,
+                   data            = OvaryICT              ,
+                   ids             = "Mare"                ,
+                   dvs             = "follicles"           ,
+                   phase           = "Phase"               ,
+                   time            = "Time"                ,
+                   package         = "arma"                ,
+                   individual_mods = TRUE                  ,
+                   target_ivs      = names(OvaryICT)[6:11] )
+}
+
+# delete the output if this was run in the development directory
+if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
+{
+  file.remove( dir(getwd(), glob2rx("*.txt")) )
+  file.remove( dir(getwd(), glob2rx("*.csv")) )
+}
 }
