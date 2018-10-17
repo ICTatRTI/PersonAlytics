@@ -1130,16 +1130,18 @@ Palytic$set("public", "describe",
               ivstats <- list()
               for(i in ivall)
               {
-                if(is.factor(tempData[[i]]) | length(unique(tempData[[i]]))==2)
+                if(is.factor(tempData[[i]]) | length(table(tempData[[i]]))==2)
                 {
                   mns <- aggregate(tempData[[self$dv]], list(tempData[[i]]),
                                    mean, na.rm=TRUE)
-                  nms <- paste('mean', self$dv, paste(i, mns[,1],sep='_EQ_'), sep='_')
+                  nms <- paste('mean of', self$dv, 'for',
+                               paste(i, mns[,1],sep='='),
+                               sep=' ')
                   for(j in 1:nrow(mns)) ivstats[[nms[j]]] <- unname( mns$x[j] )
                 }
                 else
                 {
-                  des <- paste('correlation', self$dv, i, sep='_')
+                  des <- paste('correlation of', self$dv, 'and', i, sep=' ')
 
                   hasVarDV <- sd(tempData[[self$dv]], na.rm=TRUE)!=0
                   hasVarIV <- sd(tempData[[i]]      , na.rm=TRUE)!=0
@@ -1161,7 +1163,18 @@ Palytic$set("public", "describe",
                   }
                 }
               }
-              #data.frame(unlist(ivstats))
+
+              # resturcture the results
+              statName = as.list(  names(ivstats) )
+              names(statName) <- paste('statName', 1:length(statName), sep='')
+
+              statValue = ivstats
+              names(statValue) <- paste('statValue', 1:length(statValue), sep='')
+
+              idx <- order(c(seq_along(statName), seq_along(statValue)))
+              ivstats <- c(statName, statValue)[idx]
+
+              # return
               return( ivstats )
             })
 

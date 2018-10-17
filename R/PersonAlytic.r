@@ -418,7 +418,7 @@ PersonAlytic <- function(output=NULL                                       ,
   # arma models
   if(exists('packageTest'))
   {
-    if(packageTest %in% c('nlme', 'gamlls', 'arma')) package <- packageTest
+    if(packageTest %in% c('lme', 'gamlls', 'arma')) package <- packageTest
     warning('package was overridden by packageTest to be `', package, '`')
   }
 
