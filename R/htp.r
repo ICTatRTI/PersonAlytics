@@ -137,9 +137,10 @@ htp <- function(data                                                ,
       #id<-DIM$ID[i]; iv<-DIM$IV[i]
 
       #-------------------------------------------------------------------------
-      # deep clone
+      # deep clone & initialize the model as NA
       #-------------------------------------------------------------------------
       t1 <- t0$clone(deep=TRUE)
+      modid <- NA
 
       #-------------------------------------------------------------------------
       # for the current id, select potential rows, useObs will be updated
@@ -155,6 +156,8 @@ htp <- function(data                                                ,
         useObs <- rep(TRUE, nrow(t1$data))
         wid    <- 1:nrow(t1$data)
       }
+
+
 
       #-------------------------------------------------------------------------
       # accumulate inputs and errors for the output, results are used in
@@ -208,7 +211,7 @@ htp <- function(data                                                ,
       if( is.na(tivv) ) tivv <- FALSE
       if( length( unlist(target_ivs[iv]) ) != 0 & !tivv )
       {
-        modid <- NA
+        #modid <- NA
         err_id$converge    <- paste('No variance in `', target_ivs[iv], '`.')
         err_id$estimator   <- toString( NA )
         err_id$analyzed_N  <- "0 cases were analyzed."
@@ -217,7 +220,7 @@ htp <- function(data                                                ,
       }
 
       #-------------------------------------------------------------------------
-      # if there was no target IV, make modid mod1
+      # if there was no target IV, fit the null model
       #-------------------------------------------------------------------------
       if( length( target_ivs[[iv]] ) == 0 | !tivv )
       {
@@ -234,7 +237,7 @@ htp <- function(data                                                ,
       if(is.na(dvVar)) dvVar <- 0
       if(dvVar==0)
       {
-        modid <- NA
+        #modid <- NA
         err_id$converge    <- paste('No variance in `', dvs[dv], '`.')
         err_id$estimator   <- toString( NA )
         err_id$analyzed_N  <- "0 cases were analyzed."
@@ -253,20 +256,25 @@ htp <- function(data                                                ,
       # fitWithTargetIV unless the REML fit leads to a different model than
       # the ML fit
       #-------------------------------------------------------------------------
-      Model <- NA
+      Model <- modid
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
         t1$method <- "REML"
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
         if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
-      }
-      if(!any(is.na(modid)))
-      {
-        if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
+        if(  any(c("gamlss", "lme") %in% class(Model)) )
         {
-          Model <- modid
+          err_id$method <- err_id$estimator <- "REML"
         }
       }
+      #if(!any(c("gamlss", "lme") %in% class(modid)) & !is.na(modid) &
+      #   modid != "Model did not converge")
+      #{
+      #  if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
+      #  {
+      #    Model <- modid
+      #  }
+      #}
       rm(modid)
 
       #-------------------------------------------------------------------------
@@ -282,18 +290,14 @@ htp <- function(data                                                ,
       rm(Model)
 
       #-------------------------------------------------------------------------
-      # for a clean print after the progress bar
-      #-------------------------------------------------------------------------
-      cat('\n\n')
-
-      #-------------------------------------------------------------------------
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
-      #IDout[[i]] <- list( Messages=err_id, Model=Model, Describe=descr_id )
+      #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id )
       return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
 
     } # end of foreach
+    cat('\n\n')
     # stop the cluster
     parallel::stopCluster(cl)
 
@@ -316,7 +320,7 @@ htp <- function(data                                                ,
     # parameter estimates
     #...........................................................................
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
-    IDoutSum <- lapply( IDout, function(x) x$IDoutSum)
+    IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
     IDoutSumm <- plyr::rbind.fill(IDoutSum)
 
     #...........................................................................
@@ -391,7 +395,7 @@ htpForms <- function(err_id, t1, dims, package, modid)
   err_id["random"]    <- toString( NA )
   err_id["formula"]   <- toString( NA )
 
-  if(!any(is.na(modid)))
+  if(!any(is.na(modid)) & !any(modid == "Model did not converge"))
   {
     err_id["fixed"]       <- rmSpecChar(modid$PalyticSummary$fixed)
     err_id["random"]      <- rmSpecChar(modid$PalyticSummary$random)
@@ -667,6 +671,8 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars)
     # here is a placeholder for getting error messsages from lme
     # which needs to be updated in the error handling for
     # lme in Palytic
+    err_id['wasLRTrun']  <- FALSE
+    err_id['targ_ivs_lrt_pvalue'] <- as.numeric(NA)
   }
   if(  "lme"  %in%  class(modid) )
   {
@@ -677,9 +683,10 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars)
                              Reduce( paste, deparse(modid$PalyticSummary$random) ),
                              modid$PalyticSummary$correlation,
                              sep='; ')
+    err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+    err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   }
-	err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
-	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
+
   return( list(err_id = err_id, modid = modid) )
 }
 
