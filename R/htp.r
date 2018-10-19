@@ -38,14 +38,14 @@ htp <- function(data                                                ,
   # parralelization: encapsulate ivs and ids in one foreach
   ##############################################################################
   DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
-  #if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
-  #pkgs  <- c("gamlss", "nlme", "foreach")
-  #pb <- txtProgressBar(max = nrow(DIM), style = 3)
-  #progress <- function(n) setTxtProgressBar(pb, n)
-  #opts <- list(progress = progress)
-  #exports <- c("htpForms", "htpErrors", "fitWithTargetIV",
-  #             "fitWithTargetIVlme", "fitWithTargetIVarma",
-  #             "fitWithTargetIVgamlss")
+  if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
+  pkgs  <- c("gamlss", "nlme", "foreach")
+  pb <- txtProgressBar(max = nrow(DIM), style = 3)
+  progress <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress = progress)
+  exports <- c("htpForms", "htpErrors", "fitWithTargetIV",
+               "fitWithTargetIVlme", "fitWithTargetIVarma",
+               "fitWithTargetIVgamlss")
 
 
   ##############################################################################
@@ -158,8 +158,6 @@ htp <- function(data                                                ,
         wid    <- 1:nrow(t1$data)
       }
 
-
-
       #-------------------------------------------------------------------------
       # accumulate inputs and errors for the output, results are used in
       # row selection `useObs`
@@ -257,7 +255,7 @@ htp <- function(data                                                ,
       # fitWithTargetIV unless the REML fit leads to a different model than
       # the ML fit
       #-------------------------------------------------------------------------
-      Model <- modid
+      Model <- data.frame(NA)
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
         t1$method <- "REML"
@@ -267,15 +265,20 @@ htp <- function(data                                                ,
         {
           err_id$method <- err_id$estimator <- "REML"
         }
+        if( any("Model did not converge" %in% Model) )
+        {
+          Model <- modid
+        }
       }
-      #if(!any(c("gamlss", "lme") %in% class(modid)) & !is.na(modid) &
-      #   modid != "Model did not converge")
-      #{
-      #  if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
-      #  {
-      #    Model <- modid
-      #  }
-      #}
+      if( !any(c("gamlss", "lme") %in% class(modid)) &
+          !any("Model did not converge" %in% modid)  &
+          !any(is.na(modid)) )
+      {
+        if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
+        {
+          Model <- modid
+        }
+      }
       rm(modid)
 
       #-------------------------------------------------------------------------
@@ -647,7 +650,7 @@ isNullOrForm <- function(x)
 fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3))
 {
   # fit model with targe iv
-  if(package=="nlme")   modid <- fitWithTargetIVlme(t1, useObs, dims, dropVars)
+  if(package=="nlme")   modid <- fitWithTargetIVlme(t1, useObs, dims, dropVars, PQ)
   if(package=="arma")   modid <- fitWithTargetIVarma(t1, useObs, dims, dropVars, PQ)
   if(package=="gamlss") modid <- fitWithTargetIVgamlss(t1, useObs, dims, dropVars)
 
@@ -659,10 +662,10 @@ fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3))
 
 #' fitWithTargetIVlme
 #' @keywords internal
-fitWithTargetIVlme <- function(t1, useObs, dims, dropVars)
+fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ)
 {
   err_id <- list()
-  modid  <- t1$lme( useObs, dropVars )
+  modid  <- t1$lme( useObs, dropVars, PQ )
   if(! "lme"  %in%  class(modid) )
   {
     err_id['converge']   <- modid

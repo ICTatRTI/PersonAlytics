@@ -1346,7 +1346,7 @@ Palytic$set("public", "lme",
               # if n=1, detect the correlation structure here using getARnEQ1()
               # as it may affect the lrt (we should probably do the same for
               # group ar...);
-              if( length(table(tempData[[self$ids]])==1) )
+              if( length(table(tempData[[self$ids]]))==1 )
               {
                 cor  <- getARnEQ1(m1, PQ)
                 ctrl <- nlme::lmeControl(opt="optim")
@@ -1359,7 +1359,7 @@ Palytic$set("public", "lme",
                           silent = TRUE)
               }
 
-              # clean up the call
+              # clean up the call - may not need this
               m1 <- cleanCall(modelResult=m1, PalyticObj=self)
 
               # lrt
@@ -1406,6 +1406,26 @@ Palytic$set("public", "lme",
             },
             overwrite = TRUE
 )
+
+#' cleanCall - clean up the call in in palytic objects
+#' @keywords internal
+cleanCall <- function(modelResult, PalyticObj)
+{
+  if("lme" %in% class(modelResult) )
+  {
+    modelResult$call$fixed       <- PalyticObj$fixed
+    modelResult$call$random      <- PalyticObj$random
+    modelResult$call$correlation <- PalyticObj$correlation
+    modelResult$call$method      <- PalyticObj$method
+  }
+  if( "gamlss" %in% class(modelResult) )
+  {
+    modelResult$call$formula       <- PalyticObj$formula
+    modelResult$call$sigma.formula <- PalyticObj$sigma.formula
+    modelResult$call$family        <- PalyticObj$family
+  }
+  return(modelResult)
+}
 
 #' getARnEQ1
 #' @keywords internal
