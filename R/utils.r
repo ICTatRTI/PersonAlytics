@@ -560,3 +560,23 @@ subdat <- function(data, subgroup, formula)
   if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(data))
   na.omit( subset(data, subgroup, all.vars(formula)) )
 }
+
+#' cleanCall - clean up the call in in palytic objects
+#' @keywords internal
+cleanCall <- function(modelResult, PalyticObj)
+{
+  if("lme" %in% class(modelResult) )
+  {
+    modelResult$call$fixed       <- PalyticObj$fixed
+    modelResult$call$random      <- PalyticObj$random
+    modelResult$call$correlation <- PalyticObj$correlation
+    modelResult$call$method      <- PalyticObj$method
+  }
+  if( "gamlss" %in% class(modelResult) )
+  {
+    modelResult$call$formula       <- PalyticObj$formula
+    modelResult$call$sigma.formula <- PalyticObj$sigma.formula
+    modelResult$call$family        <- PalyticObj$family
+  }
+  return(modelResult)
+}

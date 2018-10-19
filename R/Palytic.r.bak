@@ -993,7 +993,7 @@ Palytic <- R6::R6Class("Palytic",
                            ismonotone  = NULL,
                            alignPhase  = FALSE,
                            datac       = NULL,
-                           warnings    = list(), # hide? or just make them read only?
+                           warnings    = list(), # can we hide these? or just make them read only?
                            errors      = list(),
                            try_silent  = TRUE
                          )
@@ -1084,9 +1084,6 @@ Palytic$set("public", "summary",
               dropvars  <- grep(pattern = '\\(', variables)
               if(length(dropvars) > 0 ) variables <- variables[-dropvars]
 
-              tempCorrelation <- ifelse(is.null(self$correlation), "NULL",
-                                        self$correlation)
-
               # return the summary
               list(      ids          = self$ids            ,
                          dv           = self$dv             ,
@@ -1095,7 +1092,7 @@ Palytic$set("public", "summary",
                          ivs          = self$ivs            ,
                          interactions = self$interactions   ,
                          time_power   = self$time_power     ,
-                         correlation  = tempCorrelation     ,
+                         correlation  = self$correlation    ,
                          family       = self$family         ,
                          package      = self$package        ,
                          fixed        = self$fixed          ,
@@ -1133,18 +1130,16 @@ Palytic$set("public", "describe",
               ivstats <- list()
               for(i in ivall)
               {
-                if(is.factor(tempData[[i]]) | length(table(tempData[[i]]))==2)
+                if(is.factor(tempData[[i]]) | length(unique(tempData[[i]]))==2)
                 {
                   mns <- aggregate(tempData[[self$dv]], list(tempData[[i]]),
                                    mean, na.rm=TRUE)
-                  nms <- paste('mean of', self$dv, 'for',
-                               paste(i, mns[,1],sep='='),
-                               sep=' ')
+                  nms <- paste('mean', self$dv, paste(i, mns[,1],sep='_EQ_'), sep='_')
                   for(j in 1:nrow(mns)) ivstats[[nms[j]]] <- unname( mns$x[j] )
                 }
                 else
                 {
-                  des <- paste('correlation of', self$dv, 'and', i, sep=' ')
+                  des <- paste('correlation', self$dv, i, sep='_')
 
                   hasVarDV <- sd(tempData[[self$dv]], na.rm=TRUE)!=0
                   hasVarIV <- sd(tempData[[i]]      , na.rm=TRUE)!=0
@@ -1166,18 +1161,7 @@ Palytic$set("public", "describe",
                   }
                 }
               }
-
-              # resturcture the results
-              statName = as.list(  names(ivstats) )
-              names(statName) <- paste('statName', 1:length(statName), sep='')
-
-              statValue = ivstats
-              names(statValue) <- paste('statValue', 1:length(statValue), sep='')
-
-              idx <- order(c(seq_along(statName), seq_along(statValue)))
-              ivstats <- c(statName, statValue)[idx]
-
-              # return
+              #data.frame(unlist(ivstats))
               return( ivstats )
             })
 
@@ -1274,13 +1258,8 @@ Palytic$set("public", "arma",
             overwrite = TRUE
 )
 
-#TODO(Stephen) you can't just add ... to lme() and get things passed, you'll
-#need to add some sort of evaluation, e.g.
-# > args <- list(...)
-# > if("contrasts" %in% names(args)) # then pass `contrasts` to lme
-# or some other method of matching arguments, see ?match.arg
 Palytic$set("public", "lme",
-            function(subgroup=NULL, dropVars=NULL, PQ=c(3,3), ...)
+            function(subgroup=NULL, dropVars=NULL, ...)
             {
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
@@ -1294,7 +1273,9 @@ Palytic$set("public", "lme",
                                   data=tempData,
                                   random=self$random,
                                   correlation=cor,
-                                  method=self$method),
+                                  method=self$method,
+                                  keep.data=FALSE,
+                                  ...),
                         silent = TRUE)
 
               ctrl <- nlme::lmeControl()
@@ -1307,7 +1288,8 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=cor,
                                     method=self$method,
-                                    control=ctrl),
+                                    control=ctrl,
+                                    ...),
                           silent = TRUE)
               }
               # try without correlation structure
@@ -1321,7 +1303,8 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
-                                    control=ctrl),
+                                    control=ctrl,
+                                    ...),
                           silent = TRUE)
               }
               # try without random slopes or correlation structure
@@ -1339,28 +1322,10 @@ Palytic$set("public", "lme",
                                     random=self$random,
                                     correlation=self$correlation,
                                     method=self$method,
-                                    control=ctrl),
+                                    control=ctrl,
+                                    ...),
                           silent = TRUE)
               }
-
-              # if n=1, detect the correlation structure here using getARnEQ1()
-              # as it may affect the lrt (we should probably do the same for
-              # group ar...);
-              if( length(table(tempData[[self$ids]])==1) )
-              {
-                cor  <- getARnEQ1(m1, PQ)
-                ctrl <- nlme::lmeControl(opt="optim")
-                m1   <- try(nlme::lme(fixed=self$fixed,
-                                    data=tempData,
-                                    random=self$random,
-                                    correlation=cor,
-                                    method=self$method,
-                                    control=ctrl),
-                          silent = TRUE)
-              }
-
-              # clean up the call
-              m1 <- cleanCall(modelResult=m1, PalyticObj=self)
 
               # lrt
               wasLRTrun <- FALSE
@@ -1370,20 +1335,11 @@ Palytic$set("public", "lme",
                 frm0 <- all.vars(self$fixed)[-1]
                 frm0 <- frm0[! frm0 %in% dropVars]
                 frm0 <- formula( paste(self$dv, '~', paste(frm0, collapse = '+')) )
-                #m0   <- update(m1, frm0) # this fails b/c the call is messed up
-                m0 <- try(nlme::lme(fixed=frm0,
-                                    data=tempData,
-                                    random=self$random,
-                                    correlation=cor,
-                                    method=self$method),
-                          silent = TRUE)
-                if("lme" %in% class(m1) & "lme" %in% class(m1))
+                m0   <- update(m1, frm0)
+                lrt  <- anova(m1, m0)
+                if(nrow(lrt)==2 & "p-value" %in% names(lrt))
                 {
-                  lrt <- anova(m1, cleanCall(m0, self))
-                  if(nrow(lrt)==2 & "p-value" %in% names(lrt))
-                  {
-                    lrtp <- lrt$"p-value"[2]
-                  }
+                  lrtp <- lrt$"p-value"[2]
                 }
                 wasLRTrun <- TRUE
               }
@@ -1407,31 +1363,262 @@ Palytic$set("public", "lme",
             overwrite = TRUE
 )
 
-#' getARnEQ1
-#' @keywords internal
-getARnEQ1 <- function(m, PQ)
-{
-  correlation <- "NULL"
-  faa <- try( forecast::auto.arima(y     = m$residuals[,2],
-                                   xreg  = m$data[[self$dv]],
-                                   max.p = PQ[1],
-                                   max.q = PQ[2],
-                                   max.P = 0,
-                                   max.Q = 0,
-                                   max.d = 0,
-                                   max.D = 0),
-              silent = TRUE)
-  if( "Arima" %in% class(faa) )
-  {
-    faaOrder <- forecast::arimaorder(faa)
-    correlation <- paste('corARMA(p=', faaOrder[1],
-                         ',q=', faaOrder[2], ')', sep='')
-    correlation <- eval(parse(text = ifelse(!is.null(correlation),
-                             correlation,
-                             'NULL')))
-  }
-  return( correlation )
-}
+
+
+### this needs to be expanded to include our list, e.g.,
+#   R:\PaCCT\Process\MMTA Process and Record Keeping.docx
+# -- this will be done in Palytic augmentations in .Palytic
+Palytic$set("public", "gamlss",
+            function(subgroup=NULL, sigma.formula = ~1, family=NULL,
+                     dropVars=NULL, ...)
+            {
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              tempData <- na.omit( subset(self$datac, subgroup,
+                                          all.vars(self$formula)) )
+
+              # allow for family to be changed on the fly
+              currentFamily <- self$family
+              if(!is.null(family)) currentFamily <- family
+
+              wm <- 1 # default model
+              ctrl <- gamlss::gamlss.control()
+              m1 <- try(gamlss::gamlss(formula = self$formula,
+                                       sigma.formula = sigma.formula,
+                                       data    = tempData,
+                                       family  = currentFamily,
+                                       ...),
+                        silent = self$try_silent)
+
+              # default model with increased n.cyc
+              if( "try-error" %in% class(m1) )# | !eds(m1) )
+              {
+                wm <- 2
+                ctrl <- gamlss::gamlss.control(n.cyc=100)
+                m1 <- try(refit(gamlss::gamlss(formula = self$formula,
+                                               sigma.formula = sigma.formula,
+                                               data    = tempData,
+                                               family  = currentFamily,
+                                               control = ctrl,
+                                               ...)),
+                          silent = self$try_silent)
+              }
+              if( "try-error" %in% class(m1) )
+              {
+                wm <- 3 # drop the random slope(s)
+                newformula <- forms(data       = self$datac   ,
+                                    PalyticObj = self        ,
+                                    dropTime   = TRUE        ,
+                                    family     = currentFamily,
+                                    ... )
+                self$formula <- newformula$formula
+                #self$family  <- newformula$family
+                ctrl <- gamlss::gamlss.control(n.cyc=100)
+                m1 <- try(refit(gamlss::gamlss(formula = self$formula,
+                                               data    = tempData,
+                                               family  = currentFamily,
+                                               control = ctrl,
+                                               ...)),
+                          silent = self$try_silent)
+              }
+
+              # lrt
+              # TODO: this is untested
+              # TODO: this is the same in lme and gamlss, move to separate function
+              wasLRTrun <- FALSE
+              lrtp <- as.numeric(NA)
+              if( "lme" %in% class(m1) & !is.null(dropVars) )
+              {
+                frm0 <- all.vars(self$fixed)[-1]
+                frm0 <- frm0[! frm0 %in% dropVars]
+                frm0 <- formula( paste(self$dv, '~', paste(frm0, collapse = '+')) )
+                m0   <- update(m1, frm0)
+                lrt  <- anova(m1, m0)
+                if(nrow(lrt)==2 & "p-value" %in% names(lrt))
+                {
+                  lrtp <- lrt$"p-value"[2]
+                }
+                wasLRTrun <- TRUE
+              }
+
+              # output
+              if("gamlss" %in% class(m1))
+              {
+                m1$PalyticSummary  <- self$summary()
+                m1$whichPalyticMod <- paste('Palytic gamlss model #', wm)
+                m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
+                return(m1)
+              }
+              if("try-error" %in% class(m1))
+              {
+                return("Model did not converge")
+              }
+
+            },
+            overwrite = TRUE
+)
+
+###### 20181002 -- slated for deprecation --
+# ---- scratch that, we still need it to compare arma and lme
+# this will only be applied to one participant at a time
+# whichIC can take on AIC or BIC
+Palytic$set("public", "getAR_order",
+            function(P=3    ,
+                     Q=3    ,
+                     whichIC="BIC" ,
+                     lrt=FALSE  , # only valid for nested models, AR, MA are not nested
+                     alpha=.05  )
+            {
+              message("\n\nPersonAlytics: Automatic detection of the\n",
+                      "residual correlation structure starting.")
+              start <- Sys.time()
+
+              #TODO(Stephen): use deep copy in clone
+              saveMethod  <- self$method
+              saveFormula <- self$formula
+              saveRandom  <- self$random
+
+              self$method <- "ML"
+
+              # check whether time is (approximately) equally spaced, use the
+              # first participant for now; the method is the standard deviation
+              # of the 1st order difference score
+              uid <- sort( as.numeric( unique(self$datac[[self$ids]]) ) )
+              tt  <- self$datac[[self$time]][self$datac[[self$ids]]==uid[1]]
+              ttd <- diff( tt )
+              eqSpace <- sd(ttd) < .1
+
+              # for bluedoor review 20180827 set eqSpace <- 0, 'ic' is not
+              # passing correctly to auto.arima()
+              eqSpace <- FALSE
+
+              # if time is equally spaced use the auto.arima function
+              # NOTE: this has not been tested agaignst the lme approach, but
+              # it is much faster
+              if(eqSpace)
+              {
+                AR_orders <- by(self$datac[[self$dv]],
+                                self$datac[[self$ids]],
+                                FUN = forecast::auto.arima,
+                                ic=tolower(whichIC[1]))
+
+                AR_orders <- lapply(AR_orders, function(x)as.data.frame(t(x)))
+                AR_orders <- plyr::rbind.fill(AR_orders)
+                AR_orders <- data.frame(ids=as.numeric(row.names(AR_orders)),
+                                        p=AR_orders[,1],
+                                        q=AR_orders[,2])
+                AR_orders <- AR_orders[order(AR_orders$ids),]
+                row.names(AR_orders) <- NULL
+
+                AR_orders <- data.frame(ids=AR_orders$ids,
+                                        arma=paste("corARMA(p=", AR_orders$p, ",q=",
+                                                   AR_orders$q, ")", sep=""))
+                AR_orders$arma <- as.character( AR_orders$arma )
+                AR_orders[AR_orders=="corARMA(p=0,q=0)"] <- "NULL"
+
+                AR_orders[,2]   <- as.character( AR_orders[,2] )
+                self$corStructs <- AR_orders
+              }
+
+              # this approach is residual, auto.arima is observed
+              # an option to increase speed would be to use auto.arima
+              # on the residuals
+              if(!eqSpace)
+              {
+                # this is supposedly taboo but I've been unable to work around it b/c we
+                # cannot :: the %dopar% operator
+
+                # parralelization
+                require(foreach)
+                funcs <- c("mean")
+                cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK")
+                snow::clusterExport(cl, funcs)
+                doSNOW::registerDoSNOW(cl)
+                pkgs  <- c("gamlss", "nlme")
+                pb <- txtProgressBar(max = length(uid), style = 3)
+                progress <- function(n) setTxtProgressBar(pb, n)
+                opts <- list(progress = progress)
+
+                #bestCors <- list()
+                #for(id in uid)
+                bestCors <- foreach(id=uid, .packages = pkgs,
+                                    .options.snow = opts)  %dopar%
+                {
+                  corModsid <- list(); cc = 1
+                  self$correlation <- "NULL"
+                  nullMod <- self$lme(self$datac[[self$ids]]==id)
+                  print(id)
+                  if( "lme" %in% class(nullMod) )
+                  {
+                    for(p in 0:P)
+                    {
+                      for(q in 0:Q)
+                      {
+                        if(p>0 | q>0)
+                        {
+                          # will this automatically update the fixed effects? it doesn't
+                          # need to for nlme which takes `correlation` directly, but would
+                          # need to be updated for gamlss; hence, lme for now (faster too)
+                          cortemp <- paste("nlme::corARMA(p=", p, ",
+                                         q=", q, ")", sep="")
+                          cortemp <- gsub('\n', '', cortemp)
+                          cortemp <- gsub(' ', '', cortemp)
+                          self$correlation <- cortemp
+                          self$random <- saveRandom
+                          corModsid[[cc]]  <- self$lme(self$datac[[self$ids]]==id)
+                          #print( corModsid[[cc]]$dims$N )
+                          if( any(corModsid[[cc]]=="Model did not converge") )
+                          {
+                            corModsid[[cc]] <- NULL
+                          }
+                          else cc = cc + 1
+                          self$formula <- saveFormula # restore formulae, incl. correlation
+                        }
+                      }
+                    }
+                    names(corModsid) <- unlist( lapply(corModsid,
+                                                function(x) x$PalyticSummary$correlation) )
+                    corModsid <- corModsid[!is.na(names(corModsid))]
+
+                    if(!lrt)
+                    {
+                      if(whichIC=="AIC") ICs <- data.frame( Cor = names(corModsid),
+                                                       unlist( lapply(corModsid, AIC) ) )
+                      if(whichIC=="BIC") ICs <- data.frame( Cor = names(corModsid),
+                                                       unlist( lapply(corModsid, BIC) ) )
+                      else( stop( paste(whichIC, "is not a valid value for `whichIC`,",
+                                        "use AIC or BIC.")))
+                      names(ICs) <- c('Cor', 'IC')
+                      nullModIC  <- c(Cor = "NULL",
+                                       IC = ifelse(whichIC=="AIC", AIC(nullMod),
+                                                  BIC(nullMod)))
+                      nullModIC    <- as.data.frame(t(nullModIC))
+                      nullModIC$IC <- as.numeric(as.character(nullModIC$IC))
+                      ICs <- rbind(nullModIC, ICs)
+                      return( as.character( ICs$Cor[which.min(ICs[,2])] ) )
+                      #bestCors[[id]] <- as.character( ICs$Cor[which.min(ICs[,2])] )
+                    } # end of if(!lrt)
+                  } # end of if( "lme" %in% class(nullMod) )
+                  if(! "nlme" %in% class(nullMod) )
+                  {
+                    #bestCors[[id]] <- "NULL"
+                    return( "NULL" )
+                  }
+                  cat('\n\n')
+                } # end of dopar
+                parallel::stopCluster(cl)
+
+                self$corStructs <- data.frame(ids=uid,
+                                              arma=as.character( unlist(bestCors)) )
+                self$method  <- saveMethod
+                self$formula <- saveFormula # restore formulae, incl. correlation
+                self$random <- saveRandom
+              } #oef !eqspace
+              #self$corStructs$arma[self$corStructs$arma=="NULL"] <- NULL
+              message("\nAutomatic detection of the residual\n",
+                      "correlation structure took: ",
+                      capture.output(Sys.time() - start), ".\n\n")
+            },
+            overwrite = TRUE)
 
 # whichIC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",

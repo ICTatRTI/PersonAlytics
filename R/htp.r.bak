@@ -38,14 +38,14 @@ htp <- function(data                                                ,
   # parralelization: encapsulate ivs and ids in one foreach
   ##############################################################################
   DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
-  #if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
-  #pkgs  <- c("gamlss", "nlme", "foreach")
-  #pb <- txtProgressBar(max = nrow(DIM), style = 3)
-  #progress <- function(n) setTxtProgressBar(pb, n)
-  #opts <- list(progress = progress)
-  #exports <- c("htpForms", "htpErrors", "fitWithTargetIV",
-  #             "fitWithTargetIVlme", "fitWithTargetIVarma",
-  #             "fitWithTargetIVgamlss")
+  if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
+  pkgs  <- c("gamlss", "nlme", "foreach")
+  pb <- txtProgressBar(max = nrow(DIM), style = 3)
+  progress <- function(n) setTxtProgressBar(pb, n)
+  opts <- list(progress = progress)
+  exports <- c("htpForms", "htpErrors", "fitWithTargetIV",
+               "fitWithTargetIVlme", "fitWithTargetIVarma",
+               "fitWithTargetIVgamlss")
 
 
   ##############################################################################
@@ -88,8 +88,7 @@ htp <- function(data                                                ,
       if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
       #t0$time_powers # things like this should be changed to unit tests
 
-	  # this is deprecated, if n=1, use getARnEQ1 in $lme (not implemented for $gamlss)
-      #if( detectAR & package != "arma") t0$getAR_order(PQ[1], PQ[2], whichIC[1])
+      if( detectAR & package != "arma") t0$getAR_order(PQ[1], PQ[2], whichIC[1])
       if(!detectAR)
       {
         t0$corStructs <- data.frame(ids=dims$ID,
@@ -125,17 +124,17 @@ htp <- function(data                                                ,
     # start parralelization run
     #...........................................................................
     # these must be rerun after each call to stopCluster
-    #cl <- snow::makeCluster(parallel::detectCores(), type="SOCK", outfile="")  #@p@#
-    #snow::clusterExport(cl, c())                                               #@p@#
-    #doSNOW::registerDoSNOW(cl)                                                 #@p@#
+    cl <- snow::makeCluster(parallel::detectCores(), type="SOCK")
+    snow::clusterExport(cl, c())
+    doSNOW::registerDoSNOW(cl)
 
-    IDout <- list()                                                             #@f@#
+    #IDout <- list()
     #,    .export = exports
-    #IDout <- foreach( id=DIM$ID, iv=DIM$IV,                                    #@p@#
-    #        .packages = pkgs, .options.snow = opts) %dopar%                    #@p@#
-    for(i in 1:nrow(DIM))                                                       #@f@#
+    IDout <- foreach( id=DIM$ID, iv=DIM$IV,
+            .packages = pkgs, .options.snow = opts) %dopar%
+    #for(i in 1:nrow(DIM))
     {
-      id<-DIM$ID[i]; iv<-DIM$IV[i]                                              #@f@#
+      #id<-DIM$ID[i]; iv<-DIM$IV[i]
 
       #-------------------------------------------------------------------------
       # deep clone & initialize the model as NA
@@ -212,7 +211,7 @@ htp <- function(data                                                ,
       if( is.na(tivv) ) tivv <- FALSE
       if( length( unlist(target_ivs[iv]) ) != 0 & !tivv )
       {
-        #modid <- NA
+        modid <- NA
         err_id$converge    <- paste('No variance in `', target_ivs[iv], '`.')
         err_id$estimator   <- toString( NA )
         err_id$analyzed_N  <- "0 cases were analyzed."
@@ -238,7 +237,7 @@ htp <- function(data                                                ,
       if(is.na(dvVar)) dvVar <- 0
       if(dvVar==0)
       {
-        #modid <- NA
+        modid <- NA
         err_id$converge    <- paste('No variance in `', dvs[dv], '`.')
         err_id$estimator   <- toString( NA )
         err_id$analyzed_N  <- "0 cases were analyzed."
@@ -257,31 +256,26 @@ htp <- function(data                                                ,
       # fitWithTargetIV unless the REML fit leads to a different model than
       # the ML fit
       #-------------------------------------------------------------------------
-      Model <- modid
+      Model <- NA
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
         t1$method <- "REML"
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
         if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
-        if(  any(c("gamlss", "lme") %in% class(Model)) )
+      }
+      if(!any(is.na(modid)))
+      {
+        if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
         {
-          err_id$method <- err_id$estimator <- "REML"
+          Model <- modid
         }
       }
-      #if(!any(c("gamlss", "lme") %in% class(modid)) & !is.na(modid) &
-      #   modid != "Model did not converge")
-      #{
-      #  if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
-      #  {
-      #    Model <- modid
-      #  }
-      #}
       rm(modid)
 
       #-------------------------------------------------------------------------
       # add final entries to err_id, these may depend on final results
       #-------------------------------------------------------------------------
-      err_id <- htpForms(err_id, t1, dims, id, package, modid=Model)
+      err_id <- htpForms(err_id, t1, dims, package, modid=Model)
 
       #-------------------------------------------------------------------------
       # reduce the size of Model
@@ -294,13 +288,13 @@ htp <- function(data                                                ,
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
-      IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)#@f@#
-      #return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )  #@p@#
+      #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id )
+      return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
 
     } # end of foreach
     cat('\n\n')
     # stop the cluster
-    #parallel::stopCluster(cl)                                                  #@p@#
+    parallel::stopCluster(cl)
 
     message('\n\nModel fitting of the dependent variable `', dvs[dv],
             '` took: ', capture.output(Sys.time() - start), ".\n\n")
@@ -321,7 +315,7 @@ htp <- function(data                                                ,
     # parameter estimates
     #...........................................................................
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
-    IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
+    IDoutSum <- lapply( IDout, function(x) x$IDoutSum)
     IDoutSumm <- plyr::rbind.fill(IDoutSum)
 
     #...........................................................................
@@ -389,7 +383,7 @@ getParameters <- function(Model, package, target_iv, data)
 
 #' htpForms: accumulate formula information
 #' @keywords internal
-htpForms <- function(err_id, t1, dims, id, package, modid)
+htpForms <- function(err_id, t1, dims, package, modid)
 {
 
   err_id["fixed"]     <- toString( NA )

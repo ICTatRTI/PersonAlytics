@@ -397,45 +397,39 @@ PersonAlytic <- function(output=NULL                                       ,
   # override user defaults if there is a data/package/individual_mods mismatch
   if( length(unique(data[[ids]][subgroup])) == 1 & package != "arma" )
   {
-    message('\nThere is only one participant,', '
-            automatically switching to `package="arma"`.\n')
+    warning('There is only one participant, automatically switching to `package="arma"`.')
     package <- 'arma'
   }
   if( length(unique(data[[ids]][subgroup])) > 1 & package == 'arma'  &
       individual_mods != TRUE)
   {
-    message('There is more than one participant, using `package="nlme"`.',
+    warning('There is more than one participant, using `package="nlme"`.',
             '\nIf individual models are needed, switch to `individual_mods=TRUE`.')
     package <- 'nlme'
   }
   if( individual_mods == TRUE & package != 'arma' )
   {
-    message('\nWhen `individual_mods=TRUE` you must use `package="arma"`.',
-            '\nAutomatically switching to `package="arma".\n')
+    warning('When `individual_mods=TRUE` you must use `package="arma"`.',
+            '\nAutomatically switching to `package="arma".')
     package <- 'arma'
   }
 
   # for internal testing use only, allows us to compare n=1 lme models to
   # arma models
-  #args <- list(packageTest='nlme')
-  args <- list(...)
-  if(package=='lme') package <- 'nlme'
-  if("packageTest" %in% names(args))
+  if(exists('packageTest'))
   {
-    if(args$packageTest=='lme') args$packageTest <- 'nlme'
-    if(args$packageTest %in% c('nlme', 'gamlls', 'arma')) package <- args$packageTest
-    message('\npackage was overridden by packageTest to be `', package, '`\n')
+    if(packageTest %in% c('nlme', 'gamlls', 'arma')) package <- packageTest
+    warning('package was overridden by packageTest to be `', package, '`')
   }
 
   # for internal testing use only, allows us to override formulae, e.g., to
   # test random intercepts only or random slopes only models
-  userFormula = list(
-    fixed=NULL,
-    random=NULL,
-    formula=NULL)
-  if('userFormula'  %in% names(args))
+  if(!exists('userFormula'))
   {
-    userFormula <- args$userFormula
+    userFormula = list(
+      fixed=NULL,
+      random=NULL,
+      formula=NULL)
   }
 
   # override individual_mods if only 1 id, 1 dv, <= 1 target_iv
@@ -445,8 +439,6 @@ PersonAlytic <- function(output=NULL                                       ,
   {
     individual_mods <- FALSE
   }
-
-  #cat(package, file=paste(format(Sys.time(),"%Y-%m-%d-%H-%M-%S"), 'txt', sep='.'))
 
   # call 'methods'
   if(individual_mods==FALSE & length(dvs)==1 & length(target_ivs)<=1)

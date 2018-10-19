@@ -4,7 +4,7 @@
 \alias{htpForms}
 \title{htpForms: accumulate formula information}
 \usage{
-htpForms(err_id, t1, dims, package, modid)
+htpForms(err_id, t1, dims, id, package, modid)
 }
 \description{
 htpForms: accumulate formula information
