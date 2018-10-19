@@ -1282,7 +1282,7 @@ Palytic$set("public", "arma",
 Palytic$set("public", "lme",
             function(subgroup=NULL, dropVars=NULL, PQ=c(3,3), ...)
             {
-			  if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+			        if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
                                  all.vars(self$formula)))
               # github issue #1
@@ -1295,8 +1295,8 @@ Palytic$set("public", "lme",
                                   random=self$random,
                                   correlation=cor,
                                   method=self$method),
-                        silent = TRUE)		
-	
+                        silent = TRUE)
+
 
               ctrl <- nlme::lmeControl()
               if( "try-error" %in% class(m1) )# | !eds(m1) )
@@ -1359,15 +1359,15 @@ Palytic$set("public", "lme",
                                     control=ctrl),
                           silent = TRUE)
               }
-			  
-			  	cat("Palytic$lme:", 
-				"\ntempData: ", names(tempData),
-				"\ndim(tempData): ", toString(dim(tempData)),
-				"\ncor: ", toString(self$correlation),
-				"\nfixed: ", toString(self$fixed),
-				"\nrandom: ", toString(self$random),
-				"\nm1: ", class(m1),
-				"\n\n", file="last_lme.txt", append=FALSE)	
+
+			  	    cat("Palytic$lme:",
+				      "\ntempData: ", names(tempData),
+				      "\ndim(tempData): ", toString(dim(tempData)),
+				      "\ncor: ", toString(self$correlation),
+				      "\nfixed: ", toString(self$fixed),
+				      "\nrandom: ", toString(self$random),
+				      "\nm1: ", class(m1),
+				      "\n\n", file="last_lme.txt", append=FALSE)
 
               # clean up the call - may not need this
               m1 <- cleanCall(modelResult=m1, PalyticObj=self)
@@ -1402,6 +1402,7 @@ Palytic$set("public", "lme",
               if( "lme" %in% class(m1) )
               {
                 m1$PalyticSummary  <- self$summary()
+                m1$PalyticSummary$correlation <- cor
                 m1$whichPalyticMod <- paste('Palytic lme model #', wm)
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
                 return(m1)
@@ -1462,6 +1463,93 @@ getARnEQ1 <- function(m, PQ, dv)
   }
   return( correlation )
 }
+
+### TODO(Stephen) add residual correlation search for n=1
+Palytic$set("public", "gamlss",
+            function(subgroup=NULL, sigma.formula = ~1, family=NULL,
+                     dropVars=NULL, ...)
+            {
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              tempData <- na.omit( subset(self$datac, subgroup,
+                                          all.vars(self$formula)) )
+
+              # allow for family to be changed on the fly
+              currentFamily <- self$family
+              if(!is.null(family)) currentFamily <- family
+
+              wm <- 1 # default model
+              ctrl <- gamlss::gamlss.control()
+              m1 <- try(gamlss::gamlss(formula = self$formula,
+                                       sigma.formula = sigma.formula,
+                                       data = tempData,
+                                       family = currentFamily),
+                        silent = self$try_silent)
+
+              # default model with increased n.cyc
+              if( "try-error" %in% class(m1) )# | !eds(m1) )
+              {
+                wm <- 2
+                ctrl <- gamlss::gamlss.control(n.cyc=100)
+                m1 <- try(refit(gamlss::gamlss(formula = self$formula,
+                                               sigma.formula = sigma.formula,
+                                               data = tempData,
+                                               family = currentFamily,
+                                               control = ctrl)),
+                          silent = self$try_silent)
+              }
+              if( "try-error" %in% class(m1) )
+              {
+                wm <- 3 # drop the random slope(s)
+                newformula <- forms(data = self$datac ,
+                                    PalyticObj = self ,
+                                    dropTime = TRUE ,
+                                    family = currentFamily)
+                self$formula <- newformula$formula
+                #self$family <- newformula$family
+                ctrl <- gamlss::gamlss.control(n.cyc=100)
+                m1 <- try(refit(gamlss::gamlss(formula = self$formula,
+                                               data = tempData,
+                                               family = currentFamily,
+                                               control = ctrl)),
+                          silent = self$try_silent)
+              }
+
+              # lrt
+              # TODO: this is untested
+              # TODO: this is the same in lme and gamlss, move to separate function
+              wasLRTrun <- FALSE
+              lrtp <- as.numeric(NA)
+              if( "lme" %in% class(m1) & !is.null(dropVars) )
+              {
+                frm0 <- all.vars(self$fixed)[-1]
+                frm0 <- frm0[! frm0 %in% dropVars]
+                frm0 <- formula( paste(self$dv, '~', paste(frm0, collapse = '+')) )
+                m0 <- update(m1, frm0)
+                lrt <- anova(m1, m0)
+                if(nrow(lrt)==2 & "p-value" %in% names(lrt))
+                {
+                  lrtp <- lrt$"p-value"[2]
+                }
+                wasLRTrun <- TRUE
+              }
+
+              # output
+              if("gamlss" %in% class(m1))
+              {
+                m1$PalyticSummary <- self$summary()
+                m1$whichPalyticMod <- paste('Palytic gamlss model #', wm)
+                m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
+                return(m1)
+              }
+              if("try-error" %in% class(m1))
+              {
+                return("Model did not converge")
+              }
+
+            },
+            overwrite = TRUE
+)
+
 
 # whichIC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",

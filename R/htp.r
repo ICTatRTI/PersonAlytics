@@ -405,15 +405,16 @@ getParameters <- function(Model, package, target_iv, data)
 htpForms <- function(err_id, t1, dims, id, package, modid)
 {
 
-  err_id["fixed"]     <- toString( NA )
-  err_id["random"]    <- toString( NA )
-  err_id["formula"]   <- toString( NA )
+  err_id["fixed"]       <- toString( NA )
+  err_id["random"]      <- toString( NA )
+  err_id["formula"]     <- toString( NA )
+  err_id["correlation"] <- toString( NA )
 
   if(!any(is.na(modid)) & !any(modid == "Model did not converge"))
   {
     err_id["fixed"]       <- rmSpecChar(modid$PalyticSummary$fixed)
     err_id["random"]      <- rmSpecChar(modid$PalyticSummary$random)
-    err_id$correlation    <- ifelse(all(dims$ID=="All Cases"),
+    err_id["correlation"] <- ifelse(all(dims$ID=="All Cases"),
                                    rmSpecChar(modid$PalyticSummary$correlation),
                                    ifelse(package=="arma",
                                           #TODO() this doesn't get the ride order
