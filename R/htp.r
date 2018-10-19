@@ -125,17 +125,17 @@ htp <- function(data                                                ,
     # start parralelization run
     #...........................................................................
     # these must be rerun after each call to stopCluster
-    #cl <- snow::makeCluster(parallel::detectCores(), type="SOCK", outfile="")  #@p@#
-    #snow::clusterExport(cl, c())                                               #@p@#
-    #doSNOW::registerDoSNOW(cl)                                                 #@p@#
+    cl <- snow::makeCluster(parallel::detectCores(), type="SOCK", outfile="")   #@p@#
+    snow::clusterExport(cl, c())                                                #@p@#
+    doSNOW::registerDoSNOW(cl)                                                  #@p@#
 
-    IDout <- list()                                                             #@f@#
+    #IDout <- list()                                                            #@f@#
     #,    .export = exports
-    #IDout <- foreach( id=DIM$ID, iv=DIM$IV,                                    #@p@#
-    #        .packages = pkgs, .options.snow = opts) %dopar%                    #@p@#
-    for(i in 1:nrow(DIM))                                                       #@f@#
+    IDout <- foreach( id=DIM$ID, iv=DIM$IV,                                     #@p@#
+            .packages = pkgs, .options.snow = opts) %dopar%                     #@p@#
+    #for(i in 1:nrow(DIM))                                                      #@f@#
     {
-      id<-DIM$ID[i]; iv<-DIM$IV[i]                                              #@f@#
+      #id<-DIM$ID[i]; iv<-DIM$IV[i]                                             #@f@#
 
       #-------------------------------------------------------------------------
       # deep clone & initialize the model as NA
@@ -186,7 +186,7 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # for the current id, estimate a full model with the current target IV
       #-------------------------------------------------------------------------
-      if( length( unlist(target_ivs[iv]) ) > 0 & !is.na(tivv) & tivv & dvVar>0 )
+      if( length( target_ivs[[iv]] ) > 0 & !is.na(tivv) & tivv & dvVar>0 )
       {
         # add the target IV
         ivs.temp <- unlist(c(ivs, target_ivs[[iv]]))
@@ -288,7 +288,6 @@ htp <- function(data                                                ,
 
       #-------------------------------------------------------------------------
       # reduce the size of Model
-      #TODO(Stephen) move to function if possible
       #-------------------------------------------------------------------------
       IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac)
       rm(Model)
@@ -297,13 +296,13 @@ htp <- function(data                                                ,
 	    # return to foreach
       #-------------------------------------------------------------------------
       # this line stays commented  out except for testing
-      IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)#@f@#
-      #return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )  #@p@#
+      #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)#@f@#
+      return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )   #@p@#
 
     } # end of foreach
     cat('\n\n')
     # stop the cluster
-    #parallel::stopCluster(cl)                                                  #@p@#
+    parallel::stopCluster(cl)                                                   #@p@#
 
     message('\n\nModel fitting of the dependent variable `', dvs[dv],
             '` took: ', capture.output(Sys.time() - start), ".\n\n")
@@ -369,9 +368,9 @@ getParameters <- function(Model, package, target_iv, data)
                          target_iv, data)
       }
     }
-    if(package=='nlme')
-    {
-      if(! "lme" %in% class(Model)) IDoutSum <- NA
+    if(package=='nlme')    {
+
+	  if(! "lme" %in% class(Model)) IDoutSum <- NA
       if(  "lme" %in% class(Model))
       {
         IDoutSum <- rcm(summary(Model)$tTable, target_iv, data)
@@ -650,9 +649,18 @@ isNullOrForm <- function(x)
 fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3))
 {
   # fit model with targe iv
-  if(package=="nlme")   modid <- fitWithTargetIVlme(t1, useObs, dims, dropVars, PQ)
-  if(package=="arma")   modid <- fitWithTargetIVarma(t1, useObs, dims, dropVars, PQ)
-  if(package=="gamlss") modid <- fitWithTargetIVgamlss(t1, useObs, dims, dropVars)
+  if(package=="nlme")
+  {
+    modid <- fitWithTargetIVlme(t1, useObs, dims, dropVars, PQ)
+  }
+  if(package=="arma")
+  {
+    modid <- fitWithTargetIVarma(t1, useObs, dims, dropVars, PQ)
+  }
+  if(package=="gamlss")
+  {
+    modid <- fitWithTargetIVgamlss(t1, useObs, dims, dropVars)
+  }
 
   err_id <- modid$err_id
   modid  <- modid$modid

@@ -1282,7 +1282,9 @@ Palytic$set("public", "arma",
 Palytic$set("public", "lme",
             function(subgroup=NULL, dropVars=NULL, PQ=c(3,3), ...)
             {
-              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+                cat("Palytic$lme:", 
+				"\n\n", file="line374.txt", append=TRUE)
+			  if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
                                  all.vars(self$formula)))
               # github issue #1
