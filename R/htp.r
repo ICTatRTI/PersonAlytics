@@ -87,8 +87,10 @@ htp <- function(data                                                ,
     {
       if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
       #t0$time_powers # things like this should be changed to unit tests
+      if(!detectTO) t0$time_powers <- data.frame(ids=dims$ID,
+                                                 rep(1, length(dims$ID)))
 
-	  # this is deprecated, if n=1, use getARnEQ1 in $lme (not implemented for $gamlss)
+	    # this is deprecated, if n=1, use getARnEQ1 in $lme (not implemented for $gamlss)
       #if( detectAR & package != "arma") t0$getAR_order(PQ[1], PQ[2], whichIC[1])
       if(!detectAR)
       {
@@ -205,6 +207,13 @@ htp <- function(data                                                ,
         err_id <- c(err_id, fitOutput$err_id)
         modid  <- fitOutput$modid
         rm(fitOutput)
+
+        #cat(modid, "\n\n", file='FitWithTargetIV.txt', append=TRUE)
+
+        #test <- t1$lme(useObs, target_ivs[[iv]], PQ)
+        #cat(class(test), '\nuseObs: ', toString(table(useObs)),
+        #    '\ntarget_iv: ', target_ivs[[iv]], '\nPQ: ', toString(PQ),
+        #    "\n\n", file='FitWithTargetIVtest.txt', append=TRUE)
       }
       # the target iv variance was 0
       if( is.na(tivv) ) tivv <- FALSE
@@ -258,6 +267,7 @@ htp <- function(data                                                ,
       Model <- data.frame(NA)
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
+        cat("I tried to REML lme\n\n", file='REMLlme.txt', append=TRUE)
         t1$method <- "REML"
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
         if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
@@ -276,6 +286,7 @@ htp <- function(data                                                ,
       {
         if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
         {
+          cat("I made Model<-modid\n\n", file='NotREMLarma.txt', append=TRUE)
           Model <- modid
         }
       }

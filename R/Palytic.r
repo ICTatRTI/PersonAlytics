@@ -1282,8 +1282,6 @@ Palytic$set("public", "arma",
 Palytic$set("public", "lme",
             function(subgroup=NULL, dropVars=NULL, PQ=c(3,3), ...)
             {
-                cat("Palytic$lme:", 
-				"\n\n", file="line374.txt", append=TRUE)
 			  if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
                                  all.vars(self$formula)))
@@ -1297,7 +1295,8 @@ Palytic$set("public", "lme",
                                   random=self$random,
                                   correlation=cor,
                                   method=self$method),
-                        silent = TRUE)
+                        silent = TRUE)		
+	
 
               ctrl <- nlme::lmeControl()
               if( "try-error" %in% class(m1) )# | !eds(m1) )
@@ -1350,7 +1349,7 @@ Palytic$set("public", "lme",
               # group ar...);
               if( length(table(tempData[[self$ids]]))==1 )
               {
-                cor  <- getARnEQ1(m1, PQ)
+                cor  <- getARnEQ1(m1, PQ, self$dv)
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1   <- try(nlme::lme(fixed=self$fixed,
                                     data=tempData,
@@ -1360,6 +1359,15 @@ Palytic$set("public", "lme",
                                     control=ctrl),
                           silent = TRUE)
               }
+			  
+			  	cat("Palytic$lme:", 
+				"\ntempData: ", names(tempData),
+				"\ndim(tempData): ", toString(dim(tempData)),
+				"\ncor: ", toString(self$correlation),
+				"\nfixed: ", toString(self$fixed),
+				"\nrandom: ", toString(self$random),
+				"\nm1: ", class(m1),
+				"\n\n", file="last_lme.txt", append=FALSE)	
 
               # clean up the call - may not need this
               m1 <- cleanCall(modelResult=m1, PalyticObj=self)
@@ -1431,11 +1439,11 @@ cleanCall <- function(modelResult, PalyticObj)
 
 #' getARnEQ1
 #' @keywords internal
-getARnEQ1 <- function(m, PQ)
+getARnEQ1 <- function(m, PQ, dv)
 {
   correlation <- "NULL"
   faa <- try( forecast::auto.arima(y     = m$residuals[,2],
-                                   xreg  = m$data[[self$dv]],
+                                   xreg  = m$data[[dv]],
                                    max.p = PQ[1],
                                    max.q = PQ[2],
                                    max.P = 0,
