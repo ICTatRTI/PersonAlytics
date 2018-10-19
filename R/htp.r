@@ -35,6 +35,13 @@ htp <- function(data                                                ,
   library(foreach)
 
   ##############################################################################
+  # log files - create a log directory and overwrite all logs
+  ##############################################################################
+  dir.create('PAlogs')
+  cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=FALSE)
+  cat( 'Start $lme.log\n\n', file="./PAlogs/$lme.log", append=FALSE)
+
+  ##############################################################################
   # parralelization: encapsulate ivs and ids in one foreach
   ##############################################################################
   DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
@@ -703,10 +710,11 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ)
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- toString( modid$PalyticSummary$method )
     err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
-    err_id['call'] <- paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
-                             Reduce( paste, deparse(modid$PalyticSummary$random) ),
-                             modid$PalyticSummary$correlation,
-                             sep='; ')
+    err_id['call'] <- paste(
+      paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
+             Reduce( paste, deparse(modid$PalyticSummary$random) ),
+             modid$PalyticSummary$correlation,
+           sep='; '), collapse = '')
     err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
     err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   }

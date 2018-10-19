@@ -1349,7 +1349,10 @@ Palytic$set("public", "lme",
               # group ar...);
               if( length(table(tempData[[self$ids]]))==1 )
               {
-                cor  <- getARnEQ1(m1, PQ, self$dv)
+                self$correlation  <- getARnEQ1(m1, PQ, self$dv)
+                cor  <- eval(parse(text = ifelse(!is.null(self$correlation),
+                                                 self$correlation,
+                                                 'NULL')))
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1   <- try(nlme::lme(fixed=self$fixed,
                                     data=tempData,
@@ -1359,15 +1362,6 @@ Palytic$set("public", "lme",
                                     control=ctrl),
                           silent = TRUE)
               }
-
-			  	    cat("Palytic$lme:",
-				      "\ntempData: ", names(tempData),
-				      "\ndim(tempData): ", toString(dim(tempData)),
-				      "\ncor: ", toString(self$correlation),
-				      "\nfixed: ", toString(self$fixed),
-				      "\nrandom: ", toString(self$random),
-				      "\nm1: ", class(m1),
-				      "\n\n", file="last_lme.txt", append=FALSE)
 
               # clean up the call - may not need this
               m1 <- cleanCall(modelResult=m1, PalyticObj=self)
@@ -1384,10 +1378,10 @@ Palytic$set("public", "lme",
                 m0 <- try(nlme::lme(fixed=frm0,
                                     data=tempData,
                                     random=self$random,
-                                    correlation=cor,
+                                    correlation=self$correlation,
                                     method=self$method),
                           silent = TRUE)
-                if("lme" %in% class(m1) & "lme" %in% class(m1))
+                if("lme" %in% class(m1) & "lme" %in% class(m0))
                 {
                   lrt <- anova(m1, cleanCall(m0, self))
                   if(nrow(lrt)==2 & "p-value" %in% names(lrt))
@@ -1402,7 +1396,6 @@ Palytic$set("public", "lme",
               if( "lme" %in% class(m1) )
               {
                 m1$PalyticSummary  <- self$summary()
-                m1$PalyticSummary$correlation <- cor
                 m1$whichPalyticMod <- paste('Palytic lme model #', wm)
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
                 return(m1)
@@ -1414,6 +1407,15 @@ Palytic$set("public", "lme",
                 #attr(m1, 'condition')$message
                 # for the actual convergence error message
               }
+
+              cat("Palytic$lme:",
+                  "\ntempData: ", names(tempData),
+                  "\ndim(tempData): ", toString(dim(tempData)),
+                  "\ncorrelation: ", toString(self$correlation),
+                  "\nfixed: ", toString(self$fixed),
+                  "\nrandom: ", toString(self$random),
+                  "\nm1: ", class(m1),
+                  "\n\n", file="./PAlogs/$lme.log", append=TRUE)
             },
             overwrite = TRUE
 )
@@ -1457,10 +1459,8 @@ getARnEQ1 <- function(m, PQ, dv)
     faaOrder <- forecast::arimaorder(faa)
     correlation <- paste('corARMA(p=', faaOrder[1],
                          ',q=', faaOrder[2], ')', sep='')
-    correlation <- eval(parse(text = ifelse(!is.null(correlation),
-                             correlation,
-                             'NULL')))
   }
+  cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=TRUE)
   return( correlation )
 }
 
