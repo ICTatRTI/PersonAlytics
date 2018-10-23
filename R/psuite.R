@@ -46,7 +46,7 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
   st[2] <- gsub(":", "-", st[2])
   st <- paste(st, collapse=".")
 
-  #dn <- paste('PersonAlytics p-value report for', st)
+  dn <- paste('PersonAlytics p-value report for', st)
   #if(!dir.exists((dn)))  dir.create(dn)
 
   fn <- paste(paste("./", dn, "/", sep=""),
