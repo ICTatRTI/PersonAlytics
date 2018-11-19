@@ -699,11 +699,6 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ)
     err_id['estimator']  <- toString( t1$method )
     err_id['analyzed_N'] <- NA
     err_id['call']       <- NA
-    # here is a placeholder for getting error messsages from lme
-    # which needs to be updated in the error handling for
-    # lme in Palytic
-    err_id['wasLRTrun']  <- FALSE
-    err_id['targ_ivs_lrt_pvalue'] <- as.numeric(NA)
   }
   if(  "lme"  %in%  class(modid) )
   {
@@ -715,9 +710,12 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ)
              Reduce( paste, deparse(modid$PalyticSummary$random) ),
              modid$PalyticSummary$correlation,
            sep='; '), collapse = '')
-    err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
-    err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   }
+  # here is a placeholder for getting error messsages from lme
+  # which needs to be updated in the error handling for
+  # lme in Palytic
+  err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+  err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
 
   return( list(err_id = err_id, modid = modid) )
 }
@@ -751,7 +749,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
                              paste(modid$xregs, collapse=", "),
                              ".")
   }
-  	err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+  err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
 	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   return( list(err_id = err_id, modid = modid) )
 }
@@ -789,8 +787,9 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
     err_id['analyzed_N'] <- paste(modid$N, 'cases were analyzed.')
     err_id['call'] <- modid$PalyticSummary$formula
   }
-  	err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+  err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
 	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
+
   return( list(err_id = err_id, modid = modid) )
 }
 

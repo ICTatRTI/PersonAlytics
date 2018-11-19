@@ -1371,15 +1371,13 @@ Palytic$set("public", "lme",
               lrtp <- as.numeric(NA)
               if( "lme" %in% class(m1) & !is.null(dropVars) )
               {
-                frm0 <- all.vars(self$fixed)[-1]
-                frm0 <- frm0[! frm0 %in% dropVars]
-                frm0 <- formula( paste(self$dv, '~', paste(frm0, collapse = '+')) )
-                #m0   <- update(m1, frm0) # this fails b/c the call is messed up
+                frm0 <- remove_terms(self$fixed, dropVars)
                 m0 <- try(nlme::lme(fixed=frm0,
                                     data=tempData,
                                     random=self$random,
-                                    correlation=self$correlation,
-                                    method=self$method),
+                                    correlation=cor,
+                                    method=self$method,
+                                    control=ctrl),
                           silent = TRUE)
                 if("lme" %in% class(m1) & "lme" %in% class(m0))
                 {
@@ -1521,11 +1519,9 @@ Palytic$set("public", "gamlss",
               lrtp <- as.numeric(NA)
               if( "lme" %in% class(m1) & !is.null(dropVars) )
               {
-                frm0 <- all.vars(self$fixed)[-1]
-                frm0 <- frm0[! frm0 %in% dropVars]
-                frm0 <- formula( paste(self$dv, '~', paste(frm0, collapse = '+')) )
-                m0 <- update(m1, frm0)
-                lrt <- anova(m1, m0)
+                frm0 <- remove_terms(self$fixed, dropVars)
+                m0   <- update(m1, frm0)
+                lrt  <- anova(m1, m0)
                 if(nrow(lrt)==2 & "p-value" %in% names(lrt))
                 {
                   lrtp <- lrt$"p-value"[2]

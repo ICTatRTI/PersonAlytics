@@ -256,6 +256,22 @@ forms <- function(data                     ,
 
 }
 
+#' remove_terms from https://stackoverflow.com/questions/23381616/r-update-function-how-to-drop-all-the-variables-that-are-related-to-a-pre-speci
+#'
+#' @author Sven Hohenstein
+#'
+#' @param form A formula
+#' @param term A term to be removed from the formula
+#'
+#' @keywords internal
+remove_terms <- function(form, term) {
+  fterms <- terms(form)
+  fac <- attr(fterms, "factors")
+  idx <- which(as.logical(fac[term, ]))
+  new_fterms <- drop.terms(fterms, dropx = idx, keep.response = TRUE)
+  return(formula(new_fterms))
+}
+
 
 #' makeForms - function to construct and return formulae (fixed, random, formula)
 #'
