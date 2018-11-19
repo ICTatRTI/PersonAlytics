@@ -676,25 +676,28 @@ paHTP <- function(e=parent.frame())
   # fix columns that are lists and reorder the columns
   DVout <- do.call(data.frame, lapply(DVout, nnull))
 
+  # attempt adjusted p-values
+  cat("Should I attempt adjusting these p-values?\n", file='dizshiz.txt')
+  if(!is.null(e$p.method) & length(e$target_ivs) > 1)
+  {
+    cat("I attempted adjusting these p-values", file='dizshiz.txt', append=TRUE)
+    DVpsuite <- try( psuite(DVout, e$ids,
+                     rawdata=e$data,
+                     method=e$p.method,
+                     alpha=e$alpha), silent = TRUE )
+
+    if( ncol(DVpsuite) == (ncol(DVout)+length(e$p.method)+1) )
+    {
+      DVout <- DVpsuite
+    }
+  }
+
   # save the output
   write.csv(DVout, file=e$output, row.names=FALSE)
 
   return(DVout)
 
-  # attempt adjusted p-values
-  if(!is.null(e$p.method) & length(e$target_ivs) > 1)
-  {
-    ncolDVout <- ncol(DVout)
-    DVout <- try( psuite(DVout, e$ids,
-                    rawdata=e$data,
-                    method=e$p.method,
-                    alpha=e$alpha), silent = TRUE )
-    # save the output
-    if( ncol(DVout) == ncolDVout+length(e$p.method)+1 )
-    {
-      write.csv(DVout, file=e$output, row.names=FALSE)
-    }
-  }
+
 }
 
 
