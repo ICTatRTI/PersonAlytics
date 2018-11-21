@@ -257,6 +257,10 @@
 #' @param alpha Numeric value in the (0,1) interval. The Type I error rate for
 #' adjusting p-values.
 #'
+#' @param nbest Numeric integer value. The number of best \code{target_ivs} to
+#' report on before and after adjusting p-values. This is only used if
+#' \code{length(target_ivs)>1} and the \code{target_ivs} are all continuous.
+#'
 #' @param alignPhase Logical. The default is \code{alignPhase=TRUE}.
 #'
 #' Should the time variable be realigned at the phase?
@@ -381,6 +385,7 @@ PersonAlytic <- function(output=NULL                                       ,
                          sigma.formula=~1                                  ,
                          p.method = "BY"                                   ,
                          alpha = .05                                       ,
+                         nbest = NULL                                      ,
                          alignPhase = FALSE                                ,
                          debugforeach = FALSE                              ,
                          ...)
@@ -684,6 +689,7 @@ paHTP <- function(e=parent.frame())
     DVpsuite <- try( psuite(DVout, e$ids,
                      rawdata=e$data,
                      method=e$p.method,
+                     nbest=e$nbest,
                      alpha=e$alpha), silent = TRUE )
 
     if( ncol(DVpsuite) == (ncol(DVout)+length(e$p.method)+1) )

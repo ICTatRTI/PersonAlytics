@@ -18,7 +18,7 @@
 #' @param rawdata The raw data for plotting.
 #'
 
-psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
+psuite <- function(DVout, ids, method="BY", nbest=NULL, alpha=.05,
                    rawdata=NULL)
 {
 
@@ -44,31 +44,38 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
   #all(DVoutadj$targ_ivs_lrt_pvalue== DVoutadj$targ_ivs_lrt_pvalue_raw,na.rm=TRUE)
   rm(DVout)
 
-  st <- unlist( strsplit(as.character( Sys.time()), " ") )
-  st[2] <- gsub(":", "-", st[2])
-  st <- paste(st, collapse=".")
-
-  dn <- paste('PersonAlytics p-value report for', st)
-  #if(!dir.exists((dn)))  dir.create(dn)
-
-  fn <- paste(paste("./", dn, "/", sep=""),
-              paste("Best", nbest, 'pvalues', sep="_"), sep="")
-
-  targColumns <- which( grepl(pattern = 'Targ.', x = names(DVoutadj)) )
-
-  #TODO(Stephen) this worked for the metabolomics data b/c we had a large number
-  # of continuous covariates. For curelator, this is more challegenging b/c
-  # some covariates are factors and some are continuous. This is on hold for
-  # now b/c curelator doesn't need it. When yo uhave time to fix it, turn it
-  # into a separate function.
-  if(1==2)
+  if(!is.null(nbest))
   {
+    st <- unlist( strsplit(as.character( Sys.time()), " ") )
+    st[2] <- gsub(":", "-", st[2])
+    st <- paste(st, collapse=".")
+
+    dn <- paste('PersonAlytics p-value report for', st)
+    if(!dir.exists((dn)))  dir.create(dn)
+
+    fn <- paste(paste("./", dn, "/", sep=""),
+                paste("Best", nbest, 'pvalues', sep="_"), sep="")
+
+    rawColumn   <- which( names(DVoutadj) == "targ_ivs_lrt_pvalue_raw"  )
+    targColumns <- which( names(DVoutadj) %in%
+                            paste("targ_ivs_lrt_pvalue", method, "FDR", sep="_") )
+    wc <- c(rawColumn, targColumns)
+
+    # only works for continuous predictors
+    targEffecSize <- which( names(DVoutadj) == "Targ.Value" )
+
+    #TODO(Stephen) this worked for the metabolomics data b/c we had a large number
+    # of continuous covariates. For curelator, this is more challegenging b/c
+    # some covariates are factors and some are continuous. This is on hold for
+    # now b/c curelator doesn't need it. When yo uhave time to fix it, turn it
+    # into a separate function.
+
     sink(file = paste(fn, pav, "txt", sep=".") )
     ln <- paste("\n", paste(rep("-", 80), collapse=""), "\n\n", sep = "")
     for(d in levels(DVoutadj$dv))
     {
       temp <- DVoutadj[DVoutadj$dv==d,]
-      for(i in 1:(length(method)+1))
+      for(i in 1:(length(targColumns)+1))
       {
         # method
         if(i==1) mthd <- "Unadjusted"
@@ -78,20 +85,20 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
                     paste("Best", nbest, mthd, 'pvalues_for', d, sep="_"), sep="")
 
         # summary stats
-        ss <- mean(temp[,wc]<alpha, na.rm=TRUE)
+        ss <- mean(temp[,wc[i]]<alpha, na.rm=TRUE)
 
         # section title
         cat(ln, nbest, "largest effects for `", d, "` with the", mthd, "p-value.\n\n",
             'Proportion p < alpha = ', alpha, ": ", ss, '\n',
             ln)
-        # select p < alpha
-        best <- temp[temp[,wc]<alpha,targColumns]
+        # select rows with p < alpha
+        best <- temp[temp[,wc[i]]<alpha,c(targEffecSize,wc[i])]
         # select the nbest best
         nbestr <- nbest
         if(nbest > nrow(best)) nbestr <- nrow(best)
         if(nbestr > 0)
         {
-          best <- best[order(abs(best[,2]), decreasing = TRUE),][1:nbestr,]
+          best <- best[order(abs(best[,1]), decreasing = TRUE),][1:nbestr,]
         }
         best <- data.frame(best)
         row.names(best) <- NULL
@@ -99,31 +106,31 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
         {
           print( best )
 
-          # graphics
-          if(!is.null(rawdata))
-          {
-            # add foreach %dopar% here
-            bestplots <- list()
-            for(p in 1:nrow(best))
-            {
-              w  <- which(temp$target_iv==best$target_iv[p])
-              iv <- unlist( strsplit( toString(temp$ivs[w]), ", " ) )
-              g  <- try(trajplot(data=rawdata                                         ,
-                                 ids=toString(temp$ids[w])                            ,
-                                 dv=toString(temp$dv[w])                              ,
-                                 time=toString(temp$time[w])                          ,
-                                 phase=toString(temp$phase[w])                        ,
-                                 ivs=ifelse(length(iv)>1, iv[1:(length(iv)-1)], NULL) ,
-                                 target_iv=iv[length(iv)]                             ,
-                                 target_nm=toString(temp$target_iv[w])
-              ), TRUE)
-              if(! "try-error" %in% class(g) ) bestplots[[p]] <- g
+          ## graphics
+          #if(!is.null(rawdata))
+          #{
+          #  # add foreach %dopar% here
+          #  bestplots <- list()
+          #  for(p in 1:nrow(best))
+          #  {
+          #    w  <- which(temp$target_iv==best$target_iv[p])
+          #    iv <- unlist( strsplit( toString(temp$ivs[w]), ", " ) )
+          #    g  <- try(trajplot(data=rawdata                                         ,
+          #                       ids=toString(temp$ids[w])                            ,
+          #                       dv=toString(temp$dv[w])                              ,
+          #                       time=toString(temp$time[w])                          ,
+          #                       phase=toString(temp$phase[w])                        ,
+          #                       ivs=ifelse(length(iv)>1, iv[1:(length(iv)-1)], NULL) ,
+          #                       target_iv=iv[length(iv)]                             ,
+          #                       target_nm=toString(temp$target_iv[w])
+          #    ), TRUE)
+          #    if(! "try-error" %in% class(g) ) bestplots[[p]] <- g
 
-            }
-            pdf(paste(fn, pav, "pdf", sep="."), onefile = TRUE)
-            lapply(bestplots, gridExtra::grid.arrange)
-            dev.off()
-          }
+          #  }
+          #  pdf(paste(fn, pav, "pdf", sep="."), onefile = TRUE)
+          #  lapply(bestplots, gridExtra::grid.arrange)
+          #  dev.off()
+          #}
         }
         if(all(is.na(best)))
         {
@@ -134,8 +141,8 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
       }
     }
     while( sink.number() > 0 ) sink()
-  }
 
+  }
 
   return( DVoutadj )
 }
