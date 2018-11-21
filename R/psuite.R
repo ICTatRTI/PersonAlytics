@@ -36,10 +36,12 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
   # - group based, byVariable will be dvs only
   # - only 1 dv, we still get ids within dv
   byVariable <- paste(DVout$dv, DVout[[ids]], sep="_")
-  DVoutadj   <- plyr::rbind.fill(as.list(by(data = DVout['targ_ivs_lrt_pvalue'],
+  DVoutadj   <- plyr::rbind.fill(as.list(by(data = DVout[, c(ids, 'dv', 'target_iv',
+                                                        'targ_ivs_lrt_pvalue')],
                                             INDICES = byVariable,
                                             FUN = adjuster, method=method)))
-  DVoutadj   <- data.frame(DVout, DVoutadj)
+  DVoutadj   <- merge(DVout, DVoutadj)
+  #all(DVoutadj$targ_ivs_lrt_pvalue== DVoutadj$targ_ivs_lrt_pvalue_raw,na.rm=TRUE)
   rm(DVout)
 
   st <- unlist( strsplit(as.character( Sys.time()), " ") )
@@ -147,10 +149,11 @@ psuite <- function(DVout, ids, method="BY", nbest=25, alpha=.05,
 #' analyses rather than the total number of analyses
 adjuster <- function(x, method="BY")
 {
-  adj.ps <- lapply(x, function(x) p.adjust(x, method=method))
-  output <- data.frame(x, unlist(adj.ps))
-  names(output) <- c(paste(names(x), 'raw', sep='_'),
-                     paste(names(x), method, 'FDR', sep='_'))
+  adj.ps <- p.adjust(x$targ_ivs_lrt_pvalue, method=method)
+  output <- data.frame(x, adj.ps)
+  names(output) <- c(names(x)[1:3],
+                     paste(names(x)[4], 'raw', sep='_'),
+                     paste(names(x)[4], method, 'FDR', sep='_'))
   return(output)
 }
 
