@@ -18,7 +18,7 @@
 #' @param rawdata The raw data for plotting.
 #'
 
-psuite <- function(DVout, ids, method="BY", nbest=NULL, alpha=.05,
+psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
                    rawdata=NULL)
 {
 
@@ -46,11 +46,11 @@ psuite <- function(DVout, ids, method="BY", nbest=NULL, alpha=.05,
 
   if(!is.null(nbest))
   {
-    st <- unlist( strsplit(as.character( Sys.time()), " ") )
-    st[2] <- gsub(":", "-", st[2])
-    st <- paste(st, collapse=".")
+    #st <- unlist( strsplit(as.character( Sys.time()), " ") )
+    #st[2] <- gsub(":", "-", st[2])
+    #st <- paste(st, collapse=".")
 
-    dn <- paste('PersonAlytics p-value report for', st)
+    dn <- paste('PersonAlytics p-value report for', output)
     if(!dir.exists((dn)))  dir.create(dn)
 
     fn <- paste(paste("./", dn, "/", sep=""),
@@ -75,7 +75,7 @@ psuite <- function(DVout, ids, method="BY", nbest=NULL, alpha=.05,
     for(d in levels(DVoutadj$dv))
     {
       temp <- DVoutadj[DVoutadj$dv==d,]
-      for(i in 1:(length(targColumns)+1))
+      for(i in 1:length(wc))
       {
         # method
         if(i==1) mthd <- "Unadjusted"

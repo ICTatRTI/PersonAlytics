@@ -699,6 +699,7 @@ paHTP <- function(e=parent.frame())
   if(!is.null(e$p.method) & length(e$target_ivs) > 1)
   {
     DVpsuite <- try( psuite(DVout, e$ids,
+                            output = e$output,
                      rawdata=e$data,
                      method=e$p.method,
                      nbest=e$nbest,

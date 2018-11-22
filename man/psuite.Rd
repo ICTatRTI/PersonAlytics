@@ -4,7 +4,7 @@
 \alias{psuite}
 \title{psuite - apply p.adjust and add output and graphics}
 \usage{
-psuite(DVout, ids, method = "BY", nbest = NULL, alpha = 0.05,
+psuite(DVout, ids, output, method = "BY", nbest = NULL, alpha = 0.05,
   rawdata = NULL)
 }
 \arguments{
