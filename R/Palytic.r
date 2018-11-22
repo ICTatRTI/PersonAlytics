@@ -1458,6 +1458,11 @@ getARnEQ1 <- function(m, PQ, dv)
     correlation <- paste('corARMA(p=', faaOrder[1],
                          ',q=', faaOrder[2], ')', sep='')
   }
+  if(!file.exists('./PAlogs/getARnEQ1run.log'))
+  {
+    dir.create('./PAlogs')
+    cat('', file='./PAlogs/getARnEQ1run.log')
+  }
   cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=TRUE)
   return( correlation )
 }

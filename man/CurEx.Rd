@@ -11,7 +11,7 @@ Curelator test data
 # no predictor model
 CurExMod <- PersonAlytic(data=CurEx,
                  ids="id",
-                 dv="severity.migraine",
+                 dvs="severity.migraine",
                  time="time",
                  time_power=3,
                  standardize=list(dv=FALSE, iv=TRUE, byids=TRUE),
@@ -21,7 +21,7 @@ summary(CurExMod)
 # angriness predictor model
 CurExModAng <- PersonAlytic(data=CurEx,
                  ids="id",
-                 dv="severity.migraine",
+                 dvs="severity.migraine",
                  time="time",
                  ivs=list('angriness'),
                  time_power=3,
@@ -32,7 +32,7 @@ summary(CurExModAng)
 # angriness predictor model, add correlation
 CurExModAngAR1 <- PersonAlytic(data=CurEx,
                  ids="id",
-                 dv="severity.migraine",
+                 dvs="severity.migraine",
                  time="time",
                  ivs=list('angriness'),
                  time_power=3,

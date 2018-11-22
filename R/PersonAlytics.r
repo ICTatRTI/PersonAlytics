@@ -72,7 +72,7 @@ NULL
 #' # no predictor model
 #' CurExMod <- PersonAlytic(data=CurEx,
 #'                  ids="id",
-#'                  dv="severity.migraine",
+#'                  dvs="severity.migraine",
 #'                  time="time",
 #'                  time_power=3,
 #'                  standardize=list(dv=FALSE, iv=TRUE, byids=TRUE),
@@ -82,7 +82,7 @@ NULL
 #' # angriness predictor model
 #' CurExModAng <- PersonAlytic(data=CurEx,
 #'                  ids="id",
-#'                  dv="severity.migraine",
+#'                  dvs="severity.migraine",
 #'                  time="time",
 #'                  ivs=list('angriness'),
 #'                  time_power=3,
@@ -93,7 +93,7 @@ NULL
 #' # angriness predictor model, add correlation
 #' CurExModAngAR1 <- PersonAlytic(data=CurEx,
 #'                  ids="id",
-#'                  dv="severity.migraine",
+#'                  dvs="severity.migraine",
 #'                  time="time",
 #'                  ivs=list('angriness'),
 #'                  time_power=3,

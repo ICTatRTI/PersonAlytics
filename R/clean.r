@@ -132,7 +132,10 @@ clean <- function(data		 	            ,
 #'
 #' @param data See \code{\link{PersonAlytic}}.
 #' @param standardize See \code{\link{PersonAlytic}}.
+#' @param dv See \code{\link{PersonAlytic}}.
+#' @param ivs See \code{\link{PersonAlytic}}.
 #' @param family See \code{\link{PersonAlytic}}.
+#' @param ids See \code{\link{PersonAlytic}}.
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
@@ -152,7 +155,12 @@ pstand <- function(data, standardize, dv, ivs, family, ids)
   # ivs
   if( !is.null(standardize$iv) & length(ivs) > 0 )
   {
-    if(standardize$iv) dostand$iv=ivs
+    ivs_stand <- list()
+    for(i in 1:length(ivs))
+    {
+      if(is.numeric(data[[ivs[[i]]]])) ivs_stand[[i]] <- ivs[[i]]
+    }
+    if(standardize$iv) dostand$iv=ivs_stand
   }
 
   # turn dostand into a character vector

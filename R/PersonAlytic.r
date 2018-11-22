@@ -142,13 +142,13 @@
 #' @param standardize Named logical vector. The default is
 #' \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}.
 #'
-#' Which variables should be standardized?  See \code{dv} and \code{ivs}. The option
+#' Which variables should be standardized?
+#' (i.e., rescaled to have 0 mean and unit variance; see
+#' \code{\link{scale}})? See \code{dv} and \code{ivs}. The option
 #' \code{byids} controls whether standardization is done by individuals or by group.
-#'
-#' Should the dependent and independent variables
-#' be standardized (i.e., rescaled to have 0 mean and unit variance; see
-#' \code{\link{scale}})? Does not apply to factor variables. The default is \code{TRUE}
-#' which makes parameter estimate magnitudes comparable across individuals, outcomes in
+#' Does not apply to factor variables. The default is \code{TRUE}.
+#' Standardization makes parameter estimate magnitudes comparable across
+#' individuals, outcomes in
 #' \code{dvs}, and covariates in \code{target_ivs}. For dependent variables in
 #' \code{dvs}, standardization is only applied for normal outcomes, see \code{family}.
 #'
@@ -312,8 +312,8 @@
 #'                       package  = "arma"           ,
 #'                       subgroup = OvaryICT$Mare==1
 #'                       )
-#' message('\n\nDoes batch run match a single run?\n', all.equal( c(t(mare1$tTable)),
-#' unname(unlist(t1[t1$Mare==1,32:51]))) )
+#' message('\n\nDoes batch run match a single run?\n', all.equal( c(t(mare1$tTable[2:5,])),
+#' unname(unlist(t1[t1$Mare==1,41:56]))) )
 #'
 #'
 #'
@@ -590,6 +590,20 @@ paHTP <- function(e=parent.frame())
                                   standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
                                   alignPhase  = e$alignPhase  )
 
+  # standardize target_ivs
+  if(e$standardize$iv)
+  {
+    message('\nPersonAlytics is standardizing the variables in `targe_ivs`.\n')
+    for(i in 1:length(e$target_ivs))
+    {
+      tiv <- e$target_ivs[[i]]
+      if(is.numeric(e$data[tiv]))
+      {
+        e$data[[tiv]] <- scale(e$data[[tiv]])
+      }
+    }
+  }
+
   # subgroup the data and delete the parameter, after this point, it is only
   # used to subgroup to unique ids
   if( is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
@@ -682,10 +696,8 @@ paHTP <- function(e=parent.frame())
   DVout <- do.call(data.frame, lapply(DVout, nnull))
 
   # attempt adjusted p-values
-  cat("Should I attempt adjusting these p-values?\n", file='dizshiz.txt')
   if(!is.null(e$p.method) & length(e$target_ivs) > 1)
   {
-    cat("I attempted adjusting these p-values", file='dizshiz.txt', append=TRUE)
     DVpsuite <- try( psuite(DVout, e$ids,
                      rawdata=e$data,
                      method=e$p.method,

@@ -12,8 +12,8 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   method = "REML", package = "nlme", individual_mods = FALSE,
   PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3), whichIC = c("BIC",
   "AIC"), detectTO = TRUE, maxOrder = 3, charSub = NULL,
-  sigma.formula = ~1, p.method = "BY", alpha = 0.05, alignPhase = FALSE,
-  debugforeach = FALSE, nbest = NULL, ...)
+  sigma.formula = ~1, p.method = "BY", alpha = 0.05, nbest = NULL,
+  alignPhase = FALSE, debugforeach = FALSE, ...)
 }
 \arguments{
 \item{output}{Character. The default is \code{NULL}.
@@ -118,13 +118,13 @@ should only be fit to females, \code{subgroup=gender=='female'} might be used.}
 \item{standardize}{Named logical vector. The default is
 \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}.
 
-Which variables should be standardized?  See \code{dv} and \code{ivs}. The option
+Which variables should be standardized?
+(i.e., rescaled to have 0 mean and unit variance; see
+\code{\link{scale}})? See \code{dv} and \code{ivs}. The option
 \code{byids} controls whether standardization is done by individuals or by group.
-
-Should the dependent and independent variables
-be standardized (i.e., rescaled to have 0 mean and unit variance; see
-\code{\link{scale}})? Does not apply to factor variables. The default is \code{TRUE}
-which makes parameter estimate magnitudes comparable across individuals, outcomes in
+Does not apply to factor variables. The default is \code{TRUE}.
+Standardization makes parameter estimate magnitudes comparable across
+individuals, outcomes in
 \code{dvs}, and covariates in \code{target_ivs}. For dependent variables in
 \code{dvs}, standardization is only applied for normal outcomes, see \code{family}.}
 
@@ -233,6 +233,10 @@ are made and reported in separate output saved to the working directory.}
 \item{alpha}{Numeric value in the (0,1) interval. The Type I error rate for
 adjusting p-values.}
 
+\item{nbest}{Numeric integer value. The number of best \code{target_ivs} to
+report on before and after adjusting p-values. This is only used if
+\code{length(target_ivs)>1} and the \code{target_ivs} are all continuous.}
+
 \item{alignPhase}{Logical. The default is \code{alignPhase=TRUE}.
 
 Should the time variable be realigned at the phase?
@@ -318,8 +322,8 @@ mare1 <- PersonAlytic(output   = 'Mare1'          ,
                       package  = "arma"           ,
                       subgroup = OvaryICT$Mare==1
                       )
-message('\\n\\nDoes batch run match a single run?\\n', all.equal( c(t(mare1$tTable)),
-unname(unlist(t1[t1$Mare==1,32:51]))) )
+message('\\n\\nDoes batch run match a single run?\\n', all.equal( c(t(mare1$tTable[2:5,])),
+unname(unlist(t1[t1$Mare==1,41:56]))) )
 
 
 

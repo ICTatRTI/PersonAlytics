@@ -11,7 +11,13 @@ pstand(data, standardize, dv, ivs, family, ids)
 
 \item{standardize}{See \code{\link{PersonAlytic}}.}
 
+\item{dv}{See \code{\link{PersonAlytic}}.}
+
+\item{ivs}{See \code{\link{PersonAlytic}}.}
+
 \item{family}{See \code{\link{PersonAlytic}}.}
+
+\item{ids}{See \code{\link{PersonAlytic}}.}
 }
 \description{
 Function to standardize data with options from the \code{standardize} parameter.
