@@ -92,19 +92,20 @@ psuite <- function(DVout, ids, method="BY", nbest=NULL, alpha=.05,
             'Proportion p < alpha = ', alpha, ": ", ss, '\n',
             ln)
         # select rows with p < alpha
-        best <- temp[temp[,wc[i]]<alpha,c(targEffecSize,wc[i])]
+        tivloc <- which(names(temp)=='target_iv')
+        best <- temp[temp[,wc[i]]<alpha,c(tivloc, targEffecSize, wc[i])]
         # select the nbest best
         nbestr <- nbest
         if(nbest > nrow(best)) nbestr <- nrow(best)
         if(nbestr > 0)
         {
-          best <- best[order(abs(best[,1]), decreasing = TRUE),][1:nbestr,]
+          best <- best[order(abs(best[['Targ.Value']]), decreasing = TRUE),][1:nbestr,]
         }
         best <- data.frame(best)
         row.names(best) <- NULL
         if(!all(is.na(best)))
         {
-          print( best )
+          print( best, digits = 3 )
 
           ## graphics
           #if(!is.null(rawdata))
