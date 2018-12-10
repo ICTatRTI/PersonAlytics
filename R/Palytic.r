@@ -1479,7 +1479,7 @@ Palytic$set("public", "gamlss",
               tempData <- na.omit( subset(self$datac, subgroup,
                                           all.vars(self$formula)) )
 
-              # allow for family to be changed on the fly
+              # allow for family to be changed on the fly in $gamlss()
               currentFamily <- self$family
               if(!is.null(family)) currentFamily <- family
 
@@ -1525,14 +1525,14 @@ Palytic$set("public", "gamlss",
               # TODO: this is the same in lme and gamlss, move to separate function
               wasLRTrun <- FALSE
               lrtp <- as.numeric(NA)
-              if( "lme" %in% class(m1) & !is.null(dropVars) )
+              if( "gamlss" %in% class(m1) & !is.null(dropVars) )
               {
                 frm0 <- remove_terms(self$fixed, dropVars)
                 m0   <- update(m1, frm0)
-                lrt  <- anova(m1, m0)
-                if(nrow(lrt)==2 & "p-value" %in% names(lrt))
+                lrt  <- LR.test(m0, m1, print = FALSE)
+                if(length(lrt)==3 & "p.val" %in% names(lrt))
                 {
-                  lrtp <- lrt$"p-value"[2]
+                  lrtp <- lrt$p.val
                 }
                 wasLRTrun <- TRUE
               }
