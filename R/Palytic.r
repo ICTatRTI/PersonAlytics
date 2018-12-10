@@ -1116,14 +1116,17 @@ Palytic$set("public", "summary",
 Palytic$set("public", "describe",
             function(subgroup=NULL)
             {
-              # concatenate all the ivs with double checks for dropped terms
+              # concatenate all the ivs with double checks for dropped terms or non variable terms
               ivall <- all.vars(self$fixed)[-1]
+              ivall <- ivall[! ivall %in% c("0", "1")] # 0,1 make come from random effects
 
               if(! self$time[1] %in% ivall ) ivall <- c(ivall, self$time[1])
               if(length(self$phase) > 0)
               {
                 if(! self$phase %in% ivall ) ivall <- c(ivall, self$phase)
               }
+
+              ivall <- ivall[! ivall %in% c("0", "1")] # 0,1 may come from random effects
 
               # subset the data
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
