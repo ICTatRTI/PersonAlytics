@@ -62,7 +62,7 @@ psuite <- function(DVout, ids, method="BY", nbest=NULL, alpha=.05,
     wc <- c(rawColumn, targColumns)
 
     # only works for continuous predictors
-    targEffecSize <- which( names(DVoutadj) == "Targ.Value" )
+    targEffecSize <- which( names(DVoutadj) %in% c("Targ.Estimate", "Targ.Value") )
 
     #TODO(Stephen) this worked for the metabolomics data b/c we had a large number
     # of continuous covariates. For curelator, this is more challegenging b/c
@@ -99,7 +99,7 @@ psuite <- function(DVout, ids, method="BY", nbest=NULL, alpha=.05,
         if(nbest > nrow(best)) nbestr <- nrow(best)
         if(nbestr > 0)
         {
-          best <- best[order(abs(best[['Targ.Value']]), decreasing = TRUE),][1:nbestr,]
+          best <- best[order(abs(best[,3]), decreasing = TRUE),][1:nbestr,]
         }
         best <- data.frame(best)
         row.names(best) <- NULL
