@@ -249,8 +249,8 @@ htp <- function(data                                                ,
       #-------------------------------------------------------------------------
       # if the dv variance was 0
       #-------------------------------------------------------------------------
-      if(is.na(dvVar)) dvVar <- 0
-      if(dvVar==0)
+      if( is.na(dvVar) ) dvVar <- 0
+      if( dvVar==0 )
       {
         #modid <- NA
         err_id$converge    <- paste('No variance in `', dvs[dv], '`.')
@@ -276,9 +276,10 @@ htp <- function(data                                                ,
       {
         cat("I tried to REML lme\n\n", file='REMLlme.txt', append=TRUE)
         t1$method <- "REML"
+        t1$family <- family #TODO(Stephen): prior line drops family, why??
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
         if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
-        if(  any(c("gamlss", "lme") %in% class(Model)) )
+        if( any(c("gamlss", "lme") %in% class(Model)) )
         {
           err_id$method <- err_id$estimator <- "REML"
         }
@@ -382,7 +383,7 @@ getParameters <- function(Model, package, target_iv, data)
       if(! "gamlss" %in% class(Model)) IDoutSum <- NA
       if(  "gamlss" %in% class(Model))
       {
-        IDoutSum <- rcm( capture.output( temp <- summary(Model), file='NUL' ),
+        IDoutSum <- rcm( summary(Model),
                          target_iv, data)
       }
     }
@@ -759,7 +760,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
 fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
 {
   err_id <- list()
-  modid <- t1$gamlss( useObs, dropVars=dropVars )
+  modid  <- t1$gamlss( useObs, dropVars=dropVars )
 
   if(! "gamlss"  %in%  class(modid) )
   {
@@ -784,8 +785,8 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
     if(!any(has_method)) err_id['re_estimator'] <- "Cannot be determined"
 
     err_id['gamlss_estimator'] <- toString( modid$PalyticSummary$method )
-    err_id['analyzed_N'] <- paste(modid$N, 'cases were analyzed.')
-    err_id['call'] <- modid$PalyticSummary$formula
+    err_id['analyzed_N']       <- paste(modid$N, 'cases were analyzed.')
+    err_id['call']             <- rmSpecChar(modid$PalyticSummary$formula)
   }
   err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
 	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp

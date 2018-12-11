@@ -1116,14 +1116,17 @@ Palytic$set("public", "summary",
 Palytic$set("public", "describe",
             function(subgroup=NULL)
             {
-              # concatenate all the ivs with double checks for dropped terms
+              # concatenate all the ivs with double checks for dropped terms or non variable terms
               ivall <- all.vars(self$fixed)[-1]
+              ivall <- ivall[! ivall %in% c("0", "1")] # 0,1 make come from random effects
 
               if(! self$time[1] %in% ivall ) ivall <- c(ivall, self$time[1])
               if(length(self$phase) > 0)
               {
                 if(! self$phase %in% ivall ) ivall <- c(ivall, self$phase)
               }
+
+              ivall <- ivall[! ivall %in% c("0", "1")] # 0,1 may come from random effects
 
               # subset the data
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
@@ -1367,6 +1370,12 @@ Palytic$set("public", "lme",
               m1 <- cleanCall(modelResult=m1, PalyticObj=self)
 
               # lrt
+              # H0: m1 == m0
+              # if p<.05, reject H0, retain better fitting model
+              # only if lik(m1) always > lik(m0) do we retain m1, this is the assumption Ty
+              # currently uses
+              # if that does not hold, we need to use some other criterion
+              # TODO: add a check of whether lik(m1) > lik(m0)
               wasLRTrun <- FALSE
               lrtp <- as.numeric(NA)
               if( "lme" %in% class(m1) & !is.null(dropVars) )
@@ -1476,7 +1485,7 @@ Palytic$set("public", "gamlss",
               tempData <- na.omit( subset(self$datac, subgroup,
                                           all.vars(self$formula)) )
 
-              # allow for family to be changed on the fly
+              # allow for family to be changed on the fly in $gamlss()
               currentFamily <- self$family
               if(!is.null(family)) currentFamily <- family
 
@@ -1508,7 +1517,8 @@ Palytic$set("public", "gamlss",
                                     dropTime = TRUE ,
                                     family = currentFamily)
                 self$formula <- newformula$formula
-                #self$family <- newformula$family
+                self$family  <- newformula$family
+                self$fixed   <- newformula$fixed
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                data = tempData,
@@ -1518,18 +1528,20 @@ Palytic$set("public", "gamlss",
               }
 
               # lrt
-              # TODO: this is untested
-              # TODO: this is the same in lme and gamlss, move to separate function
+              # see note in $lme()
+              # here the model with the smaller deviance is preferred (as opposed to
+              # that with the higher likelihood) and we are assuming that
+              # dev(m1) always < dev(m0), but this should be checked TODO
               wasLRTrun <- FALSE
               lrtp <- as.numeric(NA)
-              if( "lme" %in% class(m1) & !is.null(dropVars) )
+              if( "gamlss" %in% class(m1) & !is.null(dropVars) )
               {
                 frm0 <- remove_terms(self$fixed, dropVars)
                 m0   <- update(m1, frm0)
-                lrt  <- anova(m1, m0)
-                if(nrow(lrt)==2 & "p-value" %in% names(lrt))
+                lrt  <- LR.test(m0, m1, print = FALSE)
+                if(length(lrt)==3 & "p.val" %in% names(lrt))
                 {
-                  lrtp <- lrt$"p-value"[2]
+                  lrtp <- lrt$p.val
                 }
                 wasLRTrun <- TRUE
               }
