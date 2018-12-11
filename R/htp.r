@@ -30,7 +30,8 @@ htp <- function(data                                                ,
                 userFormula = list(
                 fixed=NULL,
                 random=NULL,
-                formula=NULL)              )
+                formula=NULL)                                       ,
+                cores=parallel::detectCores()-1                     )
 {
   library(foreach)
 
@@ -134,7 +135,7 @@ htp <- function(data                                                ,
     # start parralelization run
     #...........................................................................
     # these must be rerun after each call to stopCluster
-    cl <- snow::makeCluster(parallel::detectCores(), type="SOCK", outfile="")   #@p@#
+    cl <- snow::makeCluster(cores, type="SOCK", outfile="")   #@p@#
     snow::clusterExport(cl, c())                                                #@p@#
     doSNOW::registerDoSNOW(cl)                                                  #@p@#
 
@@ -698,8 +699,10 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ)
   {
     err_id['converge']   <- modid
     err_id['estimator']  <- toString( t1$method )
-    err_id['analyzed_N'] <- NA
-    err_id['call']       <- NA
+    err_id['analyzed_N'] <- toString( NA )
+    err_id['call']       <- toString( NA )
+    err_id['wasLRTrun']  <- FALSE
+    err_id['targ_ivs_lrt_pvalue'] <- as.numeric( NA )
   }
   if(  "lme"  %in%  class(modid) )
   {
@@ -711,12 +714,13 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ)
              Reduce( paste, deparse(modid$PalyticSummary$random) ),
              modid$PalyticSummary$correlation,
            sep='; '), collapse = '')
+    err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
+    err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   }
   # here is a placeholder for getting error messsages from lme
   # which needs to be updated in the error handling for
   # lme in Palytic
-  err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
-  err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
+
 
   return( list(err_id = err_id, modid = modid) )
 }
@@ -769,6 +773,8 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
     err_id['gamlss_estimator'] <- toString( NA )
     err_id['analyzed_N']       <- toString( NA )
     err_id['call']             <- toString( NA )
+    err_id['wasLRTrun']           <- FALSE
+    err_id['targ_ivs_lrt_pvalue'] <- as.numeric( NA )
   }
   if(  "gamlss"  %in%  class(modid) )
   {
@@ -784,12 +790,12 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
     }
     if(!any(has_method)) err_id['re_estimator'] <- "Cannot be determined"
 
-    err_id['gamlss_estimator'] <- toString( modid$PalyticSummary$method )
-    err_id['analyzed_N']       <- paste(modid$N, 'cases were analyzed.')
-    err_id['call']             <- rmSpecChar(modid$PalyticSummary$formula)
+    err_id['gamlss_estimator']    <- toString( modid$PalyticSummary$method )
+    err_id['analyzed_N']          <- paste(modid$N, 'cases were analyzed.')
+    err_id['call']                <- rmSpecChar(modid$PalyticSummary$formula)
+    err_id['wasLRTrun']           <- modid$lrt$wasLRTrun
+    err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
   }
-  err_id['wasLRTrun']  <- modid$lrt$wasLRTrun
-	err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp
 
   return( list(err_id = err_id, modid = modid) )
 }
