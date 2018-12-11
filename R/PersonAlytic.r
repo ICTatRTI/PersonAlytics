@@ -277,6 +277,9 @@
 #' @param debugforeach Logical. The default is \code{debugforeach=FALSE}. Not
 #' implemented.
 #'
+#' @param cores Integer. The defaults is \code{parallel::detectCores()-1}, or
+#' one fewer cores than what is detected on the machine.
+#'
 #' @param ... Not currently used.
 #'
 #' @examples
@@ -388,6 +391,7 @@ PersonAlytic <- function(output=NULL                                       ,
                          nbest = NULL                                      ,
                          alignPhase = FALSE                                ,
                          debugforeach = FALSE                              ,
+                         cores = parallel::detectCores()-1                 ,
                          ...)
 {
   if(length(whichIC)>1) whichIC <- whichIC[1]
@@ -650,7 +654,8 @@ paHTP <- function(e=parent.frame())
                  detectTO      = e$detectTO      ,
                  maxOrder      = e$maxOrder      ,
                  sigma.formula = e$sigma.formula ,
-                 debugforeach  = e$debugforeach  )
+                 debugforeach  = e$debugforeach  ,
+                 cores         = e$cores         )
   }
   if( !e$individual_mods )
   {
@@ -678,7 +683,8 @@ paHTP <- function(e=parent.frame())
                  detectTO      = e$detectTO      ,
                  maxOrder      = e$maxOrder      ,
                  sigma.formula = e$sigma.formula ,
-                 debugforeach  = e$debugforeach  )
+                 debugforeach  = e$debugforeach  ,
+                 cores         = e$cores         )
 
   }
 
