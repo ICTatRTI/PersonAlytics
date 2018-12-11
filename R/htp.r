@@ -760,7 +760,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
 fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
 {
   err_id <- list()
-  modid <- t1$gamlss( useObs, dropVars=dropVars )
+  modid  <- t1$gamlss( useObs, dropVars=dropVars )
 
   if(! "gamlss"  %in%  class(modid) )
   {

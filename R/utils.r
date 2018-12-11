@@ -267,9 +267,16 @@ forms <- function(data                     ,
 remove_terms <- function(form, term) {
   fterms <- terms(form)
   fac <- attr(fterms, "factors")
-  idx <- which(as.logical(fac[term, ]))
-  new_fterms <- drop.terms(fterms, dropx = idx, keep.response = TRUE)
-  return(formula(new_fterms))
+  if(!term %in% colnames(fac))
+  {
+    stop('In attempting to `remove_terms`, the `term` is not in `form`.')
+  }
+  if( term %in% colnames(fac))
+  {
+    idx <- which(as.logical(fac[term, ]))
+    new_fterms <- drop.terms(fterms, dropx = idx, keep.response = TRUE)
+    return(formula(new_fterms))
+  }
 }
 
 

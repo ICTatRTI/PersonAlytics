@@ -1370,6 +1370,12 @@ Palytic$set("public", "lme",
               m1 <- cleanCall(modelResult=m1, PalyticObj=self)
 
               # lrt
+              # H0: m1 == m0
+              # if p<.05, reject H0, retain better fitting model
+              # only if lik(m1) always > lik(m0) do we retain m1, this is the assumption Ty
+              # currently uses
+              # if that does not hold, we need to use some other criterion
+              # TODO: add a check of whether lik(m1) > lik(m0)
               wasLRTrun <- FALSE
               lrtp <- as.numeric(NA)
               if( "lme" %in% class(m1) & !is.null(dropVars) )
@@ -1511,7 +1517,8 @@ Palytic$set("public", "gamlss",
                                     dropTime = TRUE ,
                                     family = currentFamily)
                 self$formula <- newformula$formula
-                #self$family <- newformula$family
+                self$family  <- newformula$family
+                self$fixed   <- newformula$fixed
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                data = tempData,
@@ -1521,8 +1528,10 @@ Palytic$set("public", "gamlss",
               }
 
               # lrt
-              # TODO: this is untested
-              # TODO: this is the same in lme and gamlss, move to separate function
+              # see note in $lme()
+              # here the model with the smaller deviance is preferred (as opposed to
+              # that with the higher likelihood) and we are assuming that
+              # dev(m1) always < dev(m0), but this should be checked TODO
               wasLRTrun <- FALSE
               lrtp <- as.numeric(NA)
               if( "gamlss" %in% class(m1) & !is.null(dropVars) )
