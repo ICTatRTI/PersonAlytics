@@ -275,7 +275,8 @@ htp <- function(data                                                ,
       Model <- data.frame(NA)
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
-        cat("I tried to REML lme\n\n", file='REMLlme.txt', append=TRUE)
+        try( cat("For id ", id, " and iv ", iv, " htp tried to REML lme\n\n", 
+		     file='REMLlme.txt', append=TRUE), silent = TRUE )
         t1$method <- "REML"
         t1$family <- family #TODO(Stephen): prior line drops family, why??
         if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
@@ -295,7 +296,8 @@ htp <- function(data                                                ,
       {
         if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
         {
-          cat("I made Model<-modid\n\n", file='NotREMLarma.txt', append=TRUE)
+          try( cat("For id ", id, " and iv ", iv, "I made Model<-modid\n\n", 
+		      file='NotREMLarma.txt', append=TRUE), silent = TRUE )
           Model <- modid
         }
       }
