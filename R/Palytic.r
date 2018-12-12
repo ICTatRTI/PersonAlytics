@@ -1538,7 +1538,16 @@ Palytic$set("public", "gamlss",
               {
                 frm0 <- remove_terms(self$fixed, dropVars)
                 m0   <- update(m1, frm0)
-                lrt  <- LR.test(m0, m1, print = FALSE)
+
+                # non-sig dropVars can lead to m1 and m0 with the same deviance which
+                # caueses the LR.test error
+                #
+                # "The null model has smaller deviance than the alternative
+                #  The models should be nested"
+                #
+                # do a check
+                if(! m0$G.deviance <= m1$G.deviance) lrt  <- LR.test(m0, m1, print = FALSE)
+                if(  m0$G.deviance <= m1$G.deviance) lrt  <- 1
                 if(length(lrt)==3 & "p.val" %in% names(lrt))
                 {
                   lrtp <- lrt$p.val

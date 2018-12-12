@@ -13,7 +13,8 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3), whichIC = c("BIC",
   "AIC"), detectTO = TRUE, maxOrder = 3, charSub = NULL,
   sigma.formula = ~1, p.method = "BY", alpha = 0.05, nbest = NULL,
-  alignPhase = FALSE, debugforeach = FALSE, ...)
+  alignPhase = FALSE, debugforeach = FALSE,
+  cores = parallel::detectCores() - 1, ...)
 }
 \arguments{
 \item{output}{Character. The default is \code{NULL}.
@@ -252,6 +253,9 @@ more phases, the later phase will not be aligned.}
 
 \item{debugforeach}{Logical. The default is \code{debugforeach=FALSE}. Not
 implemented.}
+
+\item{cores}{Integer. The defaults is \code{parallel::detectCores()-1}, or
+one fewer cores than what is detected on the machine.}
 
 \item{...}{Not currently used.}
 }

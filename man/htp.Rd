@@ -10,7 +10,7 @@ htp(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
   byids = FALSE), package = "gamlss", detectAR = TRUE, PQ = c(3, 3),
   whichIC = "BIC", detectTO = TRUE, maxOrder = 3, sigma.formula = ~1,
   debugforeach = FALSE, userFormula = list(fixed = NULL, random = NULL,
-  formula = NULL))
+  formula = NULL), cores = parallel::detectCores() - 1)
 }
 \description{
 high throughput

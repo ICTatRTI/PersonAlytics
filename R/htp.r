@@ -135,7 +135,7 @@ htp <- function(data                                                ,
     # start parralelization run
     #...........................................................................
     # these must be rerun after each call to stopCluster
-    cl <- snow::makeCluster(cores, type="SOCK", outfile="")   #@p@#
+    cl <- snow::makeCluster(cores, type="SOCK", outfile="")                     #@p@#
     snow::clusterExport(cl, c())                                                #@p@#
     doSNOW::registerDoSNOW(cl)                                                  #@p@#
 
