@@ -9,9 +9,9 @@ Encoding: UTF-8
 LazyData: true		
 Depends:
     doSNOW (>= 1.0.16),
-    forecast (>= 8.3),
+    forecast (>= 8.4),
     foreach (>= 1.4.4),
-    gamlss (>= 5.0-2),
+    gamlss (>= 5.1-2),
     gridExtra (>= 2.3),
     ggplot2 (>= 2.2.1),
 	  multilevel (>= 2.6),
@@ -19,8 +19,8 @@ Depends:
     parallel (>= 3.5.1),
     plyr (>= 1.8.4),
 	  R (>= 3.5.0),
-	  R6 (>= 2.2.2),
-    snow (>= 0.4-2)
+	  R6 (>= 2.3.0),
+    snow (>= 0.4-3)
 RoxygenNote: 6.0.1
 Suggests: testthat,
     knitr,
