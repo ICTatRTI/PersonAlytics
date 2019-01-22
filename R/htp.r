@@ -33,14 +33,13 @@ htp <- function(data                                                ,
                 formula=NULL)                                       ,
                 cores=parallel::detectCores()-1                     )
 {
-  library(foreach)
 
   ##############################################################################
   # log files - create a log directory and overwrite all logs
   ##############################################################################
   dir.create('PAlogs')
   cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=FALSE)
-  cat( 'Start $lme.log\n\n', file="./PAlogs/$lme.log", append=FALSE)
+  cat( 'Start $lme.log\n\n', file = "./PAlogs/$lme.log", append=FALSE)
 
   ##############################################################################
   # parralelization: encapsulate ivs and ids in one foreach
@@ -275,7 +274,7 @@ htp <- function(data                                                ,
       Model <- data.frame(NA)
       if(any(c("gamlss", "lme") %in% class(modid)))
       {
-        try( cat("For id ", id, " and iv ", iv, " htp tried to REML lme\n\n", 
+        try( cat("For id ", id, " and iv ", iv, " htp tried to REML lme\n\n",
 		     file='REMLlme.txt', append=TRUE), silent = TRUE )
         t1$method <- "REML"
         t1$family <- family #TODO(Stephen): prior line drops family, why??
@@ -296,7 +295,7 @@ htp <- function(data                                                ,
       {
         if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
         {
-          try( cat("For id ", id, " and iv ", iv, "I made Model<-modid\n\n", 
+          try( cat("For id ", id, " and iv ", iv, "I made Model<-modid\n\n",
 		      file='NotREMLarma.txt', append=TRUE), silent = TRUE )
           Model <- modid
         }
@@ -780,7 +779,7 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
   }
   if(  "gamlss"  %in%  class(modid) )
   {
-    err_id['converge'] = paste('Convergence is `', modid$converged,
+    err_id['converge'] <- paste('Convergence is `', modid$converged,
                                '`', sep='')
     has_method <- grepl("method", t1$formula)
     if(any(has_method))

@@ -1261,11 +1261,11 @@ Palytic$set("public", "arma",
 
               # output
               if( zerovar ) m1 <- ""
-              if(  any("ARIMA" %in% class(m1)) ) tTable = lmtest::coeftest(m1)
+              if(  any("ARIMA" %in% class(m1)) ) tTable <- lmtest::coeftest(m1)
               if(! any("ARIMA" %in% class(m1)) )
               {
                 m1 <- "Model did not converge"
-                tTable = NA
+                tTable <- NA
               }
 
               m1 <- list(arima = m1, tTable = tTable,
@@ -1586,8 +1586,6 @@ Palytic$set("public", "GroupAR_order",
 
               if( "lme" %in% class(nullMod) )
               {
-                require(foreach)
-
                 DIMS <- expand.grid(p=0:P, q=0:Q)
                 DIMS <- DIMS[-1,]
 
