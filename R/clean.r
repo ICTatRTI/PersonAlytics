@@ -156,7 +156,7 @@ pstand <- function(data, standardize, dv, ivs, family, ids)
   if( !is.null(standardize$iv) & length(ivs) > 0 )
   {
     ivs_stand <- list()
-    for(i in 1:length(ivs))
+    for(i in seq_along(ivs))
     {
       if(is.numeric(data[[ivs[[i]]]])) ivs_stand[[i]] <- ivs[[i]]
     }
@@ -219,7 +219,7 @@ alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
     min.times <- max.times <- vector("list", 0)
 
     ### rescale in.traphase times to start at 0
-    for(i in 1:length(phase.Levels))
+    for(i in seq_along(phase.Levels))
     {
       temp      <- dat[dat[,phase]==phase.Levels[i], c(id,time)]
       min.times[[i]] <- aggregate(temp[,time], list(temp[,id]), min, na.rm=TRUE)
@@ -235,7 +235,7 @@ alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
     }
 
     ### reaccumulate time for the phase order in phase.Levels
-    for(i in 2:length(phase.Levels))
+    for(i in seq_along(phase.Levels)[-1])
     {
       ### get the interphase gap times
       max.pmi <- cbind(min.times[[i-1]]$Group.1, apply(cbind(min.times[[i-1]]$x,

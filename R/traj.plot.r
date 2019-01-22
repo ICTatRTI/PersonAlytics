@@ -162,7 +162,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   if(Individual[1])
   {
     u.i <- unique(plotdat$`Individual Observed`$group)
-    for(i in 1:length(u.i))
+    for(i in seq_along(u.i))
     {
       temp.dat <- plotdat$`Individual Observed`[plotdat$`Individual Observed`$group==u.i[i],]
       lines(temp.dat$x, temp.dat$y, col=Individual[2], lty=Individual[3], lwd=Individual[4])
@@ -174,7 +174,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   if(Fit.Ind[1]=="TRUE" & Individual[1]!="TRUE")
   {
     u.i <- unique(plotdat$`Individual Model Based`$group)
-    for(i in 1:length(u.i))
+    for(i in seq_along(u.i))
     {
       temp.dat <- plotdat$`Individual Model Based`[plotdat$`Individual Model Based`$group==u.i[i],]
       lines(temp.dat$x, temp.dat$y, col=Fit.Ind[2], lty=Fit.Ind[3], lwd=Fit.Ind[4])
@@ -295,7 +295,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
     n.cols <- n.phases <- length(unique(dat[,phase]))
     if(n.phases<3) n.cols <- 3
     boxCols  <- brewer.pal(n.cols, "Accent")
-    if(n.phases!=length(boxCols)) boxCols <- boxCols[1:n.phases]
+    if(n.phases!=length(boxCols)) boxCols <- boxCols[seq(1,n.phases)]
   }
   if(is.null(outlier.color))
   {

@@ -75,7 +75,7 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
     for(d in levels(DVoutadj$dv))
     {
       temp <- DVoutadj[DVoutadj$dv==d,]
-      for(i in 1:length(wc))
+      for(i in seq_along(wc))
       {
         # method
         if(i==1) mthd <- "Unadjusted"
@@ -99,7 +99,7 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
         if(nbest > nrow(best)) nbestr <- nrow(best)
         if(nbestr > 0)
         {
-          best <- best[order(abs(best[,3]), decreasing = TRUE),][1:nbestr,]
+          best <- best[order(abs(best[,3]), decreasing = TRUE),][seq(1,nbestr),]
         }
         best <- data.frame(best)
         row.names(best) <- NULL
@@ -112,7 +112,7 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
           #{
           #  # add foreach %dopar% here
           #  bestplots <- list()
-          #  for(p in 1:nrow(best))
+          #  for(p in seq_along(best))
           #  {
           #    w  <- which(temp$target_iv==best$target_iv[p])
           #    iv <- unlist( strsplit( toString(temp$ivs[w]), ", " ) )
@@ -121,7 +121,7 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
           #                       dv=toString(temp$dv[w])                              ,
           #                       time=toString(temp$time[w])                          ,
           #                       phase=toString(temp$phase[w])                        ,
-          #                       ivs=ifelse(length(iv)>1, iv[1:(length(iv)-1)], NULL) ,
+          #                       ivs=ifelse(length(iv)>1, iv[seq_along(iv)[-1]], NULL) ,
           #                       target_iv=iv[length(iv)]                             ,
           #                       target_nm=toString(temp$target_iv[w])
           #    ), TRUE)
@@ -159,7 +159,7 @@ adjuster <- function(x, method="BY")
 {
   adj.ps <- p.adjust(x$targ_ivs_lrt_pvalue, method=method)
   output <- data.frame(x, adj.ps)
-  names(output) <- c(names(x)[1:3],
+  names(output) <- c(names(x)[seq(1,3)],
                      paste(names(x)[4], 'raw', sep='_'),
                      paste(names(x)[4], method, 'FDR', sep='_'))
   return(output)

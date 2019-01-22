@@ -11,19 +11,20 @@
 #'
 clean_curelator <- function(data)
 {
+  if(class(data)!="data.frame") stop("clean_curelator: `data` must be a data.frame.")
   names(data) <- tolower(names(data))
   # atmospheric variables
   data$windgust      [data$windgust      >= 100] <- NA
   data$windspeedmax  [data$windspeedmax  >= 100] <- NA
   data$windspeedmean [data$windspeedmean >= 100] <- NA
 
-  data$humiditychange    = data$humiditymax - data$humiditymin
-  data$pressurechange    = data$pressuremax - data$pressuremin
-  data$temperaturechange = data$temperaturemax - data$temperaturemin
-  data$windspeedchange   = data$windspeedmax - data$windspeedmin
+  data$humiditychange    <- data$humiditymax - data$humiditymin
+  data$pressurechange    <- data$pressuremax - data$pressuremin
+  data$temperaturechange <- data$temperaturemax - data$temperaturemin
+  data$windspeedchange   <- data$windspeedmax - data$windspeedmin
 
   ### fix fauxlogicals
-  for(i in 1:ncol(data))
+  for(i in seq_along(data))
   {
     if(all(unique(data[,i])%in%c('False', 'True', NA))) data[,i] <- as.logical(data[,i])
   }

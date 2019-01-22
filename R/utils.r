@@ -355,7 +355,7 @@ makeForms <- function(ids          = "Mare"                   ,
     #  wpt <- which(unlist(wpt))
     #  interactions[[wpt]] <- NULL
     #}
-    for(i in 1:length(interactions))
+    for(i in seq_along(interactions))
     {
       formula <- update(formula, paste("~ . +", paste(interactions[[i]], collapse="*")))
       fixed   <- update(fixed,   paste("~ . +", paste(interactions[[i]], collapse="*")))

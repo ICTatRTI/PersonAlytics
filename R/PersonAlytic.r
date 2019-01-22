@@ -598,7 +598,7 @@ paHTP <- function(e=parent.frame())
   if(e$standardize$iv)
   {
     message('\nPersonAlytics is standardizing the variables in `targe_ivs`.\n')
-    for(i in 1:length(e$target_ivs))
+    for(i in seq_along(e$target_ivs))
     {
       tiv <- e$target_ivs[[i]]
       if(is.numeric(e$data[tiv]))
@@ -625,9 +625,9 @@ paHTP <- function(e=parent.frame())
 
   # dimensions for loops
   ID <- uids
-  IV <- 1:length(e$target_ivs)
+  IV <- seq_along(e$target_ivs)
   if(is.null(e$target_ivs) | length(e$target_ivs)==0) IV <- 1
-  DV <- 1:length(e$dvs)
+  DV <- seq_along(e$dvs)
   dims <- list(ID=ID, IV=IV, DV=DV)
 
   #
@@ -692,7 +692,7 @@ paHTP <- function(e=parent.frame())
   if(!is.null(e$charSub))
   {
     DVout$target_iv <- as.character(DVout$target_iv)
-    for(i in 1:length(e$charSub))
+    for(i in seq_along(e$charSub))
     {
       DVout$target_iv <- gsub(e$charSub[[i]][1], e$charSub[[i]][2], DVout$target_iv)
     }
