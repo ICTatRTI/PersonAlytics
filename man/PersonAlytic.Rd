@@ -6,15 +6,15 @@
 mixed effects models with high throughput options.}
 \usage{
 PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
-  ivs = NULL, target_ivs = NULL, interactions = NULL, time_power = 1,
-  correlation = NULL, family = gamlss.dist::NO(), subgroup = NULL,
-  standardize = list(dv = FALSE, iv = FALSE, byids = FALSE),
-  method = "REML", package = "nlme", individual_mods = FALSE,
-  PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3), whichIC = c("BIC",
-  "AIC"), detectTO = TRUE, maxOrder = 3, charSub = NULL,
-  sigma.formula = ~1, p.method = "BY", alpha = 0.05, nbest = NULL,
-  alignPhase = FALSE, debugforeach = FALSE,
-  cores = parallel::detectCores() - 1, ...)
+  ivs = NULL, target_ivs = NULL, interactions = NULL,
+  time_power = 1, correlation = NULL, family = gamlss.dist::NO(),
+  subgroup = NULL, standardize = list(dv = FALSE, iv = FALSE, byids =
+  FALSE), method = "REML", package = "nlme", individual_mods = FALSE,
+  PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3),
+  whichIC = c("BIC", "AIC"), detectTO = TRUE, maxOrder = 3,
+  charSub = NULL, sigma.formula = ~1, p.method = "BY",
+  alpha = 0.05, nbest = NULL, alignPhase = FALSE,
+  debugforeach = FALSE, cores = parallel::detectCores() - 1, ...)
 }
 \arguments{
 \item{output}{Character. The default is \code{NULL}.
