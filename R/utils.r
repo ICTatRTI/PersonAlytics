@@ -96,17 +96,22 @@ iscorStruct <- function(x)
            '`q=1,...,Q`.')
     }
   }
-  if( ! is.null(x) & is.character(x) )
+  corList <- c("corAR1",
+               "corARMA",
+               "corCAR1",
+               "corCompSymm",
+               "corExp",
+               "corGaus",
+               "corLin",
+               "corRatio",
+               "corSpher",
+               "corSymm",
+               "NULL")
+  if(!is.null(x) & is.character(x) & ! x %in% corList)
   {
-    if(x!="NULL")
-    {
-      if(! 'corStruct' %in% class( eval( parse( text = x ) ) ) )
-      {
-        stop('`correlation` is not a valid `corStruct`')
-      }
-    }
+    stop('`correlation=', x,'` is not a valid `corStruct`. See ?corStruct.')
   }
-  return(TRUE)
+  if(x %in% corList) return(TRUE)
 }
 
 

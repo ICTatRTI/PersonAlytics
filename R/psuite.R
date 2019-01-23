@@ -190,8 +190,6 @@ adjuster <- function(x, method="BY")
 #'
 trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
 {
-  library(ggplot2)
-
   theColumns <- c(ids, dv, time, phase, ivs, target_iv)
   theColumns <- theColumns[! theColumns %in% c(1, "NULL", NA)]
   tempdata <- data[,theColumns]

@@ -122,8 +122,8 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   phase_nms  <- phase.locs$phase_nms
 
   ### general plotting inputs
-  if( xlabel=="" ) xlabel=time
-  if( ylabel=="" ) ylabel=dv
+  if( xlabel=="" ) xlabel <- time
+  if( ylabel=="" ) ylabel <- dv
   ylim <- range(c(plotdat$`Individual Observed`$y, plotdat$`Individual Model Based`$y), na.rm=TRUE)
   xlim <- range(c(plotdat$`Individual Observed`$x, plotdat$`Individual Model Based`$x), na.rm=TRUE)
   ylim <- range(pretty(ylim))
@@ -303,7 +303,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
   }
   if(boxlabel=="")
   {
-    boxlabel=phase
+    boxlabel <- phase
   }
 
   ### box plot at each phase
