@@ -58,11 +58,8 @@ clean <- function(data		 	            ,
     stop( paste('\n`', vars[wvars], '` is not in the data\n'))
   }
 
-  # if you ever decide to make a numeric id, do so here, for now enforce numeric
-  if(!is.numeric(data[[ids]]))
-  {
-    stop( paste('\n`', ids, '` must be numeric\n'))
-  }
+  # check id variable
+  data[[ids]] <- checkID(data[[ids]], ids)
 
   # check correlation structure
   invisible( iscorStruct(correlation) )
@@ -126,6 +123,43 @@ clean <- function(data		 	            ,
   }
 
   return(data)
+}
+
+#' Function to check ID variable and if possible, coerce to numeric
+#'
+#' @param x The ID variable values as a vector.
+#' @param ids The ID variable name. See \code{\link{PersonAlytic}}.
+#'
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#'
+#' @keywords internal
+checkID <- function(x, ids)
+{
+  if(!is.numeric(x))
+  {
+    if(is.character(x))
+    {
+      # length unique x
+      lux  <- length(unique(x))
+      # length unique numeric x
+      luxn <- length(unique(as.numeric(x)))
+      if(lux==lunx)
+      {
+        warning('`', ids, '` is character but will be forced to numeric')
+        return(as.numeric(x))
+      }
+      if(lux==lunx)
+      {
+        stop('`', ids, '` is character but cannot be forced to numeric.',
+             ' For example, id="1.0" and id="1.00" are not unique after',
+             ' conversion to numeric.')
+      }
+    }
+    if(!is.character(x))
+    {
+      stop( paste('\n`', ids, '` must be numeric\n', sep='') )
+    }
+  }
 }
 
 #' Function to standardize data with options from the \code{standardize} parameter.

@@ -396,8 +396,15 @@ PersonAlytic <- function(output=NULL                                       ,
 {
   if(length(whichIC)>1) whichIC <- whichIC[1]
   if(is.null(correlation)) correlation <- "NULL"
-  pav <- paste("-PAv", packageVersion("PersonAlytics"), "-", sep='')
 
+  # output labeling ####
+  #TODO(Stephen) consider adding date/time/version info to output
+  pav       <- paste("PersonAlytics_V", packageVersion("PersonAlytics"), sep='')
+  startTime <- format(Sys.time(), format='%Y%m%d_%H.%M%p')
+  fileLabel <- paste(e$pav, '_', e$startTime, sep='')
+  rm(pav, startTime)
+
+  # check the subgroup input ####
   if(!is.logical(subgroup) & !is.null(subgroup))
   {
     stop('`subgroup` must be a logical vector with TRUE/FALSE values.')
@@ -480,14 +487,14 @@ PersonAlytic <- function(output=NULL                                       ,
 #' @keywords internal
 pa1 <- function(e=parent.frame())
 {
+  # set output filename ####
   if(is.null(e$output))
   {
-    e$output <- gsub(":", ".", paste(Sys.time(), e$pav,
-                               'PersonAlyticHTP_Output.txt'))
+    e$output <- paste(e$fileLabel, 'txt', sep='.')
   }
   if(!is.null(e$output))
   {
-    e$output <- paste(e$output, e$pav, 'txt', sep='.')
+    e$output <- paste(e$output, '_', e$fileLabel, '.txt', sep='')
   }
 
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
@@ -558,14 +565,14 @@ pa1 <- function(e=parent.frame())
 #' @keywords internal
 paHTP <- function(e=parent.frame())
 {
-
+  # set output filename ####
   if(is.null(e$output))
   {
-    e$output <- gsub(":", ".", paste(Sys.time(), e$pav, 'PersonAlyticHTP_Output.csv'))
+    e$output <- paste(e$fileLabel, 'csv', sep='.')
   }
   if(!is.null(e$output))
   {
-    e$output <- paste(e$output, e$pav, 'csv', sep='.')
+    e$output <- paste(e$output, '_', e$fileLabel, '.csv', sep='')
   }
 
   # check that dvs, target_ivs are lists, if not, force
@@ -621,7 +628,7 @@ paHTP <- function(e=parent.frame())
   }
 
   # unique ids
-  uids <- sort(as.numeric(unique(e$data[[e$ids]])))
+  uids <- sort(unique(e$data[[e$ids]]))
 
   # dimensions for loops
   ID <- uids
