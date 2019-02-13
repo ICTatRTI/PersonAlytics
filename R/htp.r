@@ -120,9 +120,10 @@ htp <- function(data                                                ,
     #...........................................................................
     message('\n\nFitting models of the dependent variable `', dvs[dv],
             '` for ',
-            ifelse( length(dims$ID)>0,
-                    paste(length(dims$ID), 'cases in `', ids, '`'),
-                    dims$ID),
+            ifelse( dims$ID[1]=="All Cases",
+                    paste(length(dims$indID), ' cases in `', ids, '`', sep=''),
+                    paste("All indidivuals in `", ids, '`', sep='')
+                  ),
             ifelse( length(target_ivs)>0,
                     paste('\n and for', length(target_ivs),
                           'target indepented variables in `target_ivs`.\n'),
@@ -470,7 +471,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['package']      <- package
 
   # chec for adequate data
-  nrt            <- nrow(temp)
+  nrt            <- length(unique(temp[[t1$time]]))
   err_id['Nobs'] <- paste('There are', nrt,
                           'time points with complete data.')
 

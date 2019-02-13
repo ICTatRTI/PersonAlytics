@@ -107,12 +107,13 @@ iscorStruct <- function(x)
                "corSpher",
                "corSymm",
                "NULL")
-  isInCorList <- any( unlist( lapply(as.list(corList), grepl, x=x) ) )
+  isInCorList <- any( unlist( lapply(as.list(corList), grepl, x=x) ) ) |
+                 is.null(x)
   if(!is.null(x) & is.character(x) & ! isInCorList)
   {
     stop('`correlation=', x,'` is not a valid `corStruct`. See ?corStruct.')
   }
-  if(isInCorList) return(TRUE)
+  if(isInCorList | is.null(x)) return(TRUE)
 }
 
 

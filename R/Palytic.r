@@ -618,6 +618,7 @@ Palytic <- R6::R6Class("Palytic",
                            if( missing(value) ) private$.correlation
                            else
                            {
+                             #TODO: move to utils
                              fixcor <- function(x)
                              {
                                if(!is.null(x))

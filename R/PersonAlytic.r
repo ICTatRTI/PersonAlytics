@@ -632,11 +632,11 @@ paHTP <- function(e=parent.frame())
   uids <- sort(unique(e$data[[e$ids]]))
 
   # dimensions for loops
-  ID <- uids
+  ID <- indID <- uids
   IV <- seq_along(e$target_ivs)
   if(is.null(e$target_ivs) | length(e$target_ivs)==0) IV <- 1
   DV <- seq_along(e$dvs)
-  dims <- list(ID=ID, IV=IV, DV=DV)
+  dims <- list(ID=ID, IV=IV, DV=DV, indID=indID)
 
   #
   if( e$individual_mods )
