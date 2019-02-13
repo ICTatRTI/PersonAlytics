@@ -401,7 +401,7 @@ PersonAlytic <- function(output=NULL                                       ,
   #TODO(Stephen) consider adding date/time/version info to output
   pav       <- paste("PersonAlytics_V", packageVersion("PersonAlytics"), sep='')
   startTime <- format(Sys.time(), format='%Y%m%d_%H.%M%p')
-  fileLabel <- paste(e$pav, '_', e$startTime, sep='')
+  fileLabel <- paste(pav, '_', startTime, sep='')
   rm(pav, startTime)
 
   # check the subgroup input ####
@@ -585,21 +585,22 @@ paHTP <- function(e=parent.frame())
   # Set standardize to FALSE here, standardization will be done later if
   # requested by the user (this avoids standardizing standardized variables,
   # which may differ under different subsets, e.g., individual_models = TRUE).
-  e$data <- PersonAlytics:::clean(data        = e$data        ,
-                                  ids         = e$ids         ,
-                                  dv          = NULL          ,
-                                  time        = e$time        ,
-                                  phase       = e$phase       ,
-                                  ivs         = e$ivs         ,
-                                  fixed       = NULL          ,
-                                  random      = NULL          ,
-                                  formula     = NULL          ,
-                                  correlation = e$correlation ,
-                                  family      = e$family      ,
-                                  dvs         = e$dvs         ,
-                                  target_ivs  = e$target_ivs  ,
-                                  standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
-                                  alignPhase  = e$alignPhase  )
+  e$data <- PersonAlytics:::clean(
+    data        = e$data                                ,
+    ids         = e$ids                                 ,
+    dv          = NULL                                  ,
+    time        = e$time                                ,
+    phase       = e$phase                               ,
+    ivs         = e$ivs                                 ,
+    fixed       = NULL                                  ,
+    random      = NULL                                  ,
+    formula     = NULL                                  ,
+    correlation = e$correlation                         ,
+    family      = e$family                              ,
+    dvs         = e$dvs                                 ,
+    target_ivs  = e$target_ivs                          ,
+    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
+    alignPhase  = e$alignPhase                          )
 
   # standardize target_ivs
   if(e$standardize$iv)

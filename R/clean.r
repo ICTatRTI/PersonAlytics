@@ -160,6 +160,7 @@ checkID <- function(x, ids)
       stop( paste('\n`', ids, '` must be numeric\n', sep='') )
     }
   }
+  if(is.numeric(x)) return(x)
 }
 
 #' Function to standardize data with options from the \code{standardize} parameter.

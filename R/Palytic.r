@@ -998,7 +998,9 @@ Palytic <- R6::R6Class("Palytic",
                            try_silent  = TRUE
                          )
                          {
-                           ### consider adding option to read a file, could autodetect file type
+                           ### consider adding option to read a file, could
+                           #   autodetect file type
+
                            #if( is.character(data) )
                            #{
                            #  read
