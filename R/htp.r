@@ -42,294 +42,162 @@ htp <- function(data                                                ,
   cat( 'Start $lme.log\n\n', file = "./PAlogs/$lme.log", append=FALSE)
 
   ##############################################################################
-  # parralelization: encapsulate ivs and ids in one foreach
+  # determine which loop type to use, if dvLoop==TRUE, a non-parallelized
+  # loop for the DVs is used
   ##############################################################################
-  DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
-  if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
-  pkgs  <- c("gamlss", "nlme", "foreach")
-  pb <- txtProgressBar(max = nrow(DIM), style = 3)
-  progress <- function(n) setTxtProgressBar(pb, n)
-  opts <- list(progress = progress)
-  exports <- c("htpForms", "htpErrors", "fitWithTargetIV",
-               "fitWithTargetIVlme", "fitWithTargetIVarma",
-               "fitWithTargetIVgamlss")
-
-
-  ##############################################################################
-  # outer loop is DV
-  ##############################################################################
-  DVout <- list()
-  for(dv in dims$DV)
+  dvLoop  <- TRUE
+  if( length(dvs) > 1 & length(target_ivs) <= 1 & dims$ID[1]=="All Cases" )
   {
-    #TODO: move dv into the parralelized loop and only set up the parent object
-	  #the first time each dv is encountered, building that into dims
-	  #...........................................................................
-    # set up the parent palytic object
-    #...........................................................................
-    t0 <- Palytic$new(data=data,
-                      ids=ids,
-                      dv=dvs[[dv]],
-                      time=time,
-                      phase=phase,
-                      ivs=ivs, # target_ivs added later
-                      interactions=interactions,
-                      standardize=standardize,
-                      time_power=time_power,
-                      correlation=correlation,
-                      family=family,
-                      method="ML" # requested method used in final estimation
-                     )
+    dvLoop <- FALSE
+  }
 
-    # allow for formula override so that we can test intercept only and
-    # slope only models
-    if( any(unlist(lapply(userFormula, function(x) !is.null(x)))) )
+  ##############################################################################
+  # functions to export
+  ##############################################################################
+  exports <- c("forms")
+
+  ##############################################################################
+  # parralelization option 1: iterate over dvs only
+  ##############################################################################
+  if(!dvLoop)
+  {
+    DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
+    if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
+    capture.output( pb <- txtProgressBar(max = length(dvs), style = 3),
+                    file='NUL')
+    progress <- function(n) setTxtProgressBar(pb, n)
+    opts     <- list(progress = progress)
+
+    # parralelization setup
+    pkgs  <- c("gamlss", "nlme", "foreach")
+    cl <- snow::makeCluster(cores, type="SOCK", outfile="")
+    snow::clusterExport(cl, list())
+    doSNOW::registerDoSNOW(cl)
+
+    start <- messenger(dvLoop)
+    #TODO: find why foreach fails, error "object 'Palytic' not found, so some
+    # scoping issue since it runs fine w/o foreach
+    #IDout <- foreach( dv=seq_along(dvs), .packages = pkgs,
+    #                  .options.snow = opts) %dopar%
+    IDout <- list()
+    for(dv in seq_along(dvs))
     {
-      if( isNullOrForm(e$userFormula$fixed) ) t0$fixed <- userFormula$fixed
-      if( isNullOrForm(e$userFormula$random) ) t0$random <- userFormula$random
-      if( isNullOrForm(e$userFormula$formula) ) t0$formula <- userFormula$formula
-    }
-
-    #...........................................................................
-    # get the TO and AR
-    #...........................................................................
-    if(dims$ID[1]!="All Cases")
-    {
-      if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
-      #t0$time_powers # things like this should be changed to unit tests
-      if(!detectTO) t0$time_powers <- data.frame(ids=dims$ID,
-                                                 rep(1, length(dims$ID)))
-
-	    # this is deprecated, if n=1, use getARnEQ1 in $lme (not implemented for $gamlss)
-      #if( detectAR & package != "arma") t0$getAR_order(PQ[1], PQ[2], whichIC[1])
-      if(!detectAR)
-      {
-        t0$corStructs <- data.frame(ids=dims$ID,
-                                    arma=rep( ifelse(is.null(t0$correlation),
-                                                     "NULL", t0$correlation),
-                                                     length(dims$ID)) )
-      }
-      #t0$corStructs
-
-    }
-    if(dims$ID[1]=="All Cases")
-    {
-      if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
-      if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1])
-    }
-
-    #...........................................................................
-    # parralelization message and timing
-    #...........................................................................
-    message('\n\nFitting models of the dependent variable `', dvs[dv],
-            '` for ',
-            ifelse( dims$ID[1]=="All Cases",
-                    paste(length(dims$indID), ' cases in `', ids, '`', sep=''),
-                    paste("All indidivuals in `", ids, '`', sep='')
-                  ),
-            ifelse( length(target_ivs)>0,
-                    paste('\n and for', length(target_ivs),
-                          'target indepented variables in `target_ivs`.\n'),
-                    ".")
-            )
-    start <- Sys.time()
-
-    #...........................................................................
-    # start parralelization run
-    #...........................................................................
-    # these must be rerun after each call to stopCluster
-    cl <- snow::makeCluster(cores, type="SOCK", outfile="")                     #@p@#
-    snow::clusterExport(cl, c())                                                #@p@#
-    doSNOW::registerDoSNOW(cl)                                                  #@p@#
-
-    #IDout <- list()                                                            #@f@#
-    #,    .export = exports
-    IDout <- foreach( id=DIM$ID, iv=DIM$IV,                                     #@p@#
-            .packages = pkgs, .options.snow = opts) %dopar%                     #@p@#
-    #for(i in 1:nrow(DIM))                                                      #@f@#
-    {
-      #id<-DIM$ID[i]; iv<-DIM$IV[i]                                             #@f@#
-
-      #-------------------------------------------------------------------------
-      # deep clone & initialize the model as NA
-      #-------------------------------------------------------------------------
-      t1 <- t0$clone(deep=TRUE)
-      modid <- NA
-
-      #-------------------------------------------------------------------------
-      # for the current id, select potential rows, useObs will be updated
-      # based on missing data determined by htpErrors()
-      #-------------------------------------------------------------------------
-      if(dims$ID[1]!="All Cases")
-      {
-        useObs <- t1$data[[t1$ids]]==id
-        wid    <- which(dims$ID==id)
-      }
-      if(dims$ID[1]=="All Cases")
-      {
-        useObs <- rep(TRUE, nrow(t1$data))
-        wid    <- 1:nrow(t1$data)
-      }
-
-      #-------------------------------------------------------------------------
-      # accumulate inputs and errors for the output, results are used in
-      # row selection `useObs`
-      #-------------------------------------------------------------------------
-      htpErr <- htpErrors(t1=t1, id=id, dv=dvs[[dv]], dims=dims,
-                          package=package, useObs=useObs,
-                          target_iv=target_ivs[[iv]])
-      tivv   <- htpErr$tivv
-      dvVar  <- htpErr$dvVar
-      err_id <- htpErr$err_id
-      rm(htpErr)
-
-      #-------------------------------------------------------------------------
-      # populate time_power
-      #-------------------------------------------------------------------------
-      if(dims$ID[1]!="All Cases")
-      {
-        t1$time_power     <- as.numeric( t1$time_powers[wid,2] )
-        err_id$time_power <- t1$time_powers[wid,2]
-      }
-      if(dims$ID[1]=="All Cases")
-      {
-        err_id$time_power <- t1$time_power
-      }
-
-      #-------------------------------------------------------------------------
-      # for the current id, estimate a full model with the current target IV
-      #-------------------------------------------------------------------------
-      if( length( target_ivs[[iv]] ) > 0 & !is.na(tivv) & tivv & dvVar>0 )
-      {
-        # add the target IV
-        ivs.temp <- unlist(c(ivs, target_ivs[[iv]]))
-        if( is.null(ivs.temp) )
-        {
-          t1$ivs <- ivs.temp
-        }
-        if(!is.null(ivs.temp) )
-        {
-          t1$ivs <- gsub(" ", "", ivs.temp)
-        }
-
-        #TODO(Stephen): override correlation search for ARMA?
-        fitOutput <- fitWithTargetIV(t1, package, useObs, dims,
-                                     dropVars=target_ivs[[iv]], PQ)
-        err_id <- c(err_id, fitOutput$err_id)
-        modid  <- fitOutput$modid
-        rm(fitOutput)
-
-        #cat(modid, "\n\n", file='FitWithTargetIV.txt', append=TRUE)
-
-        #test <- t1$lme(useObs, target_ivs[[iv]], PQ)
-        #cat(class(test), '\nuseObs: ', toString(table(useObs)),
-        #    '\ntarget_iv: ', target_ivs[[iv]], '\nPQ: ', toString(PQ),
-        #    "\n\n", file='FitWithTargetIVtest.txt', append=TRUE)
-      }
-      # the target iv variance was 0
-      if( is.na(tivv) ) tivv <- FALSE
-      if( length( unlist(target_ivs[iv]) ) != 0 & !tivv )
-      {
-        #modid <- NA
-        err_id$converge    <- paste('No variance in `', target_ivs[iv], '`.')
-        err_id$estimator   <- toString( NA )
-        err_id$analyzed_N  <- "0 cases were analyzed."
-        err_id$call        <- toString( NA )
-        err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
-      }
-
-      #-------------------------------------------------------------------------
-      # if there was no target IV, fit the null model
-      #-------------------------------------------------------------------------
-      if( length( target_ivs[[iv]] ) == 0 | !tivv )
-      {
-        mod1   <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
-        modid  <- mod1$modid
-        err_id <- c(err_id, mod1$err_id)
-        rm(mod1)
-        #gc() - !!!! gc() closes connections, don't use it in foreachloops !!!
-      }
-
-      #-------------------------------------------------------------------------
-      # if the dv variance was 0
-      #-------------------------------------------------------------------------
-      if( is.na(dvVar) ) dvVar <- 0
-      if( dvVar==0 )
-      {
-        #modid <- NA
-        err_id$converge    <- paste('No variance in `', dvs[dv], '`.')
-        err_id$estimator   <- toString( NA )
-        err_id$analyzed_N  <- "0 cases were analyzed."
-        err_id$call        <- toString( NA )
-        err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
-      }
-
-      #-------------------------------------------------------------------------
-      # descriptive statistics
-      #-------------------------------------------------------------------------
-      descr_id <- t1$describe(useObs)
-
-      #-------------------------------------------------------------------------
-      # re-fit models with REML (unless arma)
-      # TODO(Stephen): this *shouldn't* need the errror accumulation from
-      # fitWithTargetIV unless the REML fit leads to a different model than
-      # the ML fit
-      #-------------------------------------------------------------------------
-      Model <- data.frame(NA)
-      if(any(c("gamlss", "lme") %in% class(modid)))
-      {
-        try( cat("For id ", id, " and iv ", iv, " htp tried to REML lme\n\n",
-		     file='REMLlme.txt', append=TRUE), silent = TRUE )
-        t1$method <- "REML"
-        t1$family <- family #TODO(Stephen): prior line drops family, why??
-        if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
-        if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
-        if( any(c("gamlss", "lme") %in% class(Model)) )
-        {
-          err_id$method <- err_id$estimator <- "REML"
-        }
-        if( any("Model did not converge" %in% Model) )
-        {
-          Model <- modid
-        }
-      }
-      if( !any(c("gamlss", "lme") %in% class(modid)) &
-          !any("Model did not converge" %in% modid)  &
-          !any(is.na(modid)) )
-      {
-        if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
-        {
-          try( cat("For id ", id, " and iv ", iv, "I made Model<-modid\n\n",
-		      file='NotREMLarma.txt', append=TRUE), silent = TRUE )
-          Model <- modid
-        }
-      }
-      rm(modid)
-
-      #-------------------------------------------------------------------------
-      # add final entries to err_id, these may depend on final results
-      #-------------------------------------------------------------------------
-      err_id <- htpForms(err_id, t1, dims, id, package, modid=Model)
-
-      #-------------------------------------------------------------------------
-      # reduce the size of Model
-      #-------------------------------------------------------------------------
-      IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac)
-      rm(Model)
-
-      #-------------------------------------------------------------------------
-	    # return to foreach
-      #-------------------------------------------------------------------------
-      # this line stays commented  out except for testing
-      #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)#@f@#
-      return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )   #@p@#
-
-    } # end of foreach
-    cat('\n\n')
+      #.........................................................................
+      # set up the  palytic object
+      #.........................................................................
+      t0 <- Palytic$new(data=data,
+                        ids=ids,
+                        dv=dvs[[dv]],
+                        time=time,
+                        phase=phase,
+                        ivs=ivs,
+                        interactions=interactions,
+                        standardize=standardize,
+                        time_power=time_power,
+                        correlation=correlation,
+                        family=family,
+                        method="ML" # requested method used in final estimation
+      )
+      t0 <- autoDetect(t0, userFormula, dims, detectTO, detectAR,
+                       maxOrder, whichIC, PQ, doForeach=FALSE)
+      IDout[[dv]] <- .htp(t0, id=1, iv=1, dv, dvs, dims, package, target_ivs, PQ)
+    }# end of foreach
     # stop the cluster
-    parallel::stopCluster(cl)                                                   #@p@#
+    parallel::stopCluster(cl)
 
-    message('\n\nModel fitting of the dependent variable `', dvs[dv],
-            '` took: ', capture.output(Sys.time() - start), ".\n\n")
+    # the next several lines are repeated in if(dvLoop), could be moved to
+    # function, but unpacking the results will take as much code a repeating
+    # the lines
+    #...........................................................................
+    # disaggregate messages
+    #...........................................................................
+    IDmsg <- lapply( IDout, function(x) data.frame(x$Messages) )
+    IDmsg <- plyr::rbind.fill(IDmsg)
+
+    #...........................................................................
+    # disaggregate depcriptive statistics
+    #...........................................................................
+    IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
+    IDdesc <- plyr::rbind.fill(IDdesc)
+
+    #...........................................................................
+    # parameter estimates
+    #...........................................................................
+    if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
+    IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
+    IDoutSumm <- plyr::rbind.fill(IDoutSum)
+
+    DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
+
+    rm(IDoutSumm, IDmsg, IDdesc )
+  }
+
+
+  ##############################################################################
+  # parralelization option 2: outer loop is DV so that correlation and time
+  # order searches only need to happen 1x/DV
+  ##############################################################################
+  if( dvLoop)
+  {
+    DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
+    if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
+    capture.output( pb <- txtProgressBar(max = nrow(DIM), style = 3), file='NUL')
+    progress <- function(n) setTxtProgressBar(pb, n)
+    opts     <- list(progress = progress)
+
+    DVout <- list()
+    for(dv in dims$DV)
+    {
+
+      #...........................................................................
+      # set up the parent palytic object
+      #...........................................................................
+      t0 <- Palytic$new(data=data,
+                        ids=ids,
+                        dv=dvs[[dv]],
+                        time=time,
+                        phase=phase,
+                        ivs=ivs, # target_ivs added later
+                        interactions=interactions,
+                        standardize=standardize,
+                        time_power=time_power,
+                        correlation=correlation,
+                        family=family,
+                        method="ML" # requested method used in final estimation
+      )
+
+      t0 <- autoDetect(t0, userFormula, dims, detectTO, detectAR,
+                       maxOrder, whichIC, PQ, doForeach=TRUE)
+
+      # parralelization setup -- must reoccur for each dv in dims$DV
+      pkgs  <- c("gamlss", "nlme", "foreach")
+      cl <- snow::makeCluster(cores, type="SOCK", outfile="")
+      snow::clusterExport(cl, list())
+      doSNOW::registerDoSNOW(cl)
+
+      start <- messenger(dvLoop, dvs, dv, dims, ids, target_ivs)
+      IDout <- foreach( id=DIM$ID, iv=DIM$IV, .export = exports,
+                        .packages = pkgs, .options.snow = opts) %dopar%
+      {
+        #id<-DIM$ID[i]; iv<-DIM$IV[i]                    #@f@#
+
+        #TODO: put new function call here
+        #-------------------------------------------------------------------------
+        # deep clone & initialize the model as NA
+        #-------------------------------------------------------------------------
+        t1 <- t0$clone(deep=TRUE)
+        .htp(t1, id, iv, dv, dvs, dims,
+             package, target_ivs, PQ)
+
+      } # end of foreach
+      # stop the cluster
+      parallel::stopCluster(cl)
+
+      message('\n\nModel fitting for the dependent variable `', dvs[dv],
+              '` took:\n ', capture.output(Sys.time() - start), ".\n\n")
+
+      cat('\n\n') #TODO is this needed?
+    }
 
     #...........................................................................
     # disaggregate messages
@@ -356,7 +224,7 @@ htp <- function(data                                                ,
     DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
-	  #gc() # causing scoping problems
+
   } # end of dv loops
 
   # final post-processing
@@ -367,6 +235,257 @@ htp <- function(data                                                ,
   outmat <- cbind(IDmsg, IDdesc, IDoutSumm)
   row.names(outmat) <- NULL
   return( outmat )
+}
+
+#' messenger
+#' @keywords internal
+messenger <- function(dvLoop, dvs=NULL, dv=NULL,
+                      dims=NULL, ids=NULL, target_ivs=NULL)
+{
+  if(!dvLoop)
+  {
+    message('\n\nModel fitting starting...\n\n')
+  }
+  if(dvLoop)
+  {
+    message('\n\nFitting models of the dependent variable `', dvs[dv],
+            '` for ',
+            ifelse( dims$ID[1]=="All Cases",
+                    paste(length(dims$indID), ' cases in `', ids, '`', sep=''),
+                    paste("All indidivuals in `", ids, '`', sep='')
+            ),
+            ifelse( length(target_ivs)>0,
+                    paste('\n and for', length(target_ivs),
+                          'target indepented variables in `target_ivs`.\n'),
+                    ".")
+    )
+  }
+  start <- Sys.time()
+  return(start)
+}
+
+#' autoDetect
+#' @keywords internal
+autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
+                       maxOrder, whichIC, PQ, doForeach=TRUE)
+{
+  # allow for formula override so that we can test intercept only and
+  # slope only models
+  if( any(unlist(lapply(userFormula, function(x) !is.null(x)))) )
+  {
+    if( isNullOrForm(userFormula$fixed) ) t0$fixed <- userFormula$fixed
+    if( isNullOrForm(userFormula$random) ) t0$random <- userFormula$random
+    if( isNullOrForm(userFormula$formula) ) t0$formula <- userFormula$formula
+  }
+
+  #...........................................................................
+  # get the TO and AR
+  #...........................................................................
+  if(dims$ID[1]!="All Cases")
+  {
+    if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
+    #t0$time_powers # things like this should be changed to unit tests
+    if(!detectTO) t0$time_powers <- data.frame(ids=dims$ID,
+                                               rep(1, length(dims$ID)))
+
+    # this is deprecated, if n=1, use getARnEQ1 in $lme (not implemented for $gamlss)
+    #if( detectAR & package != "arma") t0$getAR_order(PQ[1], PQ[2], whichIC[1])
+    if(!detectAR)
+    {
+      t0$corStructs <- data.frame(ids=dims$ID,
+                                  arma=rep( ifelse(is.null(t0$correlation),
+                                                   "NULL", t0$correlation),
+                                            length(dims$ID)) )
+    }
+    #t0$corStructs
+
+  }
+  if(dims$ID[1]=="All Cases")
+  {
+    if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
+    if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1], doForeach=doForeach)
+  }
+
+  return(t0) #TODO check whether this causes inheritance issues across scopes
+}
+
+#' .htp
+#' @keywords internal
+.htp <- function(t1, id, iv, dv, dvs, dims,
+            package, target_ivs, PQ)
+{
+  #-------------------------------------------------------------------------
+  # initialize the model as NA
+  #-------------------------------------------------------------------------
+  modid <- NA
+
+  #-------------------------------------------------------------------------
+  # for the current id, select potential rows, useObs will be updated
+  # based on missing data determined by htpErrors()
+  #-------------------------------------------------------------------------
+  if(dims$ID[1]!="All Cases")
+  {
+    useObs <- t1$data[[t1$ids]]==id
+    wid    <- which(dims$ID==id)
+  }
+  if(dims$ID[1]=="All Cases")
+  {
+    useObs <- rep(TRUE, nrow(t1$data))
+    wid    <- 1:nrow(t1$data)
+  }
+
+  #-------------------------------------------------------------------------
+  # accumulate inputs and errors for the output, results are used in
+  # row selection `useObs`
+  #-------------------------------------------------------------------------
+  htpErr <- htpErrors(t1=t1, id=id, dv=dvs[[dv]], dims=dims,
+                      package=package, useObs=useObs,
+                      target_iv=target_ivs[[iv]])
+  tivv   <- htpErr$tivv
+  dvVar  <- htpErr$dvVar
+  err_id <- htpErr$err_id
+  rm(htpErr)
+
+  #-------------------------------------------------------------------------
+  # populate time_power
+  #-------------------------------------------------------------------------
+  if(dims$ID[1]!="All Cases")
+  {
+    t1$time_power     <- as.numeric( t1$time_powers[wid,2] )
+    err_id$time_power <- t1$time_powers[wid,2]
+  }
+  if(dims$ID[1]=="All Cases")
+  {
+    err_id$time_power <- t1$time_power
+  }
+
+  #-------------------------------------------------------------------------
+  # for the current id, estimate a full model with the current target IV
+  #-------------------------------------------------------------------------
+  if( length( target_ivs[[iv]] ) > 0 & !is.na(tivv) & tivv & dvVar>0 )
+  {
+    # add the target IV
+    ivs.temp <- unlist(c(ivs, target_ivs[[iv]]))
+    if( is.null(ivs.temp) )
+    {
+      t1$ivs <- ivs.temp
+    }
+    if(!is.null(ivs.temp) )
+    {
+      t1$ivs <- gsub(" ", "", ivs.temp)
+    }
+
+    #TODO(Stephen): override correlation search for ARMA?
+    fitOutput <- fitWithTargetIV(t1, package, useObs, dims,
+                                 dropVars=target_ivs[[iv]], PQ)
+    err_id <- c(err_id, fitOutput$err_id)
+    modid  <- fitOutput$modid
+    rm(fitOutput)
+
+    #cat(modid, "\n\n", file='FitWithTargetIV.txt', append=TRUE)
+
+    #test <- t1$lme(useObs, target_ivs[[iv]], PQ)
+    #cat(class(test), '\nuseObs: ', toString(table(useObs)),
+    #    '\ntarget_iv: ', target_ivs[[iv]], '\nPQ: ', toString(PQ),
+    #    "\n\n", file='FitWithTargetIVtest.txt', append=TRUE)
+  }
+  # the target iv variance was 0
+  if( is.na(tivv) ) tivv <- FALSE
+  if( length( unlist(target_ivs[iv]) ) != 0 & !tivv )
+  {
+    #modid <- NA
+    err_id$converge    <- paste('No variance in `', target_ivs[iv], '`.')
+    err_id$estimator   <- toString( NA )
+    err_id$analyzed_N  <- "0 cases were analyzed."
+    err_id$call        <- toString( NA )
+    err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
+  }
+
+  #-------------------------------------------------------------------------
+  # if there was no target IV, fit the null model
+  #-------------------------------------------------------------------------
+  if( length( target_ivs[[iv]] ) == 0 | !tivv )
+  {
+    mod1   <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
+    modid  <- mod1$modid
+    err_id <- c(err_id, mod1$err_id)
+    rm(mod1)
+    #gc() - !!!! gc() closes connections, don't use it in foreachloops !!!
+  }
+
+  #-------------------------------------------------------------------------
+  # if the dv variance was 0
+  #-------------------------------------------------------------------------
+  if( is.na(dvVar) ) dvVar <- 0
+  if( dvVar==0 )
+  {
+    #modid <- NA
+    err_id$converge    <- paste('No variance in `', dvs[dv], '`.')
+    err_id$estimator   <- toString( NA )
+    err_id$analyzed_N  <- "0 cases were analyzed."
+    err_id$call        <- toString( NA )
+    err_id$targ_ivs_lrt_pvalue <- as.numeric( NA )
+  }
+
+  #-------------------------------------------------------------------------
+  # descriptive statistics
+  #-------------------------------------------------------------------------
+  descr_id <- t1$describe(useObs)
+
+  #-------------------------------------------------------------------------
+  # re-fit models with REML (unless arma)
+  # TODO(Stephen): this *shouldn't* need the errror accumulation from
+  # fitWithTargetIV unless the REML fit leads to a different model than
+  # the ML fit
+  #-------------------------------------------------------------------------
+  Model <- data.frame(NA)
+  if(any(c("gamlss", "lme") %in% class(modid)))
+  {
+    try( cat("For id ", id, " and iv ", iv, " htp tried to REML lme\n\n",
+             file='REMLlme.txt', append=TRUE), silent = TRUE )
+    t1$method <- "REML"
+    t1$family <- family #TODO(Stephen): prior line drops family, why??
+    if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
+    if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
+    if( any(c("gamlss", "lme") %in% class(Model)) )
+    {
+      err_id$method <- err_id$estimator <- "REML"
+    }
+    if( any("Model did not converge" %in% Model) )
+    {
+      Model <- modid
+    }
+  }
+  if( !any(c("gamlss", "lme") %in% class(modid)) &
+      !any("Model did not converge" %in% modid)  &
+      !any(is.na(modid)) )
+  {
+    if( any( c("ARIMA", "Arima") %in% class(modid$arima) ) )
+    {
+      try( cat("For id ", id, " and iv ", iv, "I made Model<-modid\n\n",
+               file='NotREMLarma.txt', append=TRUE), silent = TRUE )
+      Model <- modid
+    }
+  }
+  rm(modid)
+
+  #-------------------------------------------------------------------------
+  # add final entries to err_id, these may depend on final results
+  #-------------------------------------------------------------------------
+  err_id <- htpForms(err_id, t1, dims, id, package, modid=Model)
+
+  #-------------------------------------------------------------------------
+  # reduce the size of Model
+  #-------------------------------------------------------------------------
+  IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac)
+  rm(Model)
+
+  #-------------------------------------------------------------------------
+  # return to foreach
+  #-------------------------------------------------------------------------
+  # this line stays commented  out except for testing
+  #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)
+  return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
 }
 
 #' getParameters: extract parameter table, the `Model` variable is too big
@@ -472,8 +591,8 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['method']       <- t1$method
   err_id['package']      <- package
 
-  # chec for adequate data
-  nrt            <- length(unique(temp[[t1$time]]))
+  # check for adequate data
+  nrt            <- length(unique(temp[[t1$time[1]]]))
   err_id['Nobs'] <- paste('There are', nrt,
                           'time points with complete data.')
 

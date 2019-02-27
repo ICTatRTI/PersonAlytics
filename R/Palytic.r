@@ -1575,7 +1575,8 @@ Palytic$set("public", "GroupAR_order",
                 DIMS <- expand.grid(p=0:P, q=0:Q)
                 DIMS <- DIMS[-1,]
 
-                pb <- txtProgressBar(max = P, style = 3)
+                capture.output( pb <- txtProgressBar(max = P, style = 3),
+                                file='NUL')
 
                 if(doForeach)
                 {
@@ -1599,9 +1600,9 @@ Palytic$set("public", "GroupAR_order",
                   for(i in seq_along(DIMS[,1]))
                   {
                     corMods[[i]] <- ARpq(self, DIMS$p[i], DIMS$q[i], subgroup)
-                    setTxtProgressBar(pb, i)
+                    #setTxtProgressBar(pb, i) # this may be crossing wires with nested pb's
                   }
-                  close(pb)
+                  #close(pb)
                 }
 
                 corMods <- corMods[!unlist(lapply(corMods, is.null))]
@@ -1729,6 +1730,7 @@ Palytic$set("public", "GroupTime_Power",
                       capture.output(Sys.time() - start), ".\n\n")
 
             },
-            overwrite = TRUE)
+            overwrite = TRUE
+            )
 
 

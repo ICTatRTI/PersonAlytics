@@ -227,7 +227,7 @@ t1$time_powers
 # automatically select the ARMA model for residual correlation getAR_order
 # this runs slow because a model is selected for each individual
 \dontrun{
-t1$groupAR_order()
+t1$GroupAR_order()
 t1$corStructs
 }
 }
