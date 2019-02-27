@@ -133,24 +133,7 @@
 #'    (LRT). This is used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
 #'   The other parameters are as in \code{\link{auto.arima}}.}
 #'
-#'   \item{\code{getAR_order(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{
-#'   --- slated for deprication, superceded by \code{arma}. ---
-#'   This method automates the task of determining the correlation structure for
-#'   each case in \code{ids} (see \code{\link{PersonAlytic} or
-#'   \code{\link{PersonAlytic}}}). \code{P} and \code{Q} set the highest
-#'   autoregressive and moving average parameters to be tested. If the time
-#'   variable is approximatetly equally spaced, \code{whichIC} is the criterion
-#'   used for determining the correlation structure for each \code{ids} using
-#'   the \code{\link{auto.arima}} function. If the time variable is unequally
-#'   spaced, \code{whichIC} as also the criterion for model selection via mixed
-#'   effects models using \code{\link{lme}} if \code{lrt=FALSE}. If
-#'   \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
-#'   method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0
-#'   and only AR models are considered since AR and MA models are not nested.
-#'   Calling \code{getAR_order} populates the \code{corStructs} field of a
-#'   \code{Palytic} object. For usage, see the examples.}
-#'
-#'   \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{The
+#'   \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", alpha=.05)}}{The
 #'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
@@ -225,12 +208,12 @@
 #' # automatically select the ARMA model for residual correlation getAR_order
 #' # this runs slow because a model is selected for each individual
 #' \dontrun{
-#' t1$getAR_order()
+#' t1$GroupAR_order()
 #' t1$corStructs
 #' }
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-# start of Palytic function ####
+# start of Palytic class ####
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 Palytic <- R6::R6Class("Palytic",
                        private = list(
@@ -1578,8 +1561,8 @@ Palytic$set("public", "gamlss",
 
 # whichIC can take AIC or BIC
 Palytic$set("public", "GroupAR_order",
-            function(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05,
-                       subgroup=NULL)
+            function(P=3, Q=3, whichIC="BIC", alpha=.05,
+                       subgroup=NULL, doForeach=TRUE)
             {
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "residual correlation structure starting...")
@@ -1592,39 +1575,34 @@ Palytic$set("public", "GroupAR_order",
                 DIMS <- expand.grid(p=0:P, q=0:Q)
                 DIMS <- DIMS[-1,]
 
-                funcs <- c("mean")
-                cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK")
-                snow::clusterExport(cl, funcs)
-                doSNOW::registerDoSNOW(cl)
-                pkgs  <- c("gamlss", "nlme")
                 pb <- txtProgressBar(max = P, style = 3)
-                progress <- function(n) setTxtProgressBar(pb, n)
-                opts <- list(progress = progress)
 
-                corMods <- foreach(p=DIMS$p, q=DIMS$q, .packages = pkgs,
-                                   .options.snow = opts,
-                                   .export = c("self"))  %dopar%
+                if(doForeach)
                 {
-                  clone             <- self$clone(deep=TRUE)
-                  clone$method      <- "ML"
-                  clone$correlation <- "NULL"
+                  cl       <- snow::makeCluster(parallel::detectCores(), type="SOCK")
+                  snow::clusterExport(cl, list())
+                  doSNOW::registerDoSNOW(cl)
+                  pkgs     <- c("gamlss", "nlme")
+                  progress <- function(n) setTxtProgressBar(pb, n)
+                  opts     <- list(progress = progress)
 
-                  cortemp <- paste("nlme::corARMA(p=", p, ",
-                                 q=", q, ")", sep="")
-                  cortemp <- gsub('\n', '', cortemp)
-                  cortemp <- gsub(' ', '', cortemp)
-                  clone$correlation <- cortemp
-                  corMod <- clone$lme(subgroup)
-                  if( class(corMod) != "lme" )
+                  corMods <- foreach(p=DIMS$p, q=DIMS$q, .packages = pkgs,
+                                     .options.snow = opts)  %dopar%
                   {
-                    corMod <- NULL
+                    ARpq(self, p, q, subgroup)
                   }
-
-                  cat('\n\n')
-
-                  return(corMod)
+                  parallel::stopCluster(cl)
                 }
-                parallel::stopCluster(cl)
+                if(!doForeach)
+                {
+                  corMods <- list()
+                  for(i in seq_along(DIMS[,1]))
+                  {
+                    corMods[[i]] <- ARpq(self, DIMS$p[i], DIMS$q[i], subgroup)
+                    setTxtProgressBar(pb, i)
+                  }
+                  close(pb)
+                }
 
                 corMods <- corMods[!unlist(lapply(corMods, is.null))]
 
@@ -1632,16 +1610,14 @@ Palytic$set("public", "GroupAR_order",
                                                  function(x) x$PalyticSummary$correlation) )
                 corMods <- corMods[!is.na(names(corMods))]
 
-                if(!lrt)
-                {
-                  if(whichIC=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
-                  if(whichIC=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
-                  else( stop( paste(whichIC, "is not a valid value for `whichIC`,",
-                                    "use AIC or BIC.")))
-                  ICs <- rbind("NULL" = ifelse(whichIC=="AIC", AIC(nullMod),
-                                               BIC(nullMod)), ICs)
-                  bestCor <- c("NULL", names(corMods))[which.min(ICs[,1])]
-                }
+                if(whichIC=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
+                if(whichIC=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
+                else( stop( paste(whichIC, "is not a valid value for `whichIC`,",
+                                  "use AIC or BIC.")))
+                ICs <- rbind("NULL" = ifelse(whichIC=="AIC", AIC(nullMod),
+                                             BIC(nullMod)), ICs)
+                bestCor <- c("NULL", names(corMods))[which.min(ICs[,1])]
+
               }
               if(! "lme" %in% class(nullMod) )
               {
@@ -1654,7 +1630,29 @@ Palytic$set("public", "GroupAR_order",
             },
             overwrite = TRUE)
 
-# hard coded lme at this point, option for gamlss later
+
+#' ARpq - helper function for $GroupAR_order
+#' @keywords internal
+#' @author Stephen Tueller \email{stueller@@rti.org}
+ARpq <- function(t0, p, q, subgroup)
+{
+  clone             <- t0$clone(deep=TRUE)
+  clone$method      <- "ML"
+  clone$correlation <- "NULL"
+
+  cortemp <- paste("nlme::corARMA(p=", p, ", q=", q, ")", sep="")
+  cortemp <- gsub('\n', '', cortemp)
+  cortemp <- gsub(' ', '', cortemp)
+  clone$correlation <- cortemp
+  corMod <- clone$lme(subgroup)
+  if( class(corMod) != "lme" )
+  {
+    corMod <- NULL
+  }
+  return(corMod)
+}
+
+# TODO: hard coded lme at this point, option for gamlss later
 Palytic$set("public", "getTime_Power",
             function(maxOrder=3, whichIC="BIC")
             {
@@ -1696,7 +1694,7 @@ Palytic$set("public", "getTime_Power",
             },
             overwrite = TRUE)
 
-# hard coded lme at this point, option for gamlss later
+# TODO:hard coded lme at this point, option for gamlss later
 Palytic$set("public", "GroupTime_Power",
             function(subgroup=NULL, maxOrder=3, whichIC="BIC")
             {

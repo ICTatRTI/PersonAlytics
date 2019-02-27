@@ -151,24 +151,7 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
    (LRT). This is used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
   The other parameters are as in \code{\link{auto.arima}}.}
 
-  \item{\code{getAR_order(P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{
-  --- slated for deprication, superceded by \code{arma}. ---
-  This method automates the task of determining the correlation structure for
-  each case in \code{ids} (see \code{\link{PersonAlytic} or
-  \code{\link{PersonAlytic}}}). \code{P} and \code{Q} set the highest
-  autoregressive and moving average parameters to be tested. If the time
-  variable is approximatetly equally spaced, \code{whichIC} is the criterion
-  used for determining the correlation structure for each \code{ids} using
-  the \code{\link{auto.arima}} function. If the time variable is unequally
-  spaced, \code{whichIC} as also the criterion for model selection via mixed
-  effects models using \code{\link{lme}} if \code{lrt=FALSE}. If
-  \code{lrt=TRUE} likelihood ratios are used via the \code{\link{anova}}
-  method for \code{\link{lme}} objects. This is NOT reccomended unless Q=0
-  and only AR models are considered since AR and MA models are not nested.
-  Calling \code{getAR_order} populates the \code{corStructs} field of a
-  \code{Palytic} object. For usage, see the examples.}
-
-  \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", lrt=FALSE, alpha=.05)}}{The
+  \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", alpha=.05)}}{The
   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
   \item{\code{getTime_Power(subset, maxOrder)}}{This method automates the task of
   determining  \code{time_power} for each case in \code{ids}
@@ -244,7 +227,7 @@ t1$time_powers
 # automatically select the ARMA model for residual correlation getAR_order
 # this runs slow because a model is selected for each individual
 \dontrun{
-t1$getAR_order()
+t1$groupAR_order()
 t1$corStructs
 }
 }

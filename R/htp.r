@@ -62,8 +62,8 @@ htp <- function(data                                                ,
   for(dv in dims$DV)
   {
     #TODO: move dv into the parralelized loop and only set up the parent object
-	#the first time each dv is encountered, building that into dims
-	#...........................................................................
+	  #the first time each dv is encountered, building that into dims
+	  #...........................................................................
     # set up the parent palytic object
     #...........................................................................
     t0 <- Palytic$new(data=data,
