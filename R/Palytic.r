@@ -1,3 +1,716 @@
+#' .active - active bindings for Palytic objects
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#' @keywords internal
+.active <- function()
+{
+  list(
+    data = function(value)
+    {
+      if( missing(value) ){ private$.data }
+      else
+      {
+        stop("`$data` is read only", call. = FALSE)
+      }
+    },
+
+    ids = function(value)
+    {
+      if( missing(value) ) private$.ids
+      else
+      {
+        if(! is.character(value) )
+        {
+          stop("`ids` must be a character variable name in data")
+        }
+        if( is.null(private$.data[[value]]) )
+        {
+          stop( paste(value, "is not in the data") )
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = value,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    # use functions in the way of iscorStruct to update all formula any time
+    # any formula related object is changed
+    dv = function(value)
+    {
+      if( missing(value) ) private$.dv
+      else
+      {
+        if(! is.character(value) )
+        {
+          stop("`dv` must be a character variable name in data")
+        }
+        if( is.null(private$.data[[value]]) )
+        {
+          stop( paste(value, "is not in the data") )
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = value,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    time = function(value)
+    {
+      if( missing(value) ) private$.time
+      else
+      {
+        if(! is.character(value) )
+        {
+          stop("`time` must be a character variable name in the data")
+        }
+        if( is.null(private$.data[[value]]) )
+        {
+          stop( paste(value, "is not in the data") )
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = value,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        private$.ismonotone   <- monotone(private$.ids,
+                                          private$.time,
+                                          private$.data)
+        self
+      }
+    },
+
+    phase = function(value)
+    {
+      if( missing(value) ) private$.phase
+      else
+      {
+        if(! is.null(value))
+        {
+          if(! is.character(value) )
+          {
+            stop("`phase` must be a character variable name in the data")
+          }
+          if( is.null(private$.data[[value]]) )
+          {
+            stop( paste(value, "is not in the data") )
+          }
+          if( ! var(self$datac[[value]], na.rm = TRUE) > 0 )
+          {
+            stop( paste(value, "has zero variance") )
+          }
+        }
+
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = value,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    ivs = function(value)
+    {
+      if( missing(value) ) private$.ivs
+      else
+      {
+        if( ! any( c('list', 'character', "NULL") %in%
+                   is(value) ) )
+        {
+          stop("`ivs` must be a character list of ",
+               "variables in the data or `NULL`.")
+        }
+        if( ! all(value %in% names(private$.data) ) )
+        {
+          nov <- value[ which(! value %in% names(private$.data )) ]
+          if(length(nov)==1)
+          {
+            stop( paste(nov, "is not in the data") )
+          }
+          if(length(nov)>=2)
+          {
+            stop( paste(paste(nov, collapse=", "), "are not in the data") )
+          }
+        }
+        frms <- forms(private$.data        ,
+                      PalyticObj   = self  ,
+                      ids          = NULL  ,
+                      dv           = NULL  ,
+                      time         = NULL  ,
+                      phase        = NULL  ,
+                      ivs          = value ,
+                      interactions = NULL  ,
+                      time_power   = NULL  ,
+                      correlation  = NULL  ,
+                      family       = NULL  ,
+                      fixed        = NULL  ,
+                      random       = NULL  ,
+                      formula      = NULL  ,
+                      method       = NULL  )
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    interactions = function(value)
+    {
+      if( missing(value) ) private$.interactions
+      else
+      {
+        if(! is.list(value) )
+        {
+          stop("`interactions` must be a list of vector pairs of variables in the data")
+        }
+        if( ! all(unlist(value) %in% names(private$.data)) & !is.null(value) )
+        {
+          nov <- value[ which(! value %in% names(private$.data )) ]
+          if(length(nov)==1) stop( paste(nov, "is not in the data") )
+          if(length(nov)>=2)
+          {
+            stop( paste(paste(nov, collapse=", "), "are not in the data") )
+          }
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = value,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    time_power = function(value)
+    {
+      if( missing(value) ) private$.time_power
+      else
+      {
+        if(! is.numeric(value) ) stop("`time_power` must be numeric")
+        if( round(value, 0) != value | value < 1 )
+        {
+          stop("`time_power` must be a positive whole number")
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = value,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    correlation = function(value)
+    {
+      if( missing(value) ) private$.correlation
+      else
+      {
+        #TODO: move to utils
+        fixcor <- function(x)
+        {
+          if(!is.null(x))
+          {
+            if( x != "NULL" )
+            {
+              x <- unlist( strsplit(x, "::") )
+              return( paste("nlme", x[length(x)], sep="::" ) )
+            }
+            if( x == "NULL" )
+            {
+              return(NULL)
+            }
+          }
+          if( is.null(x)  )
+          {
+            return(x)
+          }
+        }
+        #iscor <- try( iscorStruct(fixcor(value)), TRUE )
+        value <- fixcor(value)
+        if(! iscorStruct(value) )
+        {
+          stop( paste("`correlation` must be of class `corStruct`.",
+                      "See `?nlme::corS.truct`",
+                      "For example, for AR(1) use 'corAR1()' or 'corARMA(p=1)'.",
+                      "For are 2 or higher use 'corARMA(p=2)'.",
+                      "For ARMA(3,1) use 'corARMA(p=3,q=1)'.",
+                      sep="\n") )
+        }
+        # NULL is a valid `value` for correlation, so we need one more
+        # parameter `corFromPalyticObj` to get it right
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = value,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL,
+                      corFromPalyticObj = FALSE)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    family = function(value)
+    {
+      if( missing(value) ) private$.family
+      else
+      {
+        if(! "gamlss.family" %in% class(value) )
+        {
+          stop("`family`=", value, " is not in ",
+               "gamlss.family, see `?gamlss.dist::gamlss.family`")
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = value,
+                      fixed        = NULL,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    fixed = function(value)
+    {
+      if( missing(value) ) private$.fixed
+      else
+      {
+        if(! "formula" %in% class(value) )
+        {
+          stop("`fixed` must be a formula, see `?formula` and `??nlme::lme`")
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = value,
+                      random       = NULL,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    random = function(value)
+    {
+      if( missing(value) ) private$.random
+      else
+      {
+        if(! "formula" %in% class(value) )
+        {
+          stop("`random` must be a formula, see `?formula` and `??nlme::lme`")
+        }
+        frms <- forms(private$.data,
+                      PalyticObj   = self,
+                      ids          = NULL,
+                      dv           = NULL,
+                      time         = NULL,
+                      phase        = NULL,
+                      ivs          = NULL,
+                      interactions = NULL,
+                      time_power   = NULL,
+                      correlation  = NULL,
+                      family       = NULL,
+                      fixed        = NULL,
+                      random       = value,
+                      formula      = NULL,
+                      method       = NULL)
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    formula = function(value)
+    {
+      if( missing(value) ) private$.formula
+      else
+      {
+        if(! "formula" %in% class(value) )
+        {
+          stop("`formula` must be a formula, see `?formula` and `??gamlss::gamlss`")
+        }
+        suppressWarnings(
+          frms <- forms(private$.data,
+                        PalyticObj   = NULL,
+                        ids          = NULL,
+                        dv           = NULL,
+                        time         = NULL,
+                        phase        = NULL,
+                        ivs          = NULL,
+                        interactions = NULL,
+                        time_power   = NULL,
+                        correlation  = NULL,
+                        family       = NULL,
+                        fixed        = NULL,
+                        random       = NULL,
+                        formula      = value,
+                        method       = NULL))
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    method = function(value)
+    {
+      if( missing(value) ) private$.method
+      else
+      {
+        if(!any( c('ML', 'REML') %in% value ))
+        {
+          stop("`method` should be `ML` or `REML`")
+        }
+        suppressWarnings(
+          frms <- forms(private$.data,
+                        PalyticObj   = self,
+                        ids          = NULL,
+                        dv           = NULL,
+                        time         = NULL,
+                        phase        = NULL,
+                        ivs          = NULL,
+                        interactions = NULL,
+                        time_power   = NULL,
+                        correlation  = NULL,
+                        family       = NULL,
+                        fixed        = NULL,
+                        random       = NULL,
+                        formula      = NULL,
+                        method       = value))
+        private$.ids          <- frms$ids
+        private$.dv           <- frms$dv
+        private$.time         <- frms$time
+        private$.phase        <- frms$phase
+        private$.ivs          <- frms$ivs
+        private$.interactions <- frms$interactions
+        private$.time_power   <- frms$time_power
+        private$.correlation  <- frms$correlation
+        private$.family       <- frms$family
+        private$.fixed        <- frms$fixed
+        private$.random       <- frms$random
+        private$.formula      <- frms$formula
+        private$.method       <- frms$method
+        self
+      }
+    },
+
+    standardize = function(value)
+    {
+      if( missing(value) ) private$.standardize
+      else
+      {
+        if(! is.logical( value ) )
+        {
+          stop("`standardize` should be `TRUE` or `FALSE`")
+        }
+        private$.standardize <- value
+        self
+      }
+    },
+
+    corStructs = function(value)
+    {
+      if( missing(value) ) private$.corStructs
+      else
+      {
+        private$.corStructs <- value
+        self
+      }
+    },
+
+    time_powers = function(value)
+    {
+      if( missing(value) ) private$.time_powers
+      else
+      {
+        private$.time_powers <- value
+        self
+      }
+    },
+
+    monotone = function(value)
+    {
+      if( missing(value) ) private$.monotone
+      else
+      {
+        stop("`monotone` is read only", call. = FALSE)
+      }
+    },
+
+    alignPhase = function(value)
+    {
+      if( missing(value) ) private$.alignPhase
+      else
+      {
+        private$.alignPhase <- value
+        self
+      }
+    },
+
+    datac = function(value)
+    {
+      if( missing(value) ) private$.datac
+      else
+      {
+        stop("`$datac (cleaned data) is read only", call. = FALSE)
+      }
+    },
+
+    try_silent = function(value)
+    {
+      if( missing(value) ) private$.try_silent
+      else
+      {
+        if(! "logical" %in% class(value)) stop("`try_silent` should be logical")
+        private$.try_silent <- value
+        self
+      }
+    }
+
+    ### need to add active bindings for warnings, errors
+
+
+  )
+}
+
+
 #' \code{Palytic} class generator.
 #'
 #' @docType class
@@ -247,711 +960,7 @@ Palytic <- R6::R6Class("Palytic",
                        #active = .active(), # depricate until we can find work around, low priority
                        # this may be achievable by adding a utility package that lodas first
                        # and using @importFrom in the preamble
-                       active =   list(
-                         data = function(value)
-                         {
-                           if( missing(value) ){ private$.data }
-                           else
-                           {
-                             stop("`$data` is read only", call. = FALSE)
-                           }
-                         },
-
-                         ids = function(value)
-                         {
-                           if( missing(value) ) private$.ids
-                           else
-                           {
-                             if(! is.character(value) )
-                             {
-                               stop("`ids` must be a character variable name in data")
-                             }
-                             if( is.null(private$.data[[value]]) )
-                             {
-                               stop( paste(value, "is not in the data") )
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = value,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         # use functions in the way of iscorStruct to update all formula any time
-                         # any formula related object is changed
-                         dv = function(value)
-                         {
-                           if( missing(value) ) private$.dv
-                           else
-                           {
-                             if(! is.character(value) )
-                             {
-                               stop("`dv` must be a character variable name in data")
-                             }
-                             if( is.null(private$.data[[value]]) )
-                             {
-                               stop( paste(value, "is not in the data") )
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = value,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         time = function(value)
-                         {
-                           if( missing(value) ) private$.time
-                           else
-                           {
-                             if(! is.character(value) )
-                             {
-                               stop("`time` must be a character variable name in the data")
-                             }
-                             if( is.null(private$.data[[value]]) )
-                             {
-                               stop( paste(value, "is not in the data") )
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = value,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             private$.ismonotone   <- monotone(private$.ids,
-                                                               private$.time,
-                                                               private$.data)
-                             self
-                           }
-                         },
-
-                         phase = function(value)
-                         {
-                           if( missing(value) ) private$.phase
-                           else
-                           {
-                             if(! is.null(value))
-                             {
-                               if(! is.character(value) )
-                               {
-                                 stop("`phase` must be a character variable name in the data")
-                               }
-                               if( is.null(private$.data[[value]]) )
-                               {
-                                 stop( paste(value, "is not in the data") )
-                               }
-                               if( ! var(self$datac[[value]], na.rm = TRUE) > 0 )
-                               {
-                                 stop( paste(value, "has zero variance") )
-                               }
-                             }
-
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = value,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         ivs = function(value)
-                         {
-                           if( missing(value) ) private$.ivs
-                           else
-                           {
-                             if( ! any( c('list', 'character', "NULL") %in%
-                                      is(value) ) )
-                             {
-                               stop("`ivs` must be a character list of ",
-                                    "variables in the data or `NULL`.")
-                             }
-                             if( ! all(value %in% names(private$.data) ) )
-                             {
-                               nov <- value[ which(! value %in% names(private$.data )) ]
-                               if(length(nov)==1)
-                               {
-                                 stop( paste(nov, "is not in the data") )
-                               }
-                               if(length(nov)>=2)
-                               {
-                                 stop( paste(paste(nov, collapse=", "), "are not in the data") )
-                               }
-                             }
-                             frms <- forms(private$.data        ,
-                                           PalyticObj   = self  ,
-                                           ids          = NULL  ,
-                                           dv           = NULL  ,
-                                           time         = NULL  ,
-                                           phase        = NULL  ,
-                                           ivs          = value ,
-                                           interactions = NULL  ,
-                                           time_power   = NULL  ,
-                                           correlation  = NULL  ,
-                                           family       = NULL  ,
-                                           fixed        = NULL  ,
-                                           random       = NULL  ,
-                                           formula      = NULL  ,
-                                           method       = NULL  )
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         interactions = function(value)
-                         {
-                           if( missing(value) ) private$.interactions
-                           else
-                           {
-                             if(! is.list(value) )
-                             {
-                               stop("`interactions` must be a list of vector pairs of variables in the data")
-                             }
-                             if( ! all(unlist(value) %in% names(private$.data)) & !is.null(value) )
-                             {
-                               nov <- value[ which(! value %in% names(private$.data )) ]
-                               if(length(nov)==1) stop( paste(nov, "is not in the data") )
-                               if(length(nov)>=2)
-                               {
-                                 stop( paste(paste(nov, collapse=", "), "are not in the data") )
-                               }
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = value,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         time_power = function(value)
-                         {
-                           if( missing(value) ) private$.time_power
-                           else
-                           {
-                             if(! is.numeric(value) ) stop("`time_power` must be numeric")
-                             if( round(value, 0) != value | value < 1 )
-                             {
-                               stop("`time_power` must be a positive whole number")
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = value,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         correlation = function(value)
-                         {
-                           if( missing(value) ) private$.correlation
-                           else
-                           {
-                             #TODO: move to utils
-                             fixcor <- function(x)
-                             {
-                               if(!is.null(x))
-                               {
-                                 if( x != "NULL" )
-                                 {
-                                   x <- unlist( strsplit(x, "::") )
-                                   return( paste("nlme", x[length(x)], sep="::" ) )
-                                 }
-                                 if( x == "NULL" )
-                                 {
-                                   return(NULL)
-                                 }
-                               }
-                               if( is.null(x)  )
-                               {
-                                 return(x)
-                               }
-                             }
-                             #iscor <- try( iscorStruct(fixcor(value)), TRUE )
-                             value <- fixcor(value)
-                             if(! iscorStruct(value) )
-                             {
-                               stop( paste("`correlation` must be of class `corStruct`.",
-                                           "See `?nlme::corS.truct`",
-                                           "For example, for AR(1) use 'corAR1()' or 'corARMA(p=1)'.",
-                                           "For are 2 or higher use 'corARMA(p=2)'.",
-                                           "For ARMA(3,1) use 'corARMA(p=3,q=1)'.",
-                                           sep="\n") )
-                             }
-                             # NULL is a valid `value` for correlation, so we need one more
-                             # parameter `corFromPalyticObj` to get it right
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = value,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL,
-                                           corFromPalyticObj = FALSE)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         family = function(value)
-                         {
-                           if( missing(value) ) private$.family
-                           else
-                           {
-                             if(! "gamlss.family" %in% class(value) )
-                             {
-                               stop("`family`=", value, " is not in ",
-                                    "gamlss.family, see `?gamlss.dist::gamlss.family`")
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = value,
-                                           fixed        = NULL,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         fixed = function(value)
-                         {
-                           if( missing(value) ) private$.fixed
-                           else
-                           {
-                             if(! "formula" %in% class(value) )
-                             {
-                               stop("`fixed` must be a formula, see `?formula` and `??nlme::lme`")
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = value,
-                                           random       = NULL,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         random = function(value)
-                         {
-                           if( missing(value) ) private$.random
-                           else
-                           {
-                             if(! "formula" %in% class(value) )
-                             {
-                               stop("`random` must be a formula, see `?formula` and `??nlme::lme`")
-                             }
-                             frms <- forms(private$.data,
-                                           PalyticObj   = self,
-                                           ids          = NULL,
-                                           dv           = NULL,
-                                           time         = NULL,
-                                           phase        = NULL,
-                                           ivs          = NULL,
-                                           interactions = NULL,
-                                           time_power   = NULL,
-                                           correlation  = NULL,
-                                           family       = NULL,
-                                           fixed        = NULL,
-                                           random       = value,
-                                           formula      = NULL,
-                                           method       = NULL)
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         formula = function(value)
-                         {
-                           if( missing(value) ) private$.formula
-                           else
-                           {
-                             if(! "formula" %in% class(value) )
-                             {
-                               stop("`formula` must be a formula, see `?formula` and `??gamlss::gamlss`")
-                             }
-                             suppressWarnings(
-                               frms <- forms(private$.data,
-                                             PalyticObj   = NULL,
-                                             ids          = NULL,
-                                             dv           = NULL,
-                                             time         = NULL,
-                                             phase        = NULL,
-                                             ivs          = NULL,
-                                             interactions = NULL,
-                                             time_power   = NULL,
-                                             correlation  = NULL,
-                                             family       = NULL,
-                                             fixed        = NULL,
-                                             random       = NULL,
-                                             formula      = value,
-                                             method       = NULL))
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         method = function(value)
-                         {
-                           if( missing(value) ) private$.method
-                           else
-                           {
-                             if(!any( c('ML', 'REML') %in% value ))
-                             {
-                               stop("`method` should be `ML` or `REML`")
-                             }
-                             suppressWarnings(
-                               frms <- forms(private$.data,
-                                             PalyticObj   = self,
-                                             ids          = NULL,
-                                             dv           = NULL,
-                                             time         = NULL,
-                                             phase        = NULL,
-                                             ivs          = NULL,
-                                             interactions = NULL,
-                                             time_power   = NULL,
-                                             correlation  = NULL,
-                                             family       = NULL,
-                                             fixed        = NULL,
-                                             random       = NULL,
-                                             formula      = NULL,
-                                             method       = value))
-                             private$.ids          <- frms$ids
-                             private$.dv           <- frms$dv
-                             private$.time         <- frms$time
-                             private$.phase        <- frms$phase
-                             private$.ivs          <- frms$ivs
-                             private$.interactions <- frms$interactions
-                             private$.time_power   <- frms$time_power
-                             private$.correlation  <- frms$correlation
-                             private$.family       <- frms$family
-                             private$.fixed        <- frms$fixed
-                             private$.random       <- frms$random
-                             private$.formula      <- frms$formula
-                             private$.method       <- frms$method
-                             self
-                           }
-                         },
-
-                         standardize = function(value)
-                         {
-                           if( missing(value) ) private$.standardize
-                           else
-                           {
-                             if(! is.logical( value ) )
-                             {
-                               stop("`standardize` should be `TRUE` or `FALSE`")
-                             }
-                             private$.standardize <- value
-                             self
-                           }
-                         },
-
-                         corStructs = function(value)
-                         {
-                           if( missing(value) ) private$.corStructs
-                           else
-                           {
-                             private$.corStructs <- value
-                             self
-                           }
-                         },
-
-                         time_powers = function(value)
-                         {
-                           if( missing(value) ) private$.time_powers
-                           else
-                           {
-                             private$.time_powers <- value
-                             self
-                           }
-                         },
-
-                         monotone = function(value)
-                         {
-                           if( missing(value) ) private$.monotone
-                           else
-                           {
-                             stop("`monotone` is read only", call. = FALSE)
-                           }
-                         },
-
-                         alignPhase = function(value)
-                         {
-                           if( missing(value) ) private$.alignPhase
-                           else
-                           {
-                             private$.alignPhase <- value
-                             self
-                           }
-                         },
-
-                         datac = function(value)
-                         {
-                           if( missing(value) ) private$.datac
-                           else
-                           {
-                             stop("`$datac (cleaned data) is read only", call. = FALSE)
-                           }
-                         },
-
-                         try_silent = function(value)
-                         {
-                           if( missing(value) ) private$.try_silent
-                           else
-                           {
-                             if(! "logical" %in% class(value)) stop("`try_silent` should be logical")
-                             private$.try_silent <- value
-                             self
-                           }
-                         }
-
-                         ### need to add active bindings for warnings, errors
-
-
-                       ),
+                       active = .active(),
 
                        #########################################################
                        # initialize ####
@@ -1736,5 +1745,4 @@ Palytic$set("public", "GroupTime_Power",
             },
             overwrite = TRUE
             )
-
 
