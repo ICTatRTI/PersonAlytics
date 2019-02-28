@@ -352,6 +352,19 @@ t3 <- PersonAlytic(output          = 'TargetIVStest'       ,
                    package         = "arma"                ,
                    individual_mods = TRUE                  ,
                    target_ivs      = names(OvaryICT)[6:11] )
+
+# multiple DVs with no target_ivs and group models
+t3 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
+                   data            = OvaryICT                   ,
+                   ids             = "Mare"                     ,
+                   dvs             = names(OvaryICT)[c(1,9:11)] ,
+                   phase           = "Phase"                    ,
+                   time            = "Time"                     ,
+                   package         = "lme"                      ,
+                   individual_mods = FALSE                      ,
+                   target_ivs      = NULL                       ,
+                   detectAR        = FALSE                      ,
+                   detectTO        = FALSE                      )
 }
 
 # delete the output if this was run in the development directory

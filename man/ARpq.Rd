@@ -4,7 +4,7 @@
 \alias{ARpq}
 \title{ARpq - helper function for $GroupAR_order}
 \usage{
-ARpq(t0, p, q, subgroup)
+ARpq(clone, p, q, subgroup)
 }
 \description{
 ARpq - helper function for $GroupAR_order

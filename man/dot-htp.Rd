@@ -4,7 +4,7 @@
 \alias{.htp}
 \title{.htp}
 \usage{
-.htp(t1, id, iv, dv, dvs, dims, package, target_ivs, PQ)
+.htp(t1, id, iv, dv, dvs, ivs, dims, package, target_ivs, PQ, family)
 }
 \description{
 .htp

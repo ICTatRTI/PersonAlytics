@@ -215,6 +215,7 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # start of Palytic class ####
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+#TODO move active bindings to a separate function in this file like PersonAlyticsPower
 Palytic <- R6::R6Class("Palytic",
                        private = list(
                          .data        = NULL, # consider pass by reference environment
@@ -673,7 +674,8 @@ Palytic <- R6::R6Class("Palytic",
                            {
                              if(! "gamlss.family" %in% class(value) )
                              {
-                               stop("`family` is not in gamlss.family, see `?gamlss.dist::gamlss.family`")
+                               stop("`family`=", value, " is not in ",
+                                    "gamlss.family, see `?gamlss.dist::gamlss.family`")
                              }
                              frms <- forms(private$.data,
                                            PalyticObj   = self,
@@ -1586,11 +1588,13 @@ Palytic$set("public", "GroupAR_order",
                   pkgs     <- c("gamlss", "nlme")
                   progress <- function(n) setTxtProgressBar(pb, n)
                   opts     <- list(progress = progress)
+                  t0       <- self$clone(deep=TRUE)
 
                   corMods <- foreach(p=DIMS$p, q=DIMS$q, .packages = pkgs,
                                      .options.snow = opts)  %dopar%
                   {
-                    ARpq(self, p, q, subgroup)
+                    clone <- t0$clone(deep=TRUE)
+                    ARpq(clone, p, q, subgroup)
                   }
                   parallel::stopCluster(cl)
                 }
@@ -1599,7 +1603,8 @@ Palytic$set("public", "GroupAR_order",
                   corMods <- list()
                   for(i in seq_along(DIMS[,1]))
                   {
-                    corMods[[i]] <- ARpq(self, DIMS$p[i], DIMS$q[i], subgroup)
+                    clone <- self$clone(deep=TRUE)
+                    corMods[[i]] <- ARpq(clone, DIMS$p[i], DIMS$q[i], subgroup)
                     #setTxtProgressBar(pb, i) # this may be crossing wires with nested pb's
                   }
                   #close(pb)
@@ -1635,9 +1640,8 @@ Palytic$set("public", "GroupAR_order",
 #' ARpq - helper function for $GroupAR_order
 #' @keywords internal
 #' @author Stephen Tueller \email{stueller@@rti.org}
-ARpq <- function(t0, p, q, subgroup)
+ARpq <- function(clone, p, q, subgroup)
 {
-  clone             <- t0$clone(deep=TRUE)
   clone$method      <- "ML"
   clone$correlation <- "NULL"
 

@@ -343,13 +343,13 @@
 #'                    target_ivs      = names(OvaryICT)[6:11] )
 #'
 #' # multiple DVs with no target_ivs and group models
-#' t3 <- PersonAlytic(output          = 'TargetIVStest'            ,
+#' t3 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
 #'                    data            = OvaryICT                   ,
 #'                    ids             = "Mare"                     ,
 #'                    dvs             = names(OvaryICT)[c(1,9:11)] ,
 #'                    phase           = "Phase"                    ,
 #'                    time            = "Time"                     ,
-#'                    package         = "arma"                     ,
+#'                    package         = "lme"                      ,
 #'                    individual_mods = FALSE                      ,
 #'                    target_ivs      = NULL                       ,
 #'                    detectAR        = FALSE                      ,

@@ -75,16 +75,11 @@ htp <- function(data                                                ,
     doSNOW::registerDoSNOW(cl)
 
     start <- messenger(dvLoop)
-    #TODO: find why foreach fails, error "object 'Palytic' not found, so some
-    # scoping issue since it runs fine w/o foreach
-    #IDout <- foreach( dv=seq_along(dvs), .packages = pkgs,
-    #                  .options.snow = opts) %dopar%
-    IDout <- list()
-    for(dv in seq_along(dvs))
+    DVout <- list()
+    IDout <- foreach( dv=seq_along(dvs), .packages = pkgs,
+                      .options.snow = opts) %dopar%
     {
-      #.........................................................................
       # set up the  palytic object
-      #.........................................................................
       t0 <- Palytic$new(data=data,
                         ids=ids,
                         dv=dvs[[dv]],
@@ -100,7 +95,8 @@ htp <- function(data                                                ,
       )
       t0 <- autoDetect(t0, userFormula, dims, detectTO, detectAR,
                        maxOrder, whichIC, PQ, doForeach=FALSE)
-      IDout[[dv]] <- .htp(t0, id=1, iv=1, dv, dvs, dims, package, target_ivs, PQ)
+        .htp(t0, id=1, iv=1, dv, dvs, ivs,
+                          dims, package, target_ivs, PQ, family)
     }# end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
@@ -108,30 +104,25 @@ htp <- function(data                                                ,
     # the next several lines are repeated in if(dvLoop), could be moved to
     # function, but unpacking the results will take as much code a repeating
     # the lines
-    #...........................................................................
     # disaggregate messages
-    #...........................................................................
     IDmsg <- lapply( IDout, function(x) data.frame(x$Messages) )
     IDmsg <- plyr::rbind.fill(IDmsg)
 
-    #...........................................................................
     # disaggregate depcriptive statistics
-    #...........................................................................
     IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
     IDdesc <- plyr::rbind.fill(IDdesc)
 
-    #...........................................................................
     # parameter estimates
-    #...........................................................................
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
     IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
     IDoutSumm <- plyr::rbind.fill(IDoutSum)
 
     DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
 
+    message('\n\nModel fitting took:\n ', capture.output(Sys.time() - start), ".\n\n")
+
     rm(IDoutSumm, IDmsg, IDdesc )
   }
-
 
   ##############################################################################
   # parralelization option 2: outer loop is DV so that correlation and time
@@ -148,10 +139,7 @@ htp <- function(data                                                ,
     DVout <- list()
     for(dv in dims$DV)
     {
-
-      #...........................................................................
       # set up the parent palytic object
-      #...........................................................................
       t0 <- Palytic$new(data=data,
                         ids=ids,
                         dv=dvs[[dv]],
@@ -179,15 +167,10 @@ htp <- function(data                                                ,
       IDout <- foreach( id=DIM$ID, iv=DIM$IV, .export = exports,
                         .packages = pkgs, .options.snow = opts) %dopar%
       {
-        #id<-DIM$ID[i]; iv<-DIM$IV[i]                    #@f@#
-
-        #TODO: put new function call here
-        #-------------------------------------------------------------------------
-        # deep clone & initialize the model as NA
-        #-------------------------------------------------------------------------
+        #i=1; id<-DIM$ID[i]; iv<-DIM$IV[i]
         t1 <- t0$clone(deep=TRUE)
-        .htp(t1, id, iv, dv, dvs, dims,
-             package, target_ivs, PQ)
+        .htp(t1, id, iv, dv, dvs, ivs,
+             dims, package, target_ivs, PQ, family)
 
       } # end of foreach
       # stop the cluster
@@ -199,28 +182,20 @@ htp <- function(data                                                ,
       cat('\n\n') #TODO is this needed?
     }
 
-    #...........................................................................
     # disaggregate messages
-    #...........................................................................
     IDmsg <- lapply( IDout, function(x) data.frame(x$Messages) )
     IDmsg <- plyr::rbind.fill(IDmsg)
 
-    #...........................................................................
     # disaggregate depcriptive statistics
-    #...........................................................................
     IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
     IDdesc <- plyr::rbind.fill(IDdesc)
 
-    #...........................................................................
     # parameter estimates
-    #...........................................................................
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
     IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
     IDoutSumm <- plyr::rbind.fill(IDoutSum)
 
-    #...........................................................................
     # put outputs in a list, to be aggregated outside of the dv loop
-    #...........................................................................
     DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
@@ -311,8 +286,8 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
 
 #' .htp
 #' @keywords internal
-.htp <- function(t1, id, iv, dv, dvs, dims,
-            package, target_ivs, PQ)
+.htp <- function(t1, id, iv, dv, dvs, ivs, dims,
+            package, target_ivs, PQ, family)
 {
   #-------------------------------------------------------------------------
   # initialize the model as NA
