@@ -61,6 +61,9 @@ clean <- function(data		 	            ,
   # check id variable
   data[[ids]] <- checkID(data[[ids]], ids)
 
+  # check phase variable
+  if(any(is.na(data[[phase]]))) data[[phase]] <- fixPhaseNA(data[[phase]])
+
   # check correlation structure
   invisible( iscorStruct(correlation) )
 
@@ -123,6 +126,23 @@ clean <- function(data		 	            ,
   }
 
   return(data)
+}
+
+#' fixPhaseNA - function to carry last value forward if phase is missing
+#' (this is common in example data sets Ty has worked with)
+#'
+#' @param phase The \code{phase} variable
+#'
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#'
+#' @keywords internal
+fixPhaseNA <- function(phase)
+{
+  for(i in 2:length(phase))
+  {
+    if(is.na(phase[i])) phase[i] <- phase[i-1]
+  }
+  phase
 }
 
 #' Function to check ID variable and if possible, coerce to numeric
