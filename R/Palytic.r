@@ -1746,3 +1746,100 @@ Palytic$set("public", "GroupTime_Power",
             overwrite = TRUE
             )
 
+Palytic$set("public", "plot",
+            function(subgroup=NULL, groupvars=NULL)
+            {
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              tempData <- na.omit( subset(self$datac, subgroup,
+                                          all.vars(self$formula)) )
+
+              # get summary data
+              if(!is.null(groupvars)) groupvars <- c(self$time, groupvars)
+              if( is.null(groupvars)) groupvars <- self$time
+
+              # check whetehr the time variable is continuous, if yes it
+              # needs to be aggregated so that we don't have time points with only
+              # one observation
+              time <- tempData[[self$time]]
+              if(!all(round(time) == time))
+              {
+                breaks <- hist(time, plot = FALSE)$breaks
+                r      <- nchar(strsplit(as.character(breaks), "\\.")[[1]][2])
+                tempData[[self$time]] <- round(time, r)
+              }
+              rm(time)
+
+
+              g <- ggplot(tempData, aes_string(x=self$time, y=self$dv, group=self$ids)) +
+                geom_line()
+
+              summData <- summarySE(tempData, self$dv, groupvars, TRUE)
+              for(i in 1:length(groupvars))
+              {
+                summData[[groupvars[i]]] <- as.factor(summData[[groupvars[i]]])
+              }
+              group <- 1
+              if(length(groupvars)>1) group <- groupvars[2] # TODO general to 2+ groupvars
+              xrange <- range(tempData[[self$time]], na.rm=TRUE)
+              pd <- position_dodge(0.1*(xrange[2]-xrange[1]))
+              s <- ggplot(summData, aes_string(x=self$time, y=self$dv,
+                                               group=group, col=group)) +
+                geom_errorbar(aes(ymin=sdlo, ymax=sdhi),
+                              width = .1, position = pd) +
+                geom_line(position=pd) +
+                geom_point(position=pd) +
+                ggtitle('Average trajectory with SD bars')
+
+              if(group==1) s <- s + theme(legend.position="none")
+              print(s)
+            },
+            overwrite = TRUE
+            )
+
+
+# TODO move to utils
+# comes from http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/#Helper%20functions
+## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
+##   data: a data frame.
+##   measurevar: the name of a column that contains the variable to be summariezed
+##   groupvars: a vector containing names of columns that contain grouping variables
+##   na.rm: a boolean that indicates whether to ignore NA's
+##   conf.interval: the percent range of the confidence interval (default is 95%)
+summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
+                      conf.interval=.95, .drop=TRUE) {
+
+  # New version of length which can handle NA's: if na.rm==T, don't count them
+  length2 <- function (x, na.rm=FALSE) {
+    if (na.rm) sum(!is.na(x))
+    else       length(x)
+  }
+
+  # This does the summary. For each group's data frame, return a vector with
+  # N, mean, and sd
+  datac <- ddply(data, groupvars, .drop=.drop,
+                 .fun = function(xx, col) {
+                   c(N    = length2(xx[[col]], na.rm=na.rm),
+                     mean = mean   (xx[[col]], na.rm=na.rm),
+                     sd   = sd     (xx[[col]], na.rm=na.rm)
+                   )
+                 },
+                 measurevar
+  )
+
+  datac$sdlo <- datac$mean - datac$sd
+  datac$sdhi <- datac$mean + datac$sd
+
+  # Rename the "mean" column
+  datac <- rename(datac, c("mean" = measurevar))
+
+  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
+
+  # Confidence interval multiplier for standard error
+  # Calculate t-statistic for confidence interval:
+  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
+  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
+  datac$ci <- datac$se * ciMult
+
+
+  return(datac)
+}
