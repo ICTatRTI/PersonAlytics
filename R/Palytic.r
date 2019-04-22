@@ -1746,6 +1746,8 @@ Palytic$set("public", "GroupTime_Power",
             overwrite = TRUE
             )
 
+# This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
+# of the data for ICTviz is theoretical, this function is for real data
 Palytic$set("public", "plot",
             function(subgroup=NULL, groupvars=NULL)
             {
@@ -1769,77 +1771,65 @@ Palytic$set("public", "plot",
               }
               rm(time)
 
-
-              g <- ggplot(tempData, aes_string(x=self$time, y=self$dv, group=self$ids)) +
-                geom_line()
-
-              summData <- summarySE(tempData, self$dv, groupvars, TRUE)
+              # summarize the data for plotting
+              summData <- summarySE(tempData, self$dv, groupvars, self$phase, TRUE)
               for(i in 1:length(groupvars))
               {
                 summData[[groupvars[i]]] <- as.factor(summData[[groupvars[i]]])
               }
+
+              # set up grouping variable(s)
               group <- 1
               if(length(groupvars)>1) group <- groupvars[2] # TODO general to 2+ groupvars
+
+              # calculate dodging & range
               xrange <- range(tempData[[self$time]], na.rm=TRUE)
               pd <- position_dodge(0.1*(xrange[2]-xrange[1]))
+              ylim <- range(c(summData$sdlo, summData$sdhi), na.rm=TRUE)
+
+              # set up phase colors / borrowed from ICTviz() in PersonAlyticsPower
+              # see'rects' in PersonAlyticsPower setup.r ICTviz()
+              #TODO this won't work for non-unique phase, eg ABA
+              phaseDup <- !duplicated(summData[[self$phase]])
+              rect <- summData[phaseDup,]
+              #phaseTab <- data.frame(table(summData$Phase))
+              #names(phaseTab) <- c(self$phase, 'xmax')
+              #rect <- merge(phaseTab, rect)
+              phaseEnd  <- which(phaseDup) - 1
+              rect$xmax <- summData[[self$time]][c(phaseEnd[2:length(phaseEnd)], length(phaseDup))]
+              # + 1 b/c requires 3+
+              # TODO: test with one phase
+              rect$cols <- RColorBrewer::brewer.pal(nrow(rect) + 1, 'Accent')[1:nrow(rect)]
+
+              #TODO - why isn't scale_fill_manual getting the colors right?
+
+              # plot
               s <- ggplot(summData, aes_string(x=self$time, y=self$dv,
                                                group=group, col=group)) +
                 geom_errorbar(aes(ymin=sdlo, ymax=sdhi),
                               width = .1, position = pd) +
                 geom_line(position=pd) +
                 geom_point(position=pd) +
-                ggtitle('Average trajectory with SD bars')
+                geom_rect(data=rect, aes_string(xmin=self$time, xmax='xmax',
+                                                ymin=-Inf, ymax=Inf, fill='cols'),
+                          alpha=0.4, color=NA, inherit.aes=F) +
+                scale_fill_manual(values=rect$cols, name=self$phase, labels=rect[[self$phase]]) +
+                ylab('')
 
+              # TODO: only turn off line legend if one group
               if(group==1) s <- s + theme(legend.position="none")
-              print(s)
+
+              # TODO: consider denisty by phase
+              d <- ggplot(data=summData, aes_string(x=self$dv)) +
+                geom_density(alpha=.2, fill="#FF6666") +
+                geom_histogram(aes(y=..density..), colour="black", fill="white") +
+                xlim(ylim)
+              d <- d + coord_flip() + scale_y_reverse()
+
+              top <- 'Density, Histogram, and Average Trajectory with SD bars' # maybe drop this
+              gridExtra::grid.arrange(d, s, nrow=1, ncol=2, widths = c(2,6), top=top)
+
             },
             overwrite = TRUE
             )
 
-
-# TODO move to utils
-# comes from http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/#Helper%20functions
-## Gives count, mean, standard deviation, standard error of the mean, and confidence interval (default 95%).
-##   data: a data frame.
-##   measurevar: the name of a column that contains the variable to be summariezed
-##   groupvars: a vector containing names of columns that contain grouping variables
-##   na.rm: a boolean that indicates whether to ignore NA's
-##   conf.interval: the percent range of the confidence interval (default is 95%)
-summarySE <- function(data=NULL, measurevar, groupvars=NULL, na.rm=FALSE,
-                      conf.interval=.95, .drop=TRUE) {
-
-  # New version of length which can handle NA's: if na.rm==T, don't count them
-  length2 <- function (x, na.rm=FALSE) {
-    if (na.rm) sum(!is.na(x))
-    else       length(x)
-  }
-
-  # This does the summary. For each group's data frame, return a vector with
-  # N, mean, and sd
-  datac <- ddply(data, groupvars, .drop=.drop,
-                 .fun = function(xx, col) {
-                   c(N    = length2(xx[[col]], na.rm=na.rm),
-                     mean = mean   (xx[[col]], na.rm=na.rm),
-                     sd   = sd     (xx[[col]], na.rm=na.rm)
-                   )
-                 },
-                 measurevar
-  )
-
-  datac$sdlo <- datac$mean - datac$sd
-  datac$sdhi <- datac$mean + datac$sd
-
-  # Rename the "mean" column
-  datac <- rename(datac, c("mean" = measurevar))
-
-  datac$se <- datac$sd / sqrt(datac$N)  # Calculate standard error of the mean
-
-  # Confidence interval multiplier for standard error
-  # Calculate t-statistic for confidence interval:
-  # e.g., if conf.interval is .95, use .975 (above/below), and use df=N-1
-  ciMult <- qt(conf.interval/2 + .5, datac$N-1)
-  datac$ci <- datac$se * ciMult
-
-
-  return(datac)
-}

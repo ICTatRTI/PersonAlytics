@@ -21,6 +21,7 @@ Depends:
     plyr (>= 1.8.4),
 	  R (>= 3.5.0),
 	  R6 (>= 2.3.0),
+    RColorBrewer (>= 1.1.2),
     snow (>= 0.4-3),
     tryCatchLog (>= 1.0.2)
 RoxygenNote: 6.1.1
