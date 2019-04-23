@@ -865,16 +865,17 @@
 #' # construct a new Payltic object and examine the default formulae
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
 #'                   time='Time', phase='Phase')
+#'
+#' # summary, descriptive, and plot methods
+#' t1$summary()
+#' t1$describe()
+#' t1$plot()
+#'
+#' # check the formulae creation
 #' t1$fixed
 #' t1$random
 #' t1$formula
 #' t1$correlation
-#'
-#' # summary function
-#' t1$summary()
-#'
-#' # descriptive statistics
-#' t1$describe()
 #'
 #' # compare gamlss and lme output, in which the models of the default formulae are fit
 #' (t1.gamlss <- summary(t1$gamlss()))
@@ -1749,87 +1750,52 @@ Palytic$set("public", "GroupTime_Power",
 # This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
 # of the data for ICTviz is theoretical, this function is for real data
 Palytic$set("public", "plot",
-            function(subgroup=NULL, groupvars=NULL)
+            function(subgroup=NULL, groupvar=NULL)
             {
+              # qc input
+              if(!is.null(groupvar))
+              {
+                if(length(groupvar)!=1 | !is.character(groupvar))
+                {
+                  stop('`groupvar` should be one variable name.')
+                }
+                if(! groupvar %in% names(self$datac))
+                {
+                  stop('`groupvar` is not in the data.')
+                }
+              }
+
+              # subset the data if requested
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
-              tempData <- na.omit( subset(self$datac, subgroup,
-                                          all.vars(self$formula)) )
-
+              tempData <- subset(self$datac, subgroup,
+                                 c(all.vars(self$formula), groupvar))
               # get summary data
-              if(!is.null(groupvars)) groupvars <- c(self$time, groupvars)
-              if( is.null(groupvars)) groupvars <- self$time
+              #*#if(!is.null(groupvars)) groupvars <- c(self$time, groupvars)
+              #*#if( is.null(groupvars)) groupvars <- self$time
 
-              # check whetehr the time variable is continuous, if yes it
-              # needs to be aggregated so that we don't have time points with only
-              # one observation
-              time <- tempData[[self$time]]
-              if(!all(round(time) == time))
+              if(!is.null(groupvar)) ug <- unique(tempData[[groupvar]])
+              if( is.null(groupvar)) ug <- 1
+              dens <- traj <- list()
+              for(i in seq_along(ug))
               {
-                breaks <- hist(time, plot = FALSE)$breaks
-                r      <- nchar(strsplit(as.character(breaks), "\\.")[[1]][2])
-                tempData[[self$time]] <- round(time, r)
+                legendName <- NULL
+                if(length(ug)!=1) legendName <- paste(groupvar, ug[i], sep='=')
+                if(!is.null(groupvar)) wg <- tempData[[groupvar]]==ug[i]
+                if( is.null(groupvar)) wg <- rep(TRUE, nrow(tempData))
+                ICTplots  <- ICTplot(self, tempData[wg,],
+                                     legendName = legendName)
+                dens[[i]] <- ICTplots$d
+                traj[[i]] <- ICTplots$s
+                rm(ICTplots)
               }
-              rm(time)
+              ICTplots <- c(dens, traj)
 
-              # summarize the data for plotting
-              summData <- summarySE(tempData, self$dv, groupvars, self$phase, TRUE)
-              for(i in 1:length(groupvars))
-              {
-                summData[[groupvars[i]]] <- as.factor(summData[[groupvars[i]]])
-              }
-
-              # set up grouping variable(s)
-              group <- 1
-              if(length(groupvars)>1) group <- groupvars[2] # TODO general to 2+ groupvars
-
-              # calculate dodging & range
-              xrange <- range(tempData[[self$time]], na.rm=TRUE)
-              pd <- position_dodge(0.1*(xrange[2]-xrange[1]))
-              ylim <- range(c(summData$sdlo, summData$sdhi), na.rm=TRUE)
-
-              # set up phase colors / borrowed from ICTviz() in PersonAlyticsPower
-              # see'rects' in PersonAlyticsPower setup.r ICTviz()
-              #TODO this won't work for non-unique phase, eg ABA
-              phaseDup <- !duplicated(summData[[self$phase]])
-              rect <- summData[phaseDup,]
-              #phaseTab <- data.frame(table(summData$Phase))
-              #names(phaseTab) <- c(self$phase, 'xmax')
-              #rect <- merge(phaseTab, rect)
-              phaseEnd  <- which(phaseDup) - 1
-              rect$xmax <- summData[[self$time]][c(phaseEnd[2:length(phaseEnd)], length(phaseDup))]
-              # + 1 b/c requires 3+
-              # TODO: test with one phase
-              rect$cols <- RColorBrewer::brewer.pal(nrow(rect) + 1, 'Accent')[1:nrow(rect)]
-
-              #TODO - why isn't scale_fill_manual getting the colors right?
-
-              # plot
-              s <- ggplot(summData, aes_string(x=self$time, y=self$dv,
-                                               group=group, col=group)) +
-                geom_errorbar(aes(ymin=sdlo, ymax=sdhi),
-                              width = .1, position = pd) +
-                geom_line(position=pd) +
-                geom_point(position=pd) +
-                geom_rect(data=rect, aes_string(xmin=self$time, xmax='xmax',
-                                                ymin=-Inf, ymax=Inf, fill='cols'),
-                          alpha=0.4, color=NA, inherit.aes=F) +
-                scale_fill_manual(values=rect$cols, name=self$phase, labels=rect[[self$phase]]) +
-                ylab('')
-
-              # TODO: only turn off line legend if one group
-              if(group==1) s <- s + theme(legend.position="none")
-
-              # TODO: consider denisty by phase
-              d <- ggplot(data=summData, aes_string(x=self$dv)) +
-                geom_density(alpha=.2, fill="#FF6666") +
-                geom_histogram(aes(y=..density..), colour="black", fill="white") +
-                xlim(ylim)
-              d <- d + coord_flip() + scale_y_reverse()
-
-              top <- 'Density, Histogram, and Average Trajectory with SD bars' # maybe drop this
-              gridExtra::grid.arrange(d, s, nrow=1, ncol=2, widths = c(2,6), top=top)
-
+              gridExtra::marrangeGrob(ICTplots, nrow=length(dens),
+                                      ncol=2, widths = c(2,6),
+                                      top='Density and Average Trajectory with SD bars')
             },
             overwrite = TRUE
             )
+
+
 

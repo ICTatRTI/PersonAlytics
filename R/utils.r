@@ -607,7 +607,7 @@ subdat <- function(data, subgroup, formula)
 #' with updates by Stephen Tueller
 #'
 #' @param data a data frame.
-#' @param measurevar the name of a column that contains the variable to be summariezed
+#' @param measurevar the name of a column that contains the variable to be summarized
 #' @param groupvars a vector containing names of columns that contain grouping variables
 #' @param na.rm a boolean that indicates whether to ignore NA's
 #' @param conf.interval the percent range of the confidence interval (default is 95%)

@@ -171,16 +171,17 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
 # construct a new Payltic object and examine the default formulae
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                   time='Time', phase='Phase')
+
+# summary, descriptive, and plot methods
+t1$summary()
+t1$describe()
+t1$plot()
+
+# check the formulae creation
 t1$fixed
 t1$random
 t1$formula
 t1$correlation
-
-# summary function
-t1$summary()
-
-# descriptive statistics
-t1$describe()
 
 # compare gamlss and lme output, in which the models of the default formulae are fit
 (t1.gamlss <- summary(t1$gamlss()))

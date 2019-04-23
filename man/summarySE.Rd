@@ -11,7 +11,7 @@ summarySE(data = NULL, measurevar, groupvars = NULL, phase = NULL,
 \arguments{
 \item{data}{a data frame.}
 
-\item{measurevar}{the name of a column that contains the variable to be summariezed}
+\item{measurevar}{the name of a column that contains the variable to be summarized}
 
 \item{groupvars}{a vector containing names of columns that contain grouping variables}
 
