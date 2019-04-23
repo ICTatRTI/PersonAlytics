@@ -52,19 +52,21 @@ ICTplot <- function(self, data, legendName=NULL)
   # set up phase colors / borrowed from ICTviz() in PersonAlyticsPower
   # see'rects' in PersonAlyticsPower setup.r ICTviz()
   #TODO this won't work for non-unique phase, eg ABA
-  phaseDup  <- !duplicated(summData[[self$phase]])
-  rect      <- summData[phaseDup,]
-  phaseEnd  <- which(phaseDup) - 1
-  rect$xmax <- summData[[self$time]][c(phaseEnd[2:length(phaseEnd)]+1,
-                                       length(phaseDup))]
+  if(!is.null(self$phase))
+  {
+    phaseDup  <- !duplicated(summData[[self$phase]])
+    rect      <- summData[phaseDup,]
+    phaseEnd  <- which(phaseDup) - 1
+    rect$xmax <- summData[[self$time]][c(phaseEnd[2:length(phaseEnd)]+1,
+                                         length(phaseDup))]
+    # + 1 b/c requires 3+ colors, this allows for 1 & 2 phase studies
+    rect$cols <- RColorBrewer::brewer.pal(nrow(rect) + 1, 'Accent')[1:nrow(rect)]
 
-  # + 1 b/c requires 3+ colors, this allows for 1 & 2 phase studies
-  rect$cols <- RColorBrewer::brewer.pal(nrow(rect) + 1, 'Accent')[1:nrow(rect)]
-
-  # phase colors will be incorrect if the phase levels are not in
-  # the data order
-  rect[[self$phase]] <- factor(as.character(rect[[self$phase]]),
-                               levels=as.character(rect[[self$phase]]))
+    # phase colors will be incorrect if the phase levels are not in
+    # the data order
+    rect[[self$phase]] <- factor(as.character(rect[[self$phase]]),
+                                 levels=as.character(rect[[self$phase]]))
+  }
 
   # legend name
   if(!is.null(legendName)) legendName <- paste(self$phase, legendName, sep=': ')
@@ -83,30 +85,51 @@ ICTplot <- function(self, data, legendName=NULL)
                   width = .1, position = pd) +
     geom_line(position=pd) +
     geom_point(position=pd) +
-    geom_rect(data=rect, aes_string(xmin=self$time, xmax='xmax',
-                                    ymin=-Inf, ymax=Inf,
-                                    fill=self$phase),
-              alpha=0.4, color=NA, inherit.aes=F) +
-    scale_fill_manual(values=rect$cols, name=legendName,
-                      labels=rect[[self$phase]]) +
     ylab('') + plotTheme
 
-  # TODO: only turn off line legend if one group
+  #
+  if(!is.null(self$phase))
+  {
+    s <- s + geom_rect(data=rect,
+                       aes_string(xmin=self$time, xmax='xmax',
+                                  ymin=-Inf, ymax=Inf,
+                                  fill=self$phase),
+                       alpha=0.4, color=NA, inherit.aes=F) +
+         scale_fill_manual(values=rect$cols, name=legendName,
+                        labels=rect[[self$phase]])
+  }
+
+  # turn off line legend
   if(group==1) s <- s + scale_color_continuous(guide = FALSE)
 
-  # TODO: consider denisty by phase
-  densdat <- self$datac
-  densdat[[self$phase]] <- factor(densdat[[self$phase]])
-  d <- ggplot(data=densdat,
-              aes_string(x=self$dv,
-                         colour=self$phase,
-                         fill=self$phase)) +
-    scale_fill_manual(values = rect$cols) +
-    scale_color_manual(values = rect$cols) +
-    theme(legend.position="none") +
-    geom_density(alpha=.5) +
-    xlim(ylim) + plotTheme
-  d <- d + coord_flip() + scale_y_reverse()
+  # density with no phase
+  if( is.null(self$phase))
+  {
+    densdat <- self$datac
+    d <- ggplot(data=densdat,
+                aes_string(x=self$dv)) +
+      theme(legend.position="none") +
+      geom_density(alpha=.5, col='darkblue', fill='lightblue') +
+      xlim(ylim) + plotTheme
+    d <- d + coord_flip() + scale_y_reverse()
+  }
+
+  # denisty by phase
+  if(!is.null(self$phase))
+  {
+    densdat <- self$datac
+    densdat[[self$phase]] <- factor(densdat[[self$phase]])
+    d <- ggplot(data=densdat,
+                aes_string(x=self$dv,
+                           colour=self$phase,
+                           fill=self$phase)) +
+      scale_fill_manual(values = rect$cols) +
+      scale_color_manual(values = rect$cols) +
+      theme(legend.position="none") +
+      geom_density(alpha=.5) +
+      xlim(ylim) + plotTheme
+    d <- d + coord_flip() + scale_y_reverse()
+  }
 
   return( list(d=d, s=s) )
 }

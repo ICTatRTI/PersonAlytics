@@ -62,7 +62,10 @@ clean <- function(data		 	            ,
   data[[ids]] <- checkID(data[[ids]], ids)
 
   # check phase variable
-  if(any(is.na(data[[phase]]))) data[[phase]] <- fixPhaseNA(data[[phase]])
+  if(!is.null(phase))
+  {
+    if(any(is.na(data[[phase]]))) data[[phase]] <- fixPhaseNA(data[[phase]])
+  }
 
   # check correlation structure
   invisible( iscorStruct(correlation) )

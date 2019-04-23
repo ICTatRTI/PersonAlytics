@@ -168,7 +168,7 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
 }
 
 \examples{
-# construct a new Payltic object and examine the default formulae
+# construct a new Payltic object and examine the default formulae#'
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                   time='Time', phase='Phase')
 
@@ -231,6 +231,11 @@ t1$time_powers
 t1$GroupAR_order()
 t1$corStructs
 }
+
+# construct a new Payltic object with no phase variable
+t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                  time='Time', phase=NULL)
+t1$plot()
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}

@@ -862,7 +862,7 @@
 #' }
 #'
 #' @examples
-#' # construct a new Payltic object and examine the default formulae
+#' # construct a new Payltic object and examine the default formulae#'
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
 #'                   time='Time', phase='Phase')
 #'
@@ -925,6 +925,11 @@
 #' t1$GroupAR_order()
 #' t1$corStructs
 #' }
+#'
+#' # construct a new Payltic object with no phase variable
+#' t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+#'                   time='Time', phase=NULL)
+#' t1$plot()
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # start of Palytic class ####
@@ -969,28 +974,28 @@ Palytic <- R6::R6Class("Palytic",
                        public = list(
                          initialize = function
                          (
-                           data        ,
-                           ids         = NULL,
-                           dv          = NULL,
-                           time        = NULL,
-                           phase       = NULL,
-                           ivs         = NULL,
-                           interactions= NULL,
-                           time_power  = NULL,
-                           correlation = NULL,
-                           family      = gamlss.dist::NO(),
-                           fixed       = NULL,
-                           random      = NULL,
-                           formula     = NULL,
-                           method      = "REML",
-                           standardize = list(dv=FALSE, iv=FALSE, byids=FALSE),
-                           corStructs  = NULL,
-                           time_powers = NULL,
-                           ismonotone  = NULL,
-                           alignPhase  = FALSE,
-                           datac       = NULL,
-                           warnings    = list(), # hide? or just make them read only?
-                           errors      = list(),
+                           data                                                ,
+                           ids         = NULL                                  ,
+                           dv          = NULL                                  ,
+                           time        = NULL                                  ,
+                           phase       = NULL                                  ,
+                           ivs         = NULL                                  ,
+                           interactions= NULL                                  ,
+                           time_power  = NULL                                  ,
+                           correlation = NULL                                  ,
+                           family      = gamlss.dist::NO()                     ,
+                           fixed       = NULL                                  ,
+                           random      = NULL                                  ,
+                           formula     = NULL                                  ,
+                           method      = "REML"                                ,
+                           standardize = list(dv=FALSE, iv=FALSE, byids=FALSE) ,
+                           corStructs  = NULL                                  ,
+                           time_powers = NULL                                  ,
+                           ismonotone  = NULL                                  ,
+                           alignPhase  = FALSE                                 ,
+                           datac       = NULL                                  ,
+                           warnings    = list()                                ,
+                           errors      = list()                                ,
                            try_silent  = TRUE
                          )
                          {
