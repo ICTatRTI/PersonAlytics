@@ -1755,7 +1755,7 @@ Palytic$set("public", "GroupTime_Power",
 # This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
 # of the data for ICTviz is theoretical, this function is for real data
 Palytic$set("public", "plot",
-            function(subgroup=NULL, groupvar=NULL)
+            function(subgroup=NULL, groupvar=NULL, type='histogram', ylim=NULL)
             {
               # qc input
               if(!is.null(groupvar))
@@ -1788,16 +1788,20 @@ Palytic$set("public", "plot",
                 if(!is.null(groupvar)) wg <- tempData[[groupvar]]==ug[i]
                 if( is.null(groupvar)) wg <- rep(TRUE, nrow(tempData))
                 ICTplots  <- ICTplot(self, tempData[wg,],
-                                     legendName = legendName)
+                                     legendName = legendName,
+                                     type = type,
+                                     ylim = ylim)
                 dens[[i]] <- ICTplots$d
                 traj[[i]] <- ICTplots$s
                 rm(ICTplots)
               }
               ICTplots <- c(dens, traj)
 
+              suppressMessages(
               gridExtra::marrangeGrob(ICTplots, nrow=length(dens),
                                       ncol=2, widths = c(2,6),
                                       top='Density and Average Trajectory with SD bars')
+              )
             },
             overwrite = TRUE
             )

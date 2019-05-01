@@ -1,3 +1,6 @@
+# the reason this isn't in the Palytic method $plot() is because it has multiple
+# calls in that method
+
 #' ICTplot - function to plot ICT data.
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
@@ -20,7 +23,9 @@
 # it's functionality. Used in Palytic$plot()...wait...it only takes a Palytic
 # object 'self'...maybe move this back to the method?? This is still a utility
 # function that gets multiple calls
-ICTplot <- function(self, data, legendName=NULL)
+ICTplot <- function(self, data, legendName=NULL,
+                    type=c('density', 'histogram', 'freqpoly'),
+                    ylim=NULL)
 {
   # check whetehr the time variable is continuous, if yes it
   # needs to be aggregated so that we don't have time points with only
@@ -47,7 +52,8 @@ ICTplot <- function(self, data, legendName=NULL)
   # calculate dodging & range
   xrange <- range(data[[self$time]], na.rm=TRUE)
   pd <- position_dodge(0.1*(xrange[2]-xrange[1]))
-  ylim <- range(c(summData$sdlo, summData$sdhi), na.rm=TRUE)
+  #ylim <- range(c(summData$sdlo, summData$sdhi), na.rm=TRUE) # this results in truncated tails
+  if(is.null(ylim)) ylim <- range(self$datac[[self$dv]], na.rm=TRUE)
 
   # set up phase colors / borrowed from ICTviz() in PersonAlyticsPower
   # see'rects' in PersonAlyticsPower setup.r ICTviz()
@@ -85,7 +91,7 @@ ICTplot <- function(self, data, legendName=NULL)
                   width = .1, position = pd) +
     geom_line(position=pd) +
     geom_point(position=pd) +
-    ylab('') + plotTheme
+    ylab('') + ylim(ylim) + plotTheme
 
   #
   if(!is.null(self$phase))
@@ -109,9 +115,11 @@ ICTplot <- function(self, data, legendName=NULL)
     d <- ggplot(data=densdat,
                 aes_string(x=self$dv)) +
       theme(legend.position="none") +
-      geom_density(alpha=.5, col='darkblue', fill='lightblue') +
       xlim(ylim) + plotTheme
     d <- d + coord_flip() + scale_y_reverse()
+    if(type=='density')   d <- d + geom_density(alpha=.5, col='darkblue', fill='lightblue')
+    if(type=='histogram') d <- d + geom_histogram(alpha=.5, col='darkblue', fill='lightblue')
+    if(type=='freqpoly')  d <- d + geom_freqpoly(alpha=.5, col='darkblue', fill='lightblue')
   }
 
   # denisty by phase
@@ -129,6 +137,9 @@ ICTplot <- function(self, data, legendName=NULL)
       geom_density(alpha=.5) +
       xlim(ylim) + plotTheme
     d <- d + coord_flip() + scale_y_reverse()
+    if(type=='density')   d <- d + geom_density(alpha=.5)
+    if(type=='histogram') d <- d + geom_histogram(alpha=.5)
+    if(type=='freqpoly')  d <- d + geom_freqpoly(alpha=.5)
   }
 
   return( list(d=d, s=s) )
