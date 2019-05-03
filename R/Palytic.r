@@ -1787,19 +1787,19 @@ Palytic$set("public", "plot",
                 if(length(ug)!=1) legendName <- paste(groupvar, ug[i], sep='=')
                 if(!is.null(groupvar)) wg <- tempData[[groupvar]]==ug[i]
                 if( is.null(groupvar)) wg <- rep(TRUE, nrow(tempData))
-                ICTplots  <- ICTplot(self, tempData[wg,],
+                plotICTs  <- plotICT(self, tempData[wg,],
                                      legendName = legendName,
                                      type = type,
                                      ylim = ylim)
-                dens[[i]] <- ICTplots$d
-                traj[[i]] <- ICTplots$s
-                rm(ICTplots)
+                dens[[i]] <- plotICTs$d
+                traj[[i]] <- plotICTs$s
+                rm(plotICTs)
               }
-              ICTplots <- c(dens, traj)
+              plotICTs <- c(dens, traj)
 
               suppressMessages(
               suppressWarnings(
-              gridExtra::marrangeGrob(ICTplots, nrow=length(dens),
+              gridExtra::marrangeGrob(plotICTs, nrow=length(dens),
                                       ncol=2, widths = c(2,6),
                                       top='Density and Average Trajectory with SD bars')
               ))

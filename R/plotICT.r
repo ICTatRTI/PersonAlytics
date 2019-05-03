@@ -1,7 +1,7 @@
 # the reason this isn't in the Palytic method $plot() is because it has multiple
 # calls in that method
 
-#' ICTplot - function to plot ICT data.
+#' plotICT - function to plot ICT data.
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
@@ -23,7 +23,7 @@
 # it's functionality. Used in Palytic$plot()...wait...it only takes a Palytic
 # object 'self'...maybe move this back to the method?? This is still a utility
 # function that gets multiple calls
-ICTplot <- function(self, data, legendName=NULL,
+plotICT <- function(self, data, legendName=NULL,
                     type=c('density', 'histogram', 'freqpoly'),
                     ylim=NULL)
 {
