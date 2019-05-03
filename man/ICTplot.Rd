@@ -5,7 +5,7 @@
 \title{ICTplot - function to plot ICT data.}
 \usage{
 ICTplot(self, data, legendName = NULL, type = c("density", "histogram",
-  "freqpoly"))
+  "freqpoly"), ylim = NULL)
 }
 \arguments{
 \item{out}{An \code{lme} object}

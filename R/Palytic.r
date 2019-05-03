@@ -1798,10 +1798,11 @@ Palytic$set("public", "plot",
               ICTplots <- c(dens, traj)
 
               suppressMessages(
+              suppressWarnings(
               gridExtra::marrangeGrob(ICTplots, nrow=length(dens),
                                       ncol=2, widths = c(2,6),
                                       top='Density and Average Trajectory with SD bars')
-              )
+              ))
             },
             overwrite = TRUE
             )
