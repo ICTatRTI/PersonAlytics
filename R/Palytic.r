@@ -726,10 +726,10 @@
 #' @importFrom gamlss re
 #'
 #' @export
-#' @format A \code{Palytic} generator
+#'
 #' @keywords data
 #'
-#' @usage Palytic(data, ids, dv, time)
+#' @usage Palytic$new(data, ids, dv, time)
 #'
 #' @details
 #' The fields \code{data}, \code{ids}, \code{dv}, and \code{time} are required.
@@ -934,7 +934,6 @@
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 # start of Palytic class ####
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-#TODO move active bindings to a separate function in this file like PersonAlyticsPower
 Palytic <- R6::R6Class("Palytic",
                        private = list(
                          .data        = NULL, # consider pass by reference environment
