@@ -4,9 +4,9 @@
 \name{Palytic}
 \alias{Palytic}
 \title{\code{Palytic} class generator.}
-\format{A \code{Palytic} generator}
+\format{An object of class \code{R6ClassGenerator} of length 24.}
 \usage{
-Palytic(data, ids, dv, time)
+Palytic$new(data, ids, dv, time)
 }
 \description{
 \code{Palytic} class generator.
