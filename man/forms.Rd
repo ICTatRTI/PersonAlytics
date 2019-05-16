@@ -8,7 +8,7 @@ whenever a change to any variable that can go into a formula is made}
 forms(data, PalyticObj = NULL, ids = NULL, dv = NULL, time = NULL,
   phase = NULL, ivs = NULL, interactions = NULL, time_power = NULL,
   correlation = NULL, family = NULL, fixed = NULL, random = NULL,
-  formula = NULL, method = "REML", dropTime = FALSE,
+  formula = NULL, method = "REML", dropTime = "no",
   corFromPalyticObj = TRUE)
 }
 \arguments{

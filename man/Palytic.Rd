@@ -91,7 +91,10 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
 5. If standardization is requested, standardize the data (see \code{standardize}).
 6. Sort the data on \code{ids} and \code{time}.
 7. If patients have < 2 observations, they are dropped from the data set.
-8. If phase alignment is requested, align phases (see \code{alignPhases}).}
+8. If phase alignment is
+   a. 'none', no changes are made to the time variable.
+   b. 'align', align phases (see \code{alignPhases}).
+   c. 'piecewise', add 'pwtime#' variables, which will replate time and time_power.}
 
 \item{\code{warnings}}{A list of warnings that will be populated as methods are called on a
 \code{Palytic} object.}

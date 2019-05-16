@@ -261,7 +261,13 @@
 #' report on before and after adjusting p-values. This is only used if
 #' \code{length(target_ivs)>1} and the \code{target_ivs} are all continuous.
 #'
-#' @param alignPhase Logical. The default is \code{alignPhase=TRUE}.
+#' @param alignPhase Character. The default is \code{'none'} which leaves time
+#' as is.
+#'
+#' Other options are \code{'piecewise'} which leads to a piecewise growth model
+#' and sets time to be 0 at the begining of each phase, see \code{\link{pwtime}}.
+#' The other option is \code{'align'} which aligns time at 0 between the first
+#' and second phase.
 #'
 #' Should the time variable be realigned at the phase?
 #' If \code{TRUE} (the default), the time for first observation in the second phase
@@ -385,7 +391,7 @@ PersonAlytic <- function(output          = NULL                                 
                          interactions    = NULL                                  ,
                          time_power      = 1                                     ,
                          correlation     = NULL                                  ,
-                         family          = gamlss.dist::NO()                     ,
+						             family          = gamlss.dist::NO()                     ,
                          subgroup        = NULL                                  ,
                          standardize     = list(dv=FALSE, iv=FALSE, byids=FALSE) ,
                          method          = 'REML'                                ,
@@ -402,7 +408,7 @@ PersonAlytic <- function(output          = NULL                                 
                          p.method        = "BY"                                  ,
                          alpha           = .05                                   ,
                          nbest           = NULL                                  ,
-                         alignPhase      = FALSE                                 ,
+                         alignPhase      = 'none'                                ,
                          debugforeach    = FALSE                                 ,
                          cores           = parallel::detectCores()-1             ,
                          ...)

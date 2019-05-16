@@ -7,13 +7,19 @@
 makeForms(ids = "Mare", dv = "follicles", time = "Time",
   phase = "Phase", ivs = "iv1", interactions = list(c("iv1",
   "Phase")), rint = "", correlation = "NULL", family = NO(),
-  dropTime = FALSE, method = "REML")
+  dropTime = "no", method = "REML")
 }
 \arguments{
 \item{See}{\code{\link{Palytic}}}
 }
 \description{
 makeForms - function to construct and return formulae (fixed, random, formula)
+}
+\examples{
+
+makeForms()
+
+makeForms(time = c("time", "time2", "time3"))
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}

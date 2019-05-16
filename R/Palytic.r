@@ -26,7 +26,7 @@
         {
           stop( paste(value, "is not in the data") )
         }
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = value,
                       dv           = NULL,
@@ -73,7 +73,7 @@
         {
           stop( paste(value, "is not in the data") )
         }
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = value,
@@ -118,7 +118,7 @@
         {
           stop( paste(value, "is not in the data") )
         }
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = NULL,
@@ -174,7 +174,7 @@
           }
         }
 
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = NULL,
@@ -279,7 +279,7 @@
             stop( paste(paste(nov, collapse=", "), "are not in the data") )
           }
         }
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = NULL,
@@ -321,7 +321,7 @@
         {
           stop("`time_power` must be a positive whole number")
         }
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = NULL,
@@ -391,7 +391,7 @@
         }
         # NULL is a valid `value` for correlation, so we need one more
         # parameter `corFromPalyticObj` to get it right
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = NULL,
@@ -433,7 +433,7 @@
           stop("`family`=", value, " is not in ",
                "gamlss.family, see `?gamlss.dist::gamlss.family`")
         }
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = NULL,
@@ -474,21 +474,21 @@
         {
           stop("`fixed` must be a formula, see `?formula` and `??nlme::lme`")
         }
-        frms <- forms(private$.data,
-                      PalyticObj   = self,
-                      ids          = NULL,
-                      dv           = NULL,
-                      time         = NULL,
-                      phase        = NULL,
-                      ivs          = NULL,
-                      interactions = NULL,
-                      time_power   = NULL,
-                      correlation  = NULL,
-                      family       = NULL,
-                      fixed        = value,
-                      random       = NULL,
-                      formula      = NULL,
-                      method       = NULL)
+        frms <- forms(data         = self$datac  ,
+                      PalyticObj   = self        ,
+                      ids          = NULL        ,
+                      dv           = NULL        ,
+                      time         = NULL        ,
+                      phase        = NULL        ,
+                      ivs          = NULL        ,
+                      interactions = NULL        ,
+                      time_power   = NULL        ,
+                      correlation  = NULL        ,
+                      family       = NULL        ,
+                      fixed        = value       ,
+                      random       = NULL        ,
+                      formula      = NULL        ,
+                      method       = NULL        )
         private$.ids          <- frms$ids
         private$.dv           <- frms$dv
         private$.time         <- frms$time
@@ -515,7 +515,7 @@
         {
           stop("`random` must be a formula, see `?formula` and `??nlme::lme`")
         }
-        frms <- forms(private$.data,
+        frms <- forms(self$datac,
                       PalyticObj   = self,
                       ids          = NULL,
                       dv           = NULL,
@@ -557,7 +557,7 @@
           stop("`formula` must be a formula, see `?formula` and `??gamlss::gamlss`")
         }
         suppressWarnings(
-          frms <- forms(private$.data,
+          frms <- forms(self$datac,
                         PalyticObj   = NULL,
                         ids          = NULL,
                         dv           = NULL,
@@ -599,7 +599,7 @@
           stop("`method` should be `ML` or `REML`")
         }
         suppressWarnings(
-          frms <- forms(private$.data,
+          frms <- forms(self$datac,
                         PalyticObj   = self,
                         ids          = NULL,
                         dv           = NULL,
@@ -679,7 +679,13 @@
       if( missing(value) ) private$.alignPhase
       else
       {
-        private$.alignPhase <- value
+        opts <- c('piecewise', 'align', 'none')
+        if(value %in% opts )
+        {
+          private$.alignPhase <- value
+        }
+        else stop('`alignPhase` must take on one of ',
+                  paste('`', opts, '`', sep=''))
         self
       }
     },
@@ -744,44 +750,61 @@
 #' for \code{\link{lme}} models and \code{formula} for \code{\link{gamlss}} models are
 #' automatically generated when a \code{Palytic} object is created if these fields
 #' are left \code{NULL}.
+#'
 #' @field ids A character string giving the name of the id variable in \code{data}.
+#'
 #' @field dv A character string giving the name of the dependent variable in \code{data}.
+#'
 #' @field time A character string giving the name of the time variable in \code{data}.
 #' Random slopes for time are inclued by default. This can be overridden by specifying
 #' \code{fixed} and \code{random} formula for \code{\link{lme}} models or by specifying
 #' the \code{formula} for \code{\link{gamlss}} models.
+#'
 #' @field phase A character string giving the name of the phase variable in \code{data}.
 #' The \code{phase*time} interaction is included by default. This can be overridden by
 #' specifying \code{fixed} and \code{random} formula for \code{\link{lme}} models or by
 #' specifying the \code{formula} for \code{\link{gamlss}} models.
+#'
 #' @field ivs A \code{\link{list}} of one or more character strings giving the names
 #' of additional variables in \code{data}, e.g., \code{list('iv2', 'iv2')}.
+#'
 #' @field interactions List of vector pairs of variable names for which interaction
 #' terms should be specified, e.g., \code{list(c('time', 'phase'), c('time', 'iv1'),
 #' c('iv1', 'iv2'))} where \code{'iv1'} is the name of a variable in the liste \code{ivs}.
+#'
 #' @field time_power The polynomial for \code{time}, e.g., \code{time^time_power}. Fixed
 #' effects for \code{time^1...time^time_power} will be included in models. Future
 #' releases will allow for other functions of time such as \code{\link{sin}}, but these
 #' can be applied directly by transforming the \code{time} variable.
+#'
 #' @field correlation See \code{\link{corStruct}}. Defaults to \code{NULL}, see
 #' \code{\link{lme}}. Used by both \code{\link{lme}} and \code{\link{gamlss}} models.
+#'
 #' @field family The \code{\link{gamlss.family}} distribution.
+#'
 #' @field fixed The \code{fixed} effects model for \code{\link{lme}} models.
+#'
 #' @field random The \code{random} effects model for \code{\link{lme}} models.
+#'
 #' @field formula The \code{formula} effects model for \code{\link{gamlss}} models.
 #' \code{sigma.formula}, \code{nu.formula}, and \code{tau.formula} will be implemented in
 #' a future release.
+#'
 #' @field method See \code{method} in \code{\link{lme}}. Is usef for both \code{\link{lme}}
 #' and \code{\link{gamlss}} models.
+#'
 #' @field standardize Named logical list. Which variables should be standardized? The default
 #' is \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}. See \code{dv} and \code{ivs}. The option
 #' \code{byids} controls whether standardization is done by individuals or by group. Any time
 #' variables are changed (e.g., \code{ivs}), the data are subset, or the options in
 #' \code{standardize} are changed, the raw data will be restandardized (see \code{datac}).
+#'
 #' @field corStructs Vector. A \code{correlation} structure for each case in \code{ids}. Not
 #' user accesible. Populated by \code{\link{PersonAlytic}}.
+#'
 #' @field time_powers Vector. A \code{time_order} for each case in \code{ids}. Not
 #' user accesible. Populated by \code{\link{PersonAlytic}}.
+#'
 #' @field datac data.frame. Cleaned data. Cleaning involves the following steps:
 #' 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
 #' \code{ivs}, and \code{interactions} are in \code{data}.
@@ -791,11 +814,17 @@
 #' 5. If standardization is requested, standardize the data (see \code{standardize}).
 #' 6. Sort the data on \code{ids} and \code{time}.
 #' 7. If patients have < 2 observations, they are dropped from the data set.
-#' 8. If phase alignment is requested, align phases (see \code{alignPhases}).
+#' 8. If phase alignment is
+#'    a. 'none', no changes are made to the time variable.
+#'    b. 'align', align phases (see \code{alignPhases}).
+#'    c. 'piecewise', add 'pwtime#' variables, which will replate time and time_power.
+#'
 #' @field warnings A list of warnings that will be populated as methods are called on a
 #' \code{Palytic} object.
+#'
 #' @field errors A list of errors that will be populated as methods are called on a
 #' \code{Palytic} object.
+#'
 #' @field try_silent Logical flag for testing error handling in \code{Palytic} methods.
 #'
 #' @section Methods:
@@ -953,7 +982,7 @@ Palytic <- R6::R6Class("Palytic",
                          .standardize = list(dv=FALSE, iv=FALSE, byids=FALSE),
                          .corStructs  = NULL,
                          .time_powers = NULL,
-                         .alignPhase  = FALSE,
+                         .alignPhase  = NULL,
                          .ismonotone  = NULL,
                          .datac       = NULL,
                          .warnings    = list(),
@@ -991,7 +1020,7 @@ Palytic <- R6::R6Class("Palytic",
                            corStructs  = NULL                                  ,
                            time_powers = NULL                                  ,
                            ismonotone  = NULL                                  ,
-                           alignPhase  = FALSE                                 ,
+                           alignPhase  = 'none'                                ,
                            datac       = NULL                                  ,
                            warnings    = list()                                ,
                            errors      = list()                                ,
@@ -1007,7 +1036,7 @@ Palytic <- R6::R6Class("Palytic",
                            #}
 
                            # checks that get used multiple times
-                           is.min <- !(is.null(ids) | is.null(c) | is.null(time))
+                           is.min <- !(is.null(ids) | is.null(dv) | is.null(time))
                            is.lme <- !(is.null(fixed) | is.null(random))
                            is.frm <- !is.null(formula)
 
@@ -1026,6 +1055,12 @@ Palytic <- R6::R6Class("Palytic",
                                          fixed, random, formula, correlation, family,
                                          dvs=NULL, target_ivs=NULL, standardize,
                                          sortData=TRUE, alignPhase)
+
+                           # if alignPhase == 'piecewise' update time
+                           if(alignPhase == 'piecewise')
+                           {
+                             time <- names(datac)[grepl('pwtime', names(datac))]
+                           }
 
                            # create the formulae
                            frms <- forms(datac                     ,
@@ -1089,6 +1124,8 @@ Palytic$set("public", "summary",
               tempCorrelation <- ifelse(is.null(self$correlation), "NULL",
                                         self$correlation)
 
+              varsInData <- names(self$data)[names(self$data) %in% variables]
+
               # return the summary
               list(      ids          = self$ids            ,
                          dv           = self$dv             ,
@@ -1112,7 +1149,7 @@ Palytic$set("public", "summary",
                          errors       = self$errors         ,
                          try_silent   = self$try_silent     ,
                          datac        = summary(self$datac[,variables]) ,
-                         data         = summary(self$data[,variables])  )
+                         data         = summary(self$data[,varsInData])  )
             })
 
 Palytic$set("public", "describe",
@@ -1303,7 +1340,8 @@ Palytic$set("public", "lme",
                         silent = TRUE)
 
 
-              ctrl <- nlme::lmeControl()
+              ctrl <- nlme::lmeControl() # used later if not overwritten
+
               if( "try-error" %in% class(m1) )# | !eds(m1) )
               {
                 wm <- 2
@@ -1335,12 +1373,29 @@ Palytic$set("public", "lme",
               {
                 wm <- 4
                 newformula <- forms(data       = self$datac ,
-                                    PalyticObj = self      ,
-                                    dropTime   = TRUE      )
-                self$random <- newformula$random
+                                    PalyticObj = self       ,
+                                    dropTime   = "time"     )
+                self$random <- newformula$random # dummy, this re-updates!!!!
                 self$correlation <- NULL
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
+                                    data=tempData,
+                                    random=newformula$random,
+                                    correlation=self$correlation,
+                                    method=self$method,
+                                    control=ctrl),
+                          silent = TRUE)
+              }
+              # if the model is piecewise, try taking out the time X phase
+              if( "try-error" %in% class(m1) )
+              {
+                wm <- 5
+                newformula <- forms(data = self$datac,
+                                    PalyticObj = self,
+                                    dropTime = "int" )
+                self$fixed <- newformula$fixed # dummy, this re-updates!!!!
+                ctrl <- nlme::lmeControl(opt="optim")
+                m1 <- try(nlme::lme(fixed=newformula$fixed,
                                     data=tempData,
                                     random=self$random,
                                     correlation=self$correlation,
@@ -1516,13 +1571,13 @@ Palytic$set("public", "gamlss",
                 wm <- 3 # drop the random slope(s)
                 newformula <- forms(data = self$datac ,
                                     PalyticObj = self ,
-                                    dropTime = TRUE ,
+                                    dropTime = "time" ,
                                     family = currentFamily)
-                self$formula <- newformula$formula
+                self$formula <- newformula$formula # dummy, these re-update
                 self$family  <- newformula$family
                 self$fixed   <- newformula$fixed
                 ctrl <- gamlss::gamlss.control(n.cyc=100)
-                m1 <- try(refit(gamlss::gamlss(formula = self$formula,
+                m1 <- try(refit(gamlss::gamlss(formula = newformula$formula, # this works but fails saving
                                                data = tempData,
                                                family = currentFamily,
                                                control = ctrl)),

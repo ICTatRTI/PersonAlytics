@@ -18,7 +18,7 @@ t1 <- PersonAlytic(data=OvaryICT,
                    detectAR = FALSE,
                    detectTO = FALSE,
                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
-                   alignPhase = FALSE)
+                   alignPhase = 'none')
 summary(t1)
 
 # Verify the PersonAlytic results to a direct call to lme
@@ -51,7 +51,7 @@ t3 <- PersonAlytic(data=OvaryICT,
                    detectAR = FALSE,
                    detectTO = FALSE,
                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
-                   alignPhase = TRUE)
+                   alignPhase = 'align')
 summary(t3)
 
 # definition of OvaryICT

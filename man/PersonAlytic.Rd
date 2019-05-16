@@ -13,7 +13,7 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3),
   whichIC = c("BIC", "AIC"), detectTO = TRUE, maxOrder = 3,
   charSub = NULL, sigma.formula = ~1, p.method = "BY",
-  alpha = 0.05, nbest = NULL, alignPhase = FALSE,
+  alpha = 0.05, nbest = NULL, alignPhase = "none",
   debugforeach = FALSE, cores = parallel::detectCores() - 1, ...)
 }
 \arguments{
@@ -238,7 +238,13 @@ adjusting p-values.}
 report on before and after adjusting p-values. This is only used if
 \code{length(target_ivs)>1} and the \code{target_ivs} are all continuous.}
 
-\item{alignPhase}{Logical. The default is \code{alignPhase=TRUE}.
+\item{alignPhase}{Character. The default is \code{'none'} which leaves time
+as is.
+
+Other options are \code{'piecewise'} which leads to a piecewise growth model
+and sets time to be 0 at the begining of each phase, see \code{\link{pwtime}}.
+The other option is \code{'align'} which aligns time at 0 between the first
+and second phase.
 
 Should the time variable be realigned at the phase?
 If \code{TRUE} (the default), the time for first observation in the second phase

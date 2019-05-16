@@ -146,7 +146,7 @@ forms <- function(data                     ,
                   random       = NULL      ,
                   formula      = NULL      ,
                   method       = "REML"    ,
-                  dropTime     = FALSE     ,
+                  dropTime     = "no"      ,
                   corFromPalyticObj = TRUE )
 {
   # since NULL is a valid option for correlation, we must override it using
@@ -155,12 +155,19 @@ forms <- function(data                     ,
   # a placeholder for (r)andom (int)ercepts designations
   rint <- ""
 
+  # check whether piecewise model has been requested
+  piecewise <- any(grepl('pwtime', names(data)))
+
   if(!is.null(PalyticObj))
   {
     # unpack PalyticObj
     if(is.null(ids         )) ids          <- PalyticObj$ids
     if(is.null(dv          )) dv           <- PalyticObj$dv
-    if(is.null(time        )) time         <- PalyticObj$time[[1]]
+    if(is.null(time        ))
+    {
+      if(!piecewise) time <- PalyticObj$time[[1]]
+      if( piecewise) time <- PalyticObj$time
+    }
     if(is.null(phase       )) phase        <- PalyticObj$phase
     if(is.null(ivs         )) ivs          <- PalyticObj$ivs
     if(is.null(interactions)) interactions <- PalyticObj$interactions
@@ -182,7 +189,7 @@ forms <- function(data                     ,
       time     <- unlist( strsplit(random.t[2], '\\+') )
       rint     <- time[1]
       time     <- time[2]
-      if(rint=="1") dropTime <- TRUE
+      if(rint=="1") dropTime <- "time"
       if(is.na(time)) time <- PalyticObj$time
       ids      <- random.t[3]
     }
@@ -209,7 +216,7 @@ forms <- function(data                     ,
     {
       time <- c(time, paste("I(", time, "^", 2:time_power, ")", sep=''))
     }
-    if(time_power == 1) time <- time[[1]]
+    if(time_power == 1 & !piecewise) time <- time[[1]]
   }
 
   theForms <- makeForms(ids          = ids         ,
@@ -294,6 +301,11 @@ remove_terms <- function(form, term) {
 #'
 #' @keywords internal
 #'
+#' @examples
+#'
+#' makeForms()
+#'
+#' makeForms(time = c("time", "time2", "time3"))
 makeForms <- function(ids          = "Mare"                   ,
                       dv           = "follicles"              ,
                       time         = "Time"                   ,
@@ -303,7 +315,7 @@ makeForms <- function(ids          = "Mare"                   ,
                       rint         = ""                       ,
                       correlation  = "NULL"                   ,
                       family       = NO()                     ,
-                      dropTime     = FALSE                    ,
+                      dropTime     = "no"                     ,
                       method       = "REML"                   )
 {
   # construct or update the formula objects
@@ -315,32 +327,42 @@ makeForms <- function(ids          = "Mare"                   ,
   }
   if( !is.null(phase) )
   {
-    rhs <- paste( paste(time, phase, sep='*'), collapse = '+')
+    if(dropTime != "int")
+    {
+      rhs <- paste( paste(time, phase, sep='*'), collapse = '+')
+    }
+    if(dropTime == "int")
+    {
+      rhs <- paste( c(time, phase), collapse = '+')
+    }
   }
   fixed  <- formula( paste(dv, "~", rhs ) )
 
   # random
-  if(!dropTime)
+  if(dropTime == "no" | dropTime == "int")
   {
     if(rint != "") temptime <- c(rint,time)
     if(rint == "") temptime <- time
     random   <- formula( paste("~", paste(temptime, collapse = '+'), "|", ids) )
   }
-  if( dropTime)
+  if(dropTime == "time")
   {
     random <- formula( paste("~", paste(1, collapse = '+'), "|", ids) )
   }
 
+
   # formula
-  formula <- formula( paste(paste(deparse(fixed), collapse=''),
+  if(is.null(correlation)) correlation <- "NULL"
+  cfixed  <- paste(deparse(fixed), collapse='')#; print(cfixed)
+  crandom <- paste(deparse(random), collapse='')#; print(crandom)
+  cmethod <- deparse(method)#; print(cmethod)
+  formula <- formula( paste(cfixed,
                             "+ re(random = ",
-                            #"+ gamlss::re(random = ", # error, use `@importFrom gamlss re`
-                            paste(deparse(random), collapse=''),
+                            crandom,
                             ", method=",
-                            deparse(method),
-                            ", correlation =",
-                            ifelse(is.null(correlation), "NULL", correlation),
-                            ")")
+                            cmethod,
+                            ", correlation =", correlation, ")"
+                            )
                       )
 
   if(!is.null(ivs) & length(ivs) > 0)
@@ -380,6 +402,7 @@ makeForms <- function(ids          = "Mare"                   ,
 #' @keywords internal
 #'
 #' @examples
+#'
 #' formula1 <- formula(y~x+z+a*b+re(random=time + I(time^2)|id,
 #'             correlation=corARMA(p=1,q=1), method="ML") + k + l)
 #'
@@ -669,3 +692,86 @@ mmode <- function(x)
   u <- unique(x)
   u[which.max(table(match(x, u)))]
 }
+
+
+
+#' pwtime - function to make piecewise time variables for a multiphase study
+#'
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#'
+#' @export
+#'
+#' @param time Numeric vector. A sequence of study times. If any times are
+#' negative (e.g., if time is center at 0 between the first and second
+#' phase) it is rescale to have a minimum of 0 so that the first obesravation
+#' within each phase has time=0.
+#'
+#' @param phase Numeric or character vector of the same length as time. The
+#' phases within which time is rescale to creat the time variables needed for
+#' a piecewise growth model.
+#'
+#' @examples
+#'
+#' pwtime(-49:50, sort(rep(letters[1:5], length.out = 100)))
+#'
+#' # time should not be scaled in [0,1] or similar, rescale to integer
+#' OvaryICT2 <- OvaryICT
+#' OvaryICT2$Time <- round(OvaryICT2$Time*30)
+#'
+#' p1 <- Palytic$new(data = OvaryICT2, ids='Mare', dv='follicles',
+#'                   time='Time', phase='Phase', alignPhase = 'none')
+#'
+#' p2 <- Palytic$new(data = OvaryICT2, ids='Mare', dv='follicles',
+#'                   time='Time', phase='Phase', alignPhase = 'piecewise')
+#'
+#' summary(p1$lme())
+#' summary(p2$lme())
+
+
+pwtime <- function(time, phase)
+{
+  # if the time variable is not integer, stop
+  if( !all(round(time)==time) )
+  {
+    stop('`time` should be integer valued.')
+  }
+
+  # unique phases
+  up <- unique(phase)
+
+  # 0 has a special meaning in the piecewise growth model, i.e., the
+  # beginning of each piece, so rescale time to min 0
+  # scale
+  time <- time - min(time)
+
+  # loop
+  Time <- list()
+  for( i in seq_along(up) )
+  {
+    ttime <- time
+    wlt <- phase < up[i]
+    wgt <- phase > up[i]
+
+    ttime[wlt] <- min(time)
+    ttime[wgt] <- max(ttime * as.numeric(!wgt))
+
+    # rescale all phases that are not baseline
+    if( i != up[1] )
+    {
+      ttime[ttime!=0] <- ttime[ttime!=0] - min(ttime[ttime!=0]) + 1
+    }
+
+
+    Time[[i]] <- ttime
+  }
+  Time <- data.frame( do.call(cbind, Time) )
+  names(Time) <- paste('pwtime', up, sep='')
+
+  return(Time)
+}
+
+
+
+
+
+

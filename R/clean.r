@@ -30,22 +30,22 @@
 #'
 #' @keywords internal
 
-clean <- function(data		 	            ,
-                  ids		 	              ,
-                  dv		 	              ,
-                  time		 	            ,
-                  phase	        =	NULL	,
-                  ivs	          =	NULL	,
-                  fixed       	=	NULL	,
-                  random      	=	NULL	,
-                  formula	      =	NULL	,
-                  correlation 	=	NULL	,
-                  family        = NULL  ,
-                  dvs	          =	NULL	,
-                  target_ivs    =	NULL	,
+clean <- function(data		 	                                            ,
+                  ids		 	                                              ,
+                  dv		 	                                              ,
+                  time		 	                                            ,
+                  phase	        =	NULL	                                ,
+                  ivs	          =	NULL	                                ,
+                  fixed       	=	NULL	                                ,
+                  random      	=	NULL	                                ,
+                  formula	      =	NULL	                                ,
+                  correlation 	=	NULL	                                ,
+                  family        = NULL                                  ,
+                  dvs	          =	NULL	                                ,
+                  target_ivs    =	NULL	                                ,
                   standardize 	=	list(dv=FALSE, iv=FALSE, byids=FALSE)	,
-                  sortData	    =	TRUE	,
-                  alignPhase 	  =	TRUE  )
+                  sortData	    =	TRUE	                                ,
+                  alignPhase 	  =	"none"                                )
 {
   # check that variables are in the data set
   vars <- unique( c(ids, dv, time[[1]], phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
@@ -123,9 +123,16 @@ clean <- function(data		 	            ,
   }
 
   # align the data
-  if(alignPhase & !is.null(phase))
+  if(!is.null(phase))
   {
-    data <- alignPhases(dat = data, id = ids, phase = phase, time = time)
+    if(alignPhase == 'align') data <- alignPhases(dat = data, id = ids,
+                                                 phase = phase, time = time)
+    if(alignPhase == 'piecewise')
+    {
+      data <- data.frame(data, pwtime(time = data[[time[1]]],
+                                      phase = data[[phase]])
+      )
+    }
   }
 
   return(data)

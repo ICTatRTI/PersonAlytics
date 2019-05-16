@@ -7,7 +7,7 @@
 clean(data, ids, dv, time, phase = NULL, ivs = NULL, fixed = NULL,
   random = NULL, formula = NULL, correlation = NULL, family = NULL,
   dvs = NULL, target_ivs = NULL, standardize = list(dv = FALSE, iv =
-  FALSE, byids = FALSE), sortData = TRUE, alignPhase = TRUE)
+  FALSE, byids = FALSE), sortData = TRUE, alignPhase = "none")
 }
 \arguments{
 \item{data}{See \code{\link{PersonAlytic}}.}

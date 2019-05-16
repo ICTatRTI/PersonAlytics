@@ -13,6 +13,7 @@ decompFormula(formula = NULL)
 decompFormula - function to deconstruct a return formula
 }
 \examples{
+
 formula1 <- formula(y~x+z+a*b+re(random=time + I(time^2)|id,
             correlation=corARMA(p=1,q=1), method="ML") + k + l)
 
