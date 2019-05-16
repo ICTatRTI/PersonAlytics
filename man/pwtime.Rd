@@ -33,27 +33,8 @@ p1 <- Palytic$new(data = OvaryICT2, ids='Mare', dv='follicles',
 p2 <- Palytic$new(data = OvaryICT2, ids='Mare', dv='follicles',
                   time='Time', phase='Phase', alignPhase = 'piecewise')
 
-t1 <- PersonAlytic(data=OvaryICT2                                      ,
-                   ids="Mare"                                          ,
-                   dvs="follicles"                                     ,
-                   phase="Phase"                                       ,
-                   time="Time"                                         ,
-                   package="nlme"                                      ,
-                   detectAR = FALSE                                    ,
-                   detectTO = FALSE                                    ,
-                   standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
-                   alignPhase = 'none'                                 )
-
-t2 <- PersonAlytic(data=OvaryICT2                                      ,
-                   ids="Mare"                                          ,
-                   dvs="follicles"                                     ,
-                   phase="Phase"                                       ,
-                   time="Time"                                         ,
-                   package="nlme"                                      ,
-                   detectAR = FALSE                                    ,
-                   detectTO = FALSE                                    ,
-                   standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
-                   alignPhase = 'piecewise'                            )
+summary(p1$lme())
+summary(p2$lme())
 }
 \author{
 Stephen Tueller \email{Stueller@rti.org}
