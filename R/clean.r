@@ -251,7 +251,8 @@ pstand <- function(data, standardize, dv, ivs, family, ids)
 }
 
 
-#' align the data at the transition between the first and second phase
+#' align the time variable to be zero at the transition between 
+#' the first and second phase
 #'
 #' @param data See \code{\link{PersonAlytic}}.
 #' @param id See \code{\link{PersonAlytic}}.
@@ -261,7 +262,7 @@ pstand <- function(data, standardize, dv, ivs, family, ids)
 #'
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
-#' @keywords internal
+#' @export
 
 alignPhases <- function(dat, id, phase, time, do.plot=FALSE)
 {

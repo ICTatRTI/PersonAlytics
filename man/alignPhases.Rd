@@ -2,7 +2,8 @@
 % Please edit documentation in R/clean.r
 \name{alignPhases}
 \alias{alignPhases}
-\title{align the data at the transition between the first and second phase}
+\title{align the time variable to be zero at the transition between 
+the first and second phase}
 \usage{
 alignPhases(dat, id, phase, time, do.plot = FALSE)
 }
@@ -18,9 +19,9 @@ alignPhases(dat, id, phase, time, do.plot = FALSE)
 \item{data}{See \code{\link{PersonAlytic}}.}
 }
 \description{
-align the data at the transition between the first and second phase
+align the time variable to be zero at the transition between 
+the first and second phase
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}
 }
-\keyword{internal}

@@ -1,3 +1,45 @@
+#' FPC function to get the finite population corrected standard errors and
+#' update the tTable of an lme object
+#'
+#' @export
+#'
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#'
+#' @param object An \code{\link{lme}} object from \code{\link{nlme}}, or a merMod
+#' object from \code{\link{lmer}}.
+#'
+#' @param popsize2 The finite population size at level two, i.e., persons when
+#' there are repeated measures at level 1.
+#'
+FPC <- function(object, popsize2)
+{
+  if(! class(object) %in% c('lme', 'merMod'))
+  {
+    stop('`object` must be an lme or merMod object.')
+  }
+
+  if(inherits(object, "lme"))
+  {
+    tTable <- data.frame( summary(object)$tTable )
+  }
+
+  if(inherits(object, "merMod"))
+  {
+    tTable <- data.frame( coef(summary(object)) )
+    names(tTable) <- c('Value', 'Std.Error', 't-value')
+    # the table doesn't have DF, wee need those before we can get tests
+    stop('FPC is not fully implemented for lem4/merMod objects.')
+  }
+
+  # use the approach of `summary.lme` for t- and p-values
+  tTable$Std.Error <- sqrt(diag(vcovFPC(object, popsize2 = popsize2)))
+  tTable$t.value   <- tTable$Value/tTable$Std.Error
+  tTable$p.value   <- 2 * pt(-abs(tTable$t.value), tTable$DF)
+
+  # return the FPC tTable
+  return(tTable)
+}
+
 #' @name vcovFPC
 #' @aliases vcovFPC.meMod
 #' @aliases vcovFPC.lme
@@ -37,6 +79,7 @@
 #' library(nlme)
 #' library(lme4)
 #'
+#' # illustrate equivalence in lme and merMod results with a simple ICT model
 #' mod.lme <- lme(follicles ~ Time*Phase, data = OvaryICT, random = ~ Time | Mare,
 #'                method = 'ML')
 #' mod.merMod <- lmer(follicles ~ Time*Phase + (Time | Mare), data = OvaryICT,
@@ -45,8 +88,8 @@
 #' tTable.lme <- data.frame( summary(mod.lme)$tTable[,1:2] )
 #' tTable.merMod <- data.frame( coef(summary(mod.merMod))[,1:2] )
 #'
-#' fpc.lme <- vcovFPC(mod.merMod, popsize2 = 100)
-#' fpc.merMod <- vcovFPC(mod.lme, popsize2 = 100)
+#' fpc.lme <- vcovFPC(mod.lme, popsize2 = 100)
+#' fpc.merMod <- vcovFPC(mod.merMod, popsize2 = 100)
 #'
 #' tTable.lme$FPC.Std.Error <- sqrt(diag(fpc.lme))
 #' tTable.merMod$FPC.Std.Error <- sqrt(diag(fpc.merMod))
@@ -54,6 +97,18 @@
 #' tTable.lme
 #' tTable.merMod
 #'
+#' # now show how the standard errors change whith an autocorrelation structure
+#' mod.lmema2 <- lme(follicles ~ Time*Phase, data = OvaryICT, random = ~ Time | Mare,
+#'                method = 'ML', correlation = corARMA(q=2))
+#' tTable.lmema2 <- data.frame( summary(mod.lmema2)$tTable[,1:2])
+#' fpc.lmema2 <- vcovFPC(mod.lmema2, popsize2 = 100)
+#' tTable.lmema2$FPC.Std.Error <- sqrt(diag(fpc.lmema2))
+#'
+#' # including a good fitting autocorrelation structure reduces the standard
+#' # errors relative to an unstructured correlation, and the FPC further
+#' # reduces the standard errors (thought the correlation structure has a
+#' # much bigger impact than the FPC)
+#' tTable.lmema2
 #'
 
 vcovFPC <- function(object, ...)

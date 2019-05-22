@@ -655,6 +655,22 @@
       }
     },
 
+    alignPhase = function(value)
+    {
+      if( missing(value) ) private$.alignPhase
+      else
+      {
+        opts <- c('piecewise', 'align', 'none')
+        if(value %in% opts )
+        {
+          private$.alignPhase <- value
+        }
+        else stop('`alignPhase` must take on one of ',
+                  paste('`', opts, '`', sep=''))
+        self
+      }
+    },
+
     time_powers = function(value)
     {
       if( missing(value) ) private$.time_powers
@@ -671,22 +687,6 @@
       else
       {
         stop("`monotone` is read only", call. = FALSE)
-      }
-    },
-
-    alignPhase = function(value)
-    {
-      if( missing(value) ) private$.alignPhase
-      else
-      {
-        opts <- c('piecewise', 'align', 'none')
-        if(value %in% opts )
-        {
-          private$.alignPhase <- value
-        }
-        else stop('`alignPhase` must take on one of ',
-                  paste('`', opts, '`', sep=''))
-        self
       }
     },
 
@@ -805,6 +805,14 @@
 #' @field time_powers Vector. A \code{time_order} for each case in \code{ids}. Not
 #' user accesible. Populated by \code{\link{PersonAlytic}}.
 #'
+#' @field alignPhase Character. Options include
+#'    a. 'none', no changes are made to the time or phase variable.
+#'    b. 'align', align the time variable to be zero at the transition between
+#'       the first and second phase (see \code{\link{alignPhases}}).
+#'    c. 'piecewise', add 'pwtime#' variables, which will replace time and
+#'       time_power to create a piecwise linear growth curve model, and where `#`
+#'       is the number of phases (i.e., one linear growth curve model per phase).
+#'
 #' @field datac data.frame. Cleaned data. Cleaning involves the following steps:
 #' 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
 #' \code{ivs}, and \code{interactions} are in \code{data}.
@@ -814,10 +822,7 @@
 #' 5. If standardization is requested, standardize the data (see \code{standardize}).
 #' 6. Sort the data on \code{ids} and \code{time}.
 #' 7. If patients have < 2 observations, they are dropped from the data set.
-#' 8. If phase alignment is
-#'    a. 'none', no changes are made to the time variable.
-#'    b. 'align', align phases (see \code{alignPhases}).
-#'    c. 'piecewise', add 'pwtime#' variables, which will replate time and time_power.
+#' 8. Phase alignment (if any, see \code{alignPhase}).
 #'
 #' @field warnings A list of warnings that will be populated as methods are called on a
 #' \code{Palytic} object.
@@ -989,11 +994,6 @@ Palytic <- R6::R6Class("Palytic",
                          .errors      = list(),
                          .try_silent  = TRUE
                        ),
-
-
-                       #active = .active(), # depricate until we can find work around, low priority
-                       # this may be achievable by adding a utility package that lodas first
-                       # and using @importFrom in the preamble
                        active = .active(),
 
                        #########################################################
@@ -1322,11 +1322,30 @@ Palytic$set("public", "arma",
 # > if("contrasts" %in% names(args)) # then pass `contrasts` to lme
 # or some other method of matching arguments, see ?match.arg
 Palytic$set("public", "lme",
-            function(subgroup=NULL, dropVars=NULL, PQ=c(3,3), ...)
+            function(subgroup=NULL, dropVars=NULL, PQ=c(3,3),
+                     fpc=FALSE, popsize2,...)
             {
 			        if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
                                  all.vars(self$formula)))
+              # check fpc inputs
+              if(fpc)
+              {
+                if( !exists("popsize2") )
+                {
+                  stop('\nA finite population was requested but no level-2',
+                       '\nfinite population size `popsize2` was provided.')
+                }
+                n <- length(table(tempData[[self$ids]]))
+                if( ! popsize2 > n )
+                {
+
+                  stop('\nA finite population was requested but the finite',
+                       '\npopulation size `popsize2`=', popsize2, ' , which is',
+                       '\nsmaller than the total sample size n=', n)
+                }
+              }
+
               # github issue #1
               cor <- eval(parse(text = ifelse(!is.null(self$correlation),
                                               self$correlation,
@@ -1459,7 +1478,9 @@ Palytic$set("public", "lme",
               # return
               if( "lme" %in% class(m1) )
               {
-                m1$PalyticSummary  <- self$summary()
+                if( fpc ) m1$FPCtTable <- FPC(m1, popsize2=popsize2)
+                m1$tTable <- summary(m1)$tTable # easier for simulation studies
+                m1$PalyticSummary <- self$summary()
                 m1$whichPalyticMod <- paste('Palytic lme model #', wm)
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
                 return(m1)
@@ -1703,7 +1724,8 @@ Palytic$set("public", "GroupAR_order",
                       "correlation structure took: ",
                       capture.output(Sys.time() - start), ".\n\n")
             },
-            overwrite = TRUE)
+            overwrite = TRUE
+)
 
 
 #' ARpq - helper function for $GroupAR_order

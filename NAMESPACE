@@ -2,9 +2,11 @@
 
 S3method(vcovFPC,lme)
 S3method(vcovFPC,merMod)
+export(FPC)
 export(ICC)
 export(Palytic)
 export(PersonAlytic)
+export(alignPhases)
 export(clean_curelator)
 export(getLambdat)
 export(getZt)

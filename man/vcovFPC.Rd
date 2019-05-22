@@ -43,6 +43,7 @@ fixed effects estimates for a fitted multilevel model
 library(nlme)
 library(lme4)
 
+# illustrate equivalence in lme and merMod results with a simple ICT model
 mod.lme <- lme(follicles ~ Time*Phase, data = OvaryICT, random = ~ Time | Mare,
                method = 'ML')
 mod.merMod <- lmer(follicles ~ Time*Phase + (Time | Mare), data = OvaryICT,
@@ -51,8 +52,8 @@ mod.merMod <- lmer(follicles ~ Time*Phase + (Time | Mare), data = OvaryICT,
 tTable.lme <- data.frame( summary(mod.lme)$tTable[,1:2] )
 tTable.merMod <- data.frame( coef(summary(mod.merMod))[,1:2] )
 
-fpc.lme <- vcovFPC(mod.merMod, popsize2 = 100)
-fpc.merMod <- vcovFPC(mod.lme, popsize2 = 100)
+fpc.lme <- vcovFPC(mod.lme, popsize2 = 100)
+fpc.merMod <- vcovFPC(mod.merMod, popsize2 = 100)
 
 tTable.lme$FPC.Std.Error <- sqrt(diag(fpc.lme))
 tTable.merMod$FPC.Std.Error <- sqrt(diag(fpc.merMod))
@@ -60,6 +61,18 @@ tTable.merMod$FPC.Std.Error <- sqrt(diag(fpc.merMod))
 tTable.lme
 tTable.merMod
 
+# now show how the standard errors change whith an autocorrelation structure
+mod.lmema2 <- lme(follicles ~ Time*Phase, data = OvaryICT, random = ~ Time | Mare,
+               method = 'ML', correlation = corARMA(q=2))
+tTable.lmema2 <- data.frame( summary(mod.lmema2)$tTable[,1:2])
+fpc.lmema2 <- vcovFPC(mod.lmema2, popsize2 = 100)
+tTable.lmema2$FPC.Std.Error <- sqrt(diag(fpc.lmema2))
+
+# including a good fitting autocorrelation structure reduces the standard
+# errors relative to an unstructured correlation, and the FPC further
+# reduces the standard errors (thought the correlation structure has a
+# much bigger impact than the FPC)
+tTable.lmema2
 
 }
 \references{

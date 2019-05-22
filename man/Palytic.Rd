@@ -82,6 +82,14 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
 \item{\code{time_powers}}{Vector. A \code{time_order} for each case in \code{ids}. Not
 user accesible. Populated by \code{\link{PersonAlytic}}.}
 
+\item{\code{alignPhase}}{Character. Options include
+a. 'none', no changes are made to the time or phase variable.
+b. 'align', align the time variable to be zero at the transition between
+   the first and second phase (see \code{\link{alignPhases}}).
+c. 'piecewise', add 'pwtime#' variables, which will replace time and
+   time_power to create a piecwise linear growth curve model, and where `#`
+   is the number of phases (i.e., one linear growth curve model per phase).}
+
 \item{\code{datac}}{data.frame. Cleaned data. Cleaning involves the following steps:
 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
 \code{ivs}, and \code{interactions} are in \code{data}.
@@ -91,10 +99,7 @@ user accesible. Populated by \code{\link{PersonAlytic}}.}
 5. If standardization is requested, standardize the data (see \code{standardize}).
 6. Sort the data on \code{ids} and \code{time}.
 7. If patients have < 2 observations, they are dropped from the data set.
-8. If phase alignment is
-   a. 'none', no changes are made to the time variable.
-   b. 'align', align phases (see \code{alignPhases}).
-   c. 'piecewise', add 'pwtime#' variables, which will replate time and time_power.}
+8. Phase alignment (if any, see \code{alignPhase}).}
 
 \item{\code{warnings}}{A list of warnings that will be populated as methods are called on a
 \code{Palytic} object.}
