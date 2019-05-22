@@ -41,97 +41,26 @@ fixed effects estimates for a fitted multilevel model
 \examples{
 
 library(nlme)
-library(gamlss)
 library(lme4)
 
-# nlme Ovary data
+mod.lme <- lme(follicles ~ Time*Phase, data = OvaryICT, random = ~ Time | Mare,
+               method = 'ML')
+mod.merMod <- lmer(follicles ~ Time*Phase + (Time | Mare), data = OvaryICT,
+                   REML = FALSE)
 
-mod.lme <- lme(follicles ~ Time, data = Ovary, random = ~ Time | Mare,
-             method = 'ML')
+tTable.lme <- data.frame( summary(mod.lme)$tTable[,1:2] )
+tTable.merMod <- data.frame( coef(summary(mod.merMod))[,1:2] )
 
-mod.merMod <- lmer(follicles ~ Time + (Time | Mare), data = Ovary,
-                REML = FALSE)
+fpc.lme <- vcovFPC(mod.merMod, popsize2 = 100)
+fpc.merMod <- vcovFPC(mod.lme, popsize2 = 100)
 
-popsize2 <- seq(100,1000,by=100)
+tTable.lme$FPC.Std.Error <- sqrt(diag(fpc.lme))
+tTable.merMod$FPC.Std.Error <- sqrt(diag(fpc.merMod))
 
-fpc.se.merMod <- fpc.se.lme <- list()
-for(i in seq_along(popsize2))
-{
-  fpc.se.merMod[[i]] <- sqrt(diag(vcovFPC(mod.merMod, popsize2 = popsize2[i])))
-  fpc.se.lme[[i]] <- sqrt(diag(vcovFPC(mod.lme, popsize2 = popsize2[[i]])))
-}
+tTable.lme
+tTable.merMod
 
-all.equal(
-do.call(rbind, fpc.se.merMod),
-do.call(rbind, fpc.se.lme),
-tolerance = 9e-06
-)
 
-\dontrun{
-
-# use getLambdat to create Lambdat and show equivalence to lme4 (within rounding)
-Lambdat <- getLambdat(mod.lme)
-all.equal(Lambdat, getME(mod.merMod, "Lambdat"), tolerance = 9e-06)
-
-# use getZt to create Zt and show equivalence to lme4
-Zt <- getZt(mod.lme)
-all.equal(unname(Zt), unname(getME(mod.merMod, "Zt")))
-
-}
-
-# nlme rat BodyWeight example
-
-mod.lme <- lme(weight ~ Time, data = BodyWeight, random = ~ Time | Rat,
-             method = 'ML')
-
-mod.merMod <- lmer(weight ~ Time + (Time | Rat), data = BodyWeight,
-                REML = FALSE)
-
-fpc.se.merMod <- fpc.se.lme <- list()
-for(i in seq_along(popsize2))
-{
-  fpc.se.merMod[[i]] <- sqrt(diag(vcovFPC(mod.merMod, popsize2 = popsize2[i])))
-  fpc.se.lme[[i]] <- sqrt(diag(vcovFPC(mod.lme, popsize2 = popsize2[[i]])))
-}
-
-all.equal(
-do.call(rbind, fpc.se.merMod),
-do.call(rbind, fpc.se.lme),
-tolerance = 9e-06
-)
-
-\dontrun{
-
-# use getLambdat to create Lambdat and show equivalence to lme4 (within rounding)
-Lambdat <- getLambdat(mod.lme)
-all.equal(Lambdat, getME(mod.merMod, "Lambdat"), tolerance = 9e-06)
-
-# use getZt to create Zt and show equivalence to lme4
-Zt <- getZt(mod.lme)
-all.equal(unname(Zt), unname(getME(mod.merMod, "Zt")))
-
-}
-
-\dontrun{
-
-# some background tests
-
-# random effects covariance matrices
-getVarCov(mod.lme) # this is the same as VarCorr
-VarCorr(mod.lme)
-
-vcov(mod.merMod) # this is fixed effects, not the same matrix as VarCorr
-VarCorr(mod.merMod)
-
-# not implemented for gamlss
-
-mod.gamlss <- gamlss(follicles ~ Time + re(random = ~ Time | Mare,
-                method = 'ML'), sigma.fo = ~ 0,
-                data = Ovary, )
-mod.gamlss <- gamlss(weight ~ Time + re(random = ~ Time | Rat,
-                method = 'ML'), sigma.fo = ~ 0,
-                data = BodyWeight, )
-}
 }
 \references{
 https://psycnet.apa.org/doiLanding?doi=10.1037%2Fmet0000137
