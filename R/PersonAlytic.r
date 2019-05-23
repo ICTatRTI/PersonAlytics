@@ -297,6 +297,9 @@
 #' @param ... Not currently used.
 #'
 #' @examples
+#'
+#' \dontrun{
+#'
 #' # full sample model
 #' t0 <- PersonAlytic(output  = 'Test0'     ,
 #'                    data    = OvaryICT    ,
@@ -352,7 +355,7 @@
 #' #                 family=c(NO(), BEINF()),
 #' #                 package='gamlss')
 #'
-#' \dontrun{
+#'
 #' # individual models with target variables
 #' t3 <- PersonAlytic(output          = 'TargetIVStest'       ,
 #'                    data            = OvaryICT              ,
@@ -392,13 +395,12 @@
 #'                    detectTO        = FALSE                      ,
 #'                    fpc             = 200                        )
 #'
+#' # clean up
+#' file.remove( dir(getwd(), glob2rx("*.txt")) )
+#' file.remove( dir(getwd(), glob2rx("*.csv")) )
 #'
-#' # delete the output if this was run in the development directory
-#' if(getwd()=="R:/PaCCT/09 Repository/PersonAlytics")
-#' {
-#'   file.remove( dir(getwd(), glob2rx("*.txt")) )
-#'   file.remove( dir(getwd(), glob2rx("*.csv")) )
-#' }
+#'
+
 
 # \dontrun{
 # # if you wish to delete the automatically created csv file, run

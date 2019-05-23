@@ -68,7 +68,6 @@ fpcCheck <- function(popsize2, n)
 #' @title \code{vcovFPC} Obtain finite-population-adjusted standard errors for
 #' fixed effects estimates for a fitted multilevel model
 #'
-#' @import Matrix
 #' @export
 #'
 #' @author Mark H. C. Lai \email{mark.lai@@uc.edu}, Oi-man Kwok, Yu-Yu Hsiao,
