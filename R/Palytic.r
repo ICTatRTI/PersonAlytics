@@ -1083,29 +1083,32 @@ Palytic <- R6::R6Class("Palytic",
                            ismonotone <- monotone(ids, time, datac)
 
                            # populate private
-                           private$.data        <- data
-                           private$.ids         <- ids
-                           private$.dv          <- dv
-                           private$.time        <- time
-                           private$.phase       <- phase
-                           private$.ivs         <- ivs
-                           private$.interactions<- interactions
-                           private$.time_power  <- time_power
-                           private$.correlation <- correlation
-                           private$.family      <- family
-                           private$.fixed       <- frms$fixed
-                           private$.random      <- frms$random
-                           private$.formula     <- frms$formula
-                           private$.method      <- method
-                           private$.standardize <- standardize
-                           private$.corStructs  <- corStructs
-                           private$.time_powers <- time_powers
-                           private$.ismonotone  <- ismonotone
-                           private$.alignPhase  <- alignPhase
-                           private$.datac       <- datac
-                           private$.warnings    <- warnings
-                           private$.errors      <- errors
-                           private$.try_silent  <- try_silent
+                           private$.data         <- data
+                           private$.ids          <- ids
+                           private$.dv           <- dv
+                           private$.time         <- time
+                           private$.phase        <- phase
+                           private$.ivs          <- ivs
+                           private$.interactions <- interactions
+                           private$.time_power   <- time_power
+                           private$.correlation  <- correlation
+                           private$.family       <- family
+                           private$.fixed        <- frms$fixed
+                           private$.random       <- frms$random
+                           private$.formula      <- frms$formula
+                           private$.method       <- method
+                           private$.standardize  <- standardize
+                           private$.corStructs   <- corStructs
+                           private$.time_powers  <- time_powers
+                           private$.ismonotone   <- ismonotone
+                           private$.alignPhase   <- alignPhase
+                           private$.datac        <- datac
+                           private$.warnings     <- warnings
+                           private$.errors       <- errors
+                           private$.try_silent   <- try_silent
+
+                           # cleanup
+                           rm(frms)
 
                          }
 
@@ -1329,22 +1332,8 @@ Palytic$set("public", "lme",
               tempData <- na.omit(subset(self$datac, subgroup,
                                  all.vars(self$formula)))
               # check fpc inputs
-              if(fpc)
-              {
-                if( !exists("popsize2") )
-                {
-                  stop('\nA finite population was requested but no level-2',
-                       '\nfinite population size `popsize2` was provided.')
-                }
-                n <- length(table(tempData[[self$ids]]))
-                if( ! popsize2 > n )
-                {
-
-                  stop('\nA finite population was requested but the finite',
-                       '\npopulation size `popsize2`=', popsize2, ' , which is',
-                       '\nsmaller than the total sample size n=', n)
-                }
-              }
+              n <- length(table(tempData[[self$ids]]))
+              if(fpc) fpcCheck(popsize2, n)
 
               # github issue #1
               cor <- eval(parse(text = ifelse(!is.null(self$correlation),
@@ -1478,7 +1467,7 @@ Palytic$set("public", "lme",
               # return
               if( "lme" %in% class(m1) )
               {
-                if( fpc ) m1$FPCtTable <- FPC(m1, popsize2=popsize2)
+                if( fpc ) m1$FPCtTable <- as.matrix(FPC(object=m1, popsize2=popsize2))
                 m1$tTable <- summary(m1)$tTable # easier for simulation studies
                 m1$PalyticSummary <- self$summary()
                 m1$whichPalyticMod <- paste('Palytic lme model #', wm)

@@ -4,7 +4,7 @@
 \alias{getParameters}
 \title{getParameters: extract parameter table, the `Model` variable is too big}
 \usage{
-getParameters(Model, package, target_iv, data)
+getParameters(Model, package, target_iv, data, fpc)
 }
 \arguments{
 \item{Model}{Statistical model output from \code{\link{Palytic}} methods

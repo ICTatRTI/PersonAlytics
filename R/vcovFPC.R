@@ -40,6 +40,27 @@ FPC <- function(object, popsize2)
   return(tTable)
 }
 
+#' fpcCheck
+#'
+#' @keywords internal
+#'
+#' @author Stephen Tueller \email{stueller@@rti.org}
+fpcCheck <- function(popsize2, n)
+{
+  if( !exists("popsize2") )
+  {
+    stop('\nA finite population was requested but no level-2',
+         '\nfinite population size `popsize2` was provided.')
+  }
+  if( ! popsize2 > n )
+  {
+
+    stop('\nA finite population was requested but the finite',
+         '\npopulation size `popsize2`=', popsize2, ' , which is',
+         '\nsmaller than the total sample size n=', n)
+  }
+}
+
 #' @name vcovFPC
 #' @aliases vcovFPC.meMod
 #' @aliases vcovFPC.lme
@@ -154,11 +175,11 @@ vcovFPC.merMod <- function(object, popsize2 = NULL,
   A <- PR$Lambdat %*% PR$Zt # equivalent to: A <- getME(object, "A")
   Astar <- A * sqrt(fpc2)
   X <- PR$X
-  Astar_X <- Astar %*% X
+  Astar_X <- as.matrix( Astar %*% X )
   D <- Matrix::Diagonal(nrow(Astar), fpc1) + tcrossprod(Astar)
   Fisher_I <- (crossprod(X) - crossprod(solve(t(chol(D)), Astar_X))) / fpc1
-  Phi <- solve(Fisher_I) * sigma(object)^2 # TODO: this used to be 2^, is my correction correct?
-    Phi <- as(Phi, "dpoMatrix")
+  Phi <- solve(Fisher_I) * sigma(object)^2
+  #Phi <- as(Phi, "dpoMatrix")
   nmsX <- colnames(X)
   dimnames(Phi) <- list(nmsX, nmsX)
   if (!KR) {
@@ -210,13 +231,13 @@ vcovFPC.lme <- function(object, popsize2 = NULL,
     return(vcov(object))
   }
   A <- getLambdat(object) %*% getZt(object)
-  Astar <- A * sqrt(fpc2)
+  Astar <- as.matrix( A * sqrt(fpc2) )
   X <- model.matrix(object, data = object$data)
   Astar_X <- Astar %*% X
-  D <- Matrix::Diagonal(nrow(Astar), fpc1) + tcrossprod(Astar)
+  D <- Matrix::Diagonal(nrow(Astar), fpc1) + tcrossprod( Astar )
   Fisher_I <- (crossprod(X) - crossprod(solve(t(chol(D)), Astar_X))) / fpc1
   Phi <- solve(Fisher_I) * sigma(object)^2
-    Phi <- as(Phi, "dpoMatrix")
+  #Phi <- as(Phi, "dpoMatrix")
   nmsX <- colnames(X)
   dimnames(Phi) <- list(nmsX, nmsX)
   if (!KR) {

@@ -133,7 +133,9 @@
 #' applied to all outcomes.
 #' The \code{family} parameter is ignored if \code{package="nlme"}.
 #'
-#' @param subgroup Logical vector. The default is \code{subgroup=NULL}.
+#' @param subgroup Logical vector. The default is \code{subgroup=NULL} wich
+#' results in a logical vector of the same length as the number of rows in
+#' \code{data} with all values equal to \code{TRUE}.
 #'
 #' A vector where \code{length(subgroup)==nrow(data)} indicating
 #' which subset of the data should be used for analysis. For example, if a model
@@ -280,6 +282,12 @@
 #' alignment only happens at the first phase transition. If there are three or
 #' more phases, the later phase will not be aligned.
 #'
+#' @param fpc Numeric. The default is 0. If the value of fpc is greater than
+#' the number of individuals in the data set, fpc is taken as the size of the
+#' finite population from which the data were sampled, and a finite population
+#' correction is made for the fixed effects standard errors, t-tests, and
+#' p-values.
+#'
 #' @param debugforeach Logical. The default is \code{debugforeach=FALSE}. Not
 #' implemented.
 #'
@@ -324,7 +332,15 @@
 #' message('\n\nDoes batch run match a single run?\n', all.equal( c(t(mare1$tTable[2:5,])),
 #' unname(unlist(t1[t1$Mare==1,41:56]))) )
 #'
-#'
+#' # full sample model with a finite population correction (FPC)
+#' t0fpc <- PersonAlytic(output  = 'Test0'  ,
+#'                    data    = OvaryICT    ,
+#'                    ids     = "Mare"      ,
+#'                    dvs     = "follicles" ,
+#'                    phase   = "Phase"     ,
+#'                    time    = "Time"      ,
+#'                    package = "nlme"      ,
+#'                    fpc     = 100         )
 #'
 #' # gamlss with two distributions - features not implemented
 #' #OvaryICT$follicles01 <- to01(OvaryICT$follicles)
@@ -352,7 +368,7 @@
 #' t3 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
 #'                    data            = OvaryICT                   ,
 #'                    ids             = "Mare"                     ,
-#'                    dvs             = names(OvaryICT)[c(1,9:11)] ,
+#'                    dvs             = names(OvaryICT)[c(3,9:11)] ,
 #'                    phase           = "Phase"                    ,
 #'                    time            = "Time"                     ,
 #'                    package         = "lme"                      ,
@@ -362,8 +378,23 @@
 #'                    detectTO        = FALSE                      )
 #' }
 #'
+#' # repeat t3 with finite population correction
+#' t4 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
+#'                    data            = OvaryICT                   ,
+#'                    ids             = "Mare"                     ,
+#'                    dvs             = names(OvaryICT)[c(3,9:11)] ,
+#'                    phase           = "Phase"                    ,
+#'                    time            = "Time"                     ,
+#'                    package         = "lme"                      ,
+#'                    individual_mods = FALSE                      ,
+#'                    target_ivs      = NULL                       ,
+#'                    detectAR        = FALSE                      ,
+#'                    detectTO        = FALSE                      ,
+#'                    fpc             = 200                        )
+#'
+#'
 #' # delete the output if this was run in the development directory
-#' if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
+#' if(getwd()=="R:/PaCCT/09 Repository/PersonAlytics")
 #' {
 #'   file.remove( dir(getwd(), glob2rx("*.txt")) )
 #'   file.remove( dir(getwd(), glob2rx("*.csv")) )
@@ -409,7 +440,8 @@ PersonAlytic <- function(output          = NULL                                 
                          alpha           = .05                                   ,
                          nbest           = NULL                                  ,
                          alignPhase      = 'none'                                ,
-                         debugforeach    = FALSE                                 ,
+                         fpc             = 0                                     ,
+						             debugforeach    = FALSE                                 ,
                          cores           = parallel::detectCores()-1             ,
                          ...)
 {
@@ -428,15 +460,17 @@ PersonAlytic <- function(output          = NULL                                 
   {
     stop('`subgroup` must be a logical vector with TRUE/FALSE values.')
   }
+  if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(data))
 
   # override user defaults if there is a data/package/individual_mods mismatch
-  if( length(unique(data[[ids]][subgroup])) == 1 & package != "arma" )
+  n <- length(unique(data[[ids]][subgroup]))
+  if( n == 1 & package != "arma" )
   {
     message('\nThere is only one participant,', '
             automatically switching to `package="arma"`.\n')
     package <- 'arma'
   }
-  if( length(unique(data[[ids]][subgroup])) > 1 & package == 'arma'  &
+  if( n > 1 & package == 'arma'  &
       individual_mods != TRUE)
   {
     message('There is more than one participant, using `package="nlme"`.',
@@ -481,6 +515,20 @@ PersonAlytic <- function(output          = NULL                                 
     individual_mods <- FALSE
   }
 
+  # finite population correction (fpc) settings
+  if( fpc > n ) fpcCheck(fpc, n)
+  if( is.numeric(fpc) & fpc > n )
+  {
+    popsize2 <- fpc
+    fpc <- TRUE
+  }
+  else
+  {
+    popsize2 <- NULL
+    fpc <- FALSE
+  }
+
+
   #cat(package, file=paste(format(Sys.time(),"%Y-%m-%d-%H-%M-%S"), 'txt', sep='.'))
 
   # call 'methods'
@@ -493,14 +541,15 @@ PersonAlytic <- function(output          = NULL                                 
     pout <- paHTP()
   }
 
-  return(pout)
-
   while( sink.number() > 0 ) sink()
+
+  return(pout)
 }
 
 #TODO(Stephen): individual_mods = FALSE is yielding different results than
 #if running via htp (which can be forced), see the example in
-#R:\PaCCT\02 Clients\curelator\Analyses\20181004\20181004 Curelator Analyses PersonAlytics_v0.1.2.2.r
+#R:\PaCCT\02 Clients\curelator\Analyses\20181004\20181004 Curelator Analyses
+#PersonAlytics_v0.1.2.2.r
 #' pa1
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #' @keywords internal
@@ -568,8 +617,9 @@ pa1 <- function(e=parent.frame())
 
   # fit the models
   if(e$package=="gamlss") Grp.out <- t1$gamlss(e$subgroup)
-  if(e$package=="nlme")   Grp.out <- t1$lme(e$subgroup)
-  if(e$package=="arma")   Grp.out <- t1$arma(e$subgroup)
+  if(e$package=="nlme")   Grp.out <- t1$lme(e$subgroup, fpc=e$fpc,
+                                            popsize2=e$popsize2)
+  if(e$package=="arma")   Grp.out <- t1$arma(e$subgroup )
 
   sink(file=e$output)
   print( Grp.out )
@@ -674,6 +724,8 @@ paHTP <- function(e=parent.frame())
                  correlation   = e$correlation   ,
                  family        = e$family        ,
                  standardize   = e$standardize   ,
+                 fpc           = e$fpc           ,
+                 popsize2      = e$popsize2      ,
                  package       = e$package       ,
                  detectAR      = e$detectAR      ,
                  PQ            = e$PQ            ,
@@ -703,6 +755,8 @@ paHTP <- function(e=parent.frame())
                  correlation   = e$correlation   ,
                  family        = e$family        ,
                  standardize   = e$standardize   ,
+                 fpc           = e$fpc           ,
+                 popsize2      = e$popsize2      ,
                  package       = e$package       ,
                  detectAR      = e$detectAR      ,
                  PQ            = e$PQ            ,

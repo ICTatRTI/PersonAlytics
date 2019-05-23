@@ -19,6 +19,8 @@ htp <- function(data                                                ,
                 correlation=NULL                                    ,
                 family = gamlss.dist::NO()                          ,
                 standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
+                fpc = FALSE                                         ,
+                popsize2 = 0                                        ,
                 package='gamlss'                                    ,
                 detectAR = TRUE                                     ,
                 PQ = c(3, 3)                                        ,
@@ -56,6 +58,9 @@ htp <- function(data                                                ,
   ##############################################################################
   exports <- c("forms")
 
+  # parralelization options could be implemented as methods for a generic,
+  # would that be faster? probably not, and since the user con't touch them,
+  # the generic doesn't help anyone
   ##############################################################################
   # parralelization option 1: iterate over dvs only
   ##############################################################################
@@ -79,6 +84,8 @@ htp <- function(data                                                ,
     IDout <- foreach( dv=seq_along(dvs), .packages = pkgs,
                       .options.snow = opts) %dopar%
     {
+      # pre-clean loop
+      if(exists("t0")) rm(t0)
       # set up the  palytic object
       t0 <- Palytic$new(data=data,
                         ids=ids,
@@ -93,10 +100,12 @@ htp <- function(data                                                ,
                         family=family,
                         method="ML" # requested method used in final estimation
       )
+      # TODO make this an update method that doesn't need to write back to a
+      # named object
       t0 <- autoDetect(t0, userFormula, dims, detectTO, detectAR,
                        maxOrder, whichIC, PQ, doForeach=FALSE)
-        .htp(t0, id=1, iv=1, dv, dvs, ivs,
-                          dims, package, target_ivs, PQ, family)
+      .htp(t0, id=1, iv=1, dv, dvs, ivs,
+           dims, package, target_ivs, PQ, family, fpc, popsize2)
     }# end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
@@ -114,10 +123,22 @@ htp <- function(data                                                ,
 
     # parameter estimates
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
-    IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
+    IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum) )
     IDoutSumm <- plyr::rbind.fill(IDoutSum)
 
-    DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
+    # fpc
+    if(fpc & package == "nlme")
+    {
+      IDoutSumFPC <- lapply( IDout, function(x) data.frame(x$IDoutSumFPC) )
+      IFoutSummFPC <- plyr::rbind.fill(IDoutSumFPC)
+    }
+
+    if(!fpc) DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
+    if(fpc & package == "nlme")
+    {
+      DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm,
+                         IDoutSummFPC=IFoutSummFPC)
+    }
 
     message('\n\nModel fitting took:\n ', capture.output(Sys.time() - start), ".\n\n")
 
@@ -170,7 +191,7 @@ htp <- function(data                                                ,
         #i=1; id<-DIM$ID[i]; iv<-DIM$IV[i]
         t1 <- t0$clone(deep=TRUE)
         .htp(t1, id, iv, dv, dvs, ivs,
-             dims, package, target_ivs, PQ, family)
+             dims, package, target_ivs, PQ, family, fpc, popsize2)
 
       } # end of foreach
       # stop the cluster
@@ -195,8 +216,22 @@ htp <- function(data                                                ,
     IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
     IDoutSumm <- plyr::rbind.fill(IDoutSum)
 
+    # fpc
+    if(fpc & package == "nlme")
+    {
+      IDoutSumFPC <- lapply( IDout, function(x) data.frame(x$IDoutSumFPC) )
+      IFoutSummFPC <- plyr::rbind.fill(IDoutSumFPC)
+    }
+
     # put outputs in a list, to be aggregated outside of the dv loop
-    DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
+    if(!fpc) DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc,
+                                        IDoutSumm=IDoutSumm)
+    if(fpc & package == "nlme")
+    {
+      DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc,
+                                 IDoutSumm=IDoutSumm,
+                                 IDoutSummFPC=IFoutSummFPC)
+    }
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
 
@@ -207,8 +242,16 @@ htp <- function(data                                                ,
   IDdesc    <- plyr::rbind.fill( lapply(DVout, function(x) x$IDdesc) )
   IDoutSumm <- plyr::rbind.fill( lapply(DVout, function(x) x$IDoutSumm) )
 
-  outmat <- cbind(IDmsg, IDdesc, IDoutSumm)
+  if(fpc & package == "nlme")
+  {
+    IDoutSummFPC <- plyr::rbind.fill( lapply(DVout, function(x) x$IDoutSummFPC) )
+    names(IDoutSummFPC) <- paste(names(IDoutSummFPC), 'FPC', sep='.')
+    outmat <- cbind(IDmsg, IDdesc, IDoutSumm, IDoutSummFPC)
+  }
+  if(!fpc) outmat <- cbind(IDmsg, IDdesc, IDoutSumm)
+
   row.names(outmat) <- NULL
+
   return( outmat )
 }
 
@@ -287,7 +330,7 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
 #' .htp
 #' @keywords internal
 .htp <- function(t1, id, iv, dv, dvs, ivs, dims,
-            package, target_ivs, PQ, family)
+            package, target_ivs, PQ, family, fpc, popsize2)
 {
   #-------------------------------------------------------------------------
   # initialize the model as NA
@@ -352,7 +395,8 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
 
     #TODO(Stephen): override correlation search for ARMA?
     fitOutput <- fitWithTargetIV(t1, package, useObs, dims,
-                                 dropVars=target_ivs[[iv]], PQ)
+                                 dropVars=target_ivs[[iv]], PQ,
+                                 fpc=fpc, popsize2=popsize2)
     err_id <- c(err_id, fitOutput$err_id)
     modid  <- fitOutput$modid
     rm(fitOutput)
@@ -381,11 +425,12 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
   #-------------------------------------------------------------------------
   if( length( target_ivs[[iv]] ) == 0 | !tivv )
   {
-    mod1   <- fitWithTargetIV(t1, package, useObs, dims, PQ=PQ)
+    mod1   <- fitWithTargetIV(t1, package, useObs, dims,
+                              dropVars=NULL, PQ=PQ,
+                              fpc=fpc, popsize2=popsize2)
     modid  <- mod1$modid
     err_id <- c(err_id, mod1$err_id)
     rm(mod1)
-    #gc() - !!!! gc() closes connections, don't use it in foreachloops !!!
   }
 
   #-------------------------------------------------------------------------
@@ -421,7 +466,8 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
     t1$method <- "REML"
     t1$family <- family #TODO(Stephen): prior line drops family, why??
     if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
-    if("lme"    %in% class(modid)) Model <- t1$lme( useObs )
+    if("lme"    %in% class(modid)) Model <- t1$lme( useObs,
+                                      fpc=fpc, popsize2 = popsize2)
     if( any(c("gamlss", "lme") %in% class(Model)) )
     {
       err_id$method <- err_id$estimator <- "REML"
@@ -452,7 +498,13 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
   #-------------------------------------------------------------------------
   # reduce the size of Model
   #-------------------------------------------------------------------------
-  IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac)
+  IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac,
+                            fpc=FALSE)
+  if(fpc & package == "nlme")
+  {
+    IDoutSumFPC <- getParameters(Model, package, target_ivs[[iv]], t1$datac,
+                                fpc=fpc)
+  }
   rm(Model)
 
   #-------------------------------------------------------------------------
@@ -460,7 +512,15 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
   #-------------------------------------------------------------------------
   # this line stays commented  out except for testing
   #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)
-  return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
+  if( !fpc | package != "nlme" )
+  {
+    return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
+  }
+  if(fpc & package == "nlme")
+  {
+    return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id,
+                  IDoutSumFPC=IDoutSumFPC) )
+  }
 }
 
 #' getParameters: extract parameter table, the `Model` variable is too big
@@ -472,7 +532,7 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
 #' @param data A data.frame, for now only pass t1$datac in \code{\link{htp}}
 #'
 #' @keywords internal
-getParameters <- function(Model, package, target_iv, data)
+getParameters <- function(Model, package, target_iv, data, fpc)
 {
   IDoutSum <- data.frame(NA)
   if(!all(is.na(Model)))
@@ -486,14 +546,24 @@ getParameters <- function(Model, package, target_iv, data)
                          target_iv, data)
       }
     }
-    if(package=='nlme')    {
 
-	  if(! "lme" %in% class(Model)) IDoutSum <- NA
+    if(package=='nlme')
+    {
+	    if(! "lme" %in% class(Model)) IDoutSum <- NA
       if(  "lme" %in% class(Model))
       {
-        IDoutSum <- rcm(summary(Model)$tTable, target_iv, data)
+        if(!fpc)
+        {
+          IDoutSum <- rcm(summary(Model)$tTable, target_iv, data)
+        }
+
+        if(fpc)
+        {
+          IDoutSum <- rcm(Model$FPCtTable, target_iv, data)
+        }
       }
     }
+
     if(package=="arma")
     {
       if(! "coeftest"  %in%  class(Model$tTable)) IDoutSum <- NA
@@ -503,6 +573,7 @@ getParameters <- function(Model, package, target_iv, data)
       }
     }
   }
+
   return(IDoutSum)
 }
 
@@ -558,8 +629,8 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['target_iv']    <- toString( target_iv )
   err_id['interactions'] <- toString( t1$interactions )
   err_id['time_power']   <- t1$time_power # updated later
-  err_id['correlation']  <- ifelse(package=="arma", "See 'call' column'",
-                                   t1$correlation)
+  if(package=="arma") err_id['correlation']  <- "See 'call' column'"
+  if(package!="arma") err_id['correlation']  <- t1$correlation
   err_id['family']       <- t1$family[[1]][2]
   err_id['standardize']  <- paste(paste(names(t1$standardize),
                                         t1$standardize, sep='='), collapse=', ')
@@ -765,12 +836,14 @@ isNullOrForm <- function(x)
 #TODO(Stephen): add ... to these functions to pass to Palytic methods
 #' fit models with the target iv & calculate LRT
 #' @keywords internal
-fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3))
+fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3),
+                            fpc, popsize2)
 {
   # fit model with targe iv
   if(package=="nlme")
   {
-    modid <- fitWithTargetIVlme(t1, useObs, dims, dropVars, PQ)
+    modid <- fitWithTargetIVlme(t1, useObs, dims, dropVars, PQ,
+                                fpc, popsize2)
   }
   if(package=="arma")
   {
@@ -789,10 +862,11 @@ fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3))
 
 #' fitWithTargetIVlme
 #' @keywords internal
-fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ)
+fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ, fpc, popsize2)
 {
   err_id <- list()
-  modid  <- t1$lme( useObs, dropVars, PQ )
+  modid  <- t1$lme( useObs, dropVars, PQ,
+                    fpc=fpc, popsize2 = popsize2 )
   if(! "lme"  %in%  class(modid) )
   {
     err_id['converge']   <- modid

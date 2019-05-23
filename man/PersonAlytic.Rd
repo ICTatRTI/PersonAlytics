@@ -13,7 +13,7 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   PalyticObj = NULL, detectAR = TRUE, PQ = c(3, 3),
   whichIC = c("BIC", "AIC"), detectTO = TRUE, maxOrder = 3,
   charSub = NULL, sigma.formula = ~1, p.method = "BY",
-  alpha = 0.05, nbest = NULL, alignPhase = "none",
+  alpha = 0.05, nbest = NULL, alignPhase = "none", fpc = 0,
   debugforeach = FALSE, cores = parallel::detectCores() - 1, ...)
 }
 \arguments{
@@ -110,7 +110,9 @@ A list of the same length as \code{length(dv)} can be supplied. For example if
 applied to all outcomes.
 The \code{family} parameter is ignored if \code{package="nlme"}.}
 
-\item{subgroup}{Logical vector. The default is \code{subgroup=NULL}.
+\item{subgroup}{Logical vector. The default is \code{subgroup=NULL} wich
+results in a logical vector of the same length as the number of rows in
+\code{data} with all values equal to \code{TRUE}.
 
 A vector where \code{length(subgroup)==nrow(data)} indicating
 which subset of the data should be used for analysis. For example, if a model
@@ -257,6 +259,12 @@ graphing. This approach does not generalize to three or more phases, and
 alignment only happens at the first phase transition. If there are three or
 more phases, the later phase will not be aligned.}
 
+\item{fpc}{Numeric. The default is 0. If the value of fpc is greater than
+the number of individuals in the data set, fpc is taken as the size of the
+finite population from which the data were sampled, and a finite population
+correction is made for the fixed effects standard errors, t-tests, and
+p-values.}
+
 \item{debugforeach}{Logical. The default is \code{debugforeach=FALSE}. Not
 implemented.}
 
@@ -335,7 +343,15 @@ mare1 <- PersonAlytic(output   = 'Mare1'          ,
 message('\\n\\nDoes batch run match a single run?\\n', all.equal( c(t(mare1$tTable[2:5,])),
 unname(unlist(t1[t1$Mare==1,41:56]))) )
 
-
+# full sample model with a finite population correction (FPC)
+t0fpc <- PersonAlytic(output  = 'Test0'  ,
+                   data    = OvaryICT    ,
+                   ids     = "Mare"      ,
+                   dvs     = "follicles" ,
+                   phase   = "Phase"     ,
+                   time    = "Time"      ,
+                   package = "nlme"      ,
+                   fpc     = 100         )
 
 # gamlss with two distributions - features not implemented
 #OvaryICT$follicles01 <- to01(OvaryICT$follicles)
@@ -363,7 +379,7 @@ t3 <- PersonAlytic(output          = 'TargetIVStest'       ,
 t3 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
                    data            = OvaryICT                   ,
                    ids             = "Mare"                     ,
-                   dvs             = names(OvaryICT)[c(1,9:11)] ,
+                   dvs             = names(OvaryICT)[c(3,9:11)] ,
                    phase           = "Phase"                    ,
                    time            = "Time"                     ,
                    package         = "lme"                      ,
@@ -373,8 +389,23 @@ t3 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
                    detectTO        = FALSE                      )
 }
 
+# repeat t3 with finite population correction
+t4 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
+                   data            = OvaryICT                   ,
+                   ids             = "Mare"                     ,
+                   dvs             = names(OvaryICT)[c(3,9:11)] ,
+                   phase           = "Phase"                    ,
+                   time            = "Time"                     ,
+                   package         = "lme"                      ,
+                   individual_mods = FALSE                      ,
+                   target_ivs      = NULL                       ,
+                   detectAR        = FALSE                      ,
+                   detectTO        = FALSE                      ,
+                   fpc             = 200                        )
+
+
 # delete the output if this was run in the development directory
-if(getwd()=="R:/PaCCT/Repository/PersonAlytics")
+if(getwd()=="R:/PaCCT/09 Repository/PersonAlytics")
 {
   file.remove( dir(getwd(), glob2rx("*.txt")) )
   file.remove( dir(getwd(), glob2rx("*.csv")) )

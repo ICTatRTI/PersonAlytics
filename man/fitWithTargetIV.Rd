@@ -5,7 +5,7 @@
 \title{fit models with the target iv & calculate LRT}
 \usage{
 fitWithTargetIV(t1, package, useObs, dims, dropVars = NULL, PQ = c(3,
-  3))
+  3), fpc, popsize2)
 }
 \description{
 fit models with the target iv & calculate LRT
