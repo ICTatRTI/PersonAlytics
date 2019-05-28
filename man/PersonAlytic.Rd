@@ -308,6 +308,9 @@ within each person if individual models are being fit to the data). Correction
 options are given in \code{\link{p.adjust}}.
 }
 \examples{
+
+\dontrun{
+
 # full sample model
 t0 <- PersonAlytic(output  = 'Test0'     ,
                    data    = OvaryICT    ,
@@ -363,7 +366,7 @@ t0fpc <- PersonAlytic(output  = 'Test0'  ,
 #                 family=c(NO(), BEINF()),
 #                 package='gamlss')
 
-\dontrun{
+
 # individual models with target variables
 t3 <- PersonAlytic(output          = 'TargetIVStest'       ,
                    data            = OvaryICT              ,
@@ -403,11 +406,9 @@ t4 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
                    detectTO        = FALSE                      ,
                    fpc             = 200                        )
 
+# clean up
+file.remove( dir(getwd(), glob2rx("*.txt")) )
+file.remove( dir(getwd(), glob2rx("*.csv")) )
 
-# delete the output if this was run in the development directory
-if(getwd()=="R:/PaCCT/09 Repository/PersonAlytics")
-{
-  file.remove( dir(getwd(), glob2rx("*.txt")) )
-  file.remove( dir(getwd(), glob2rx("*.csv")) )
-}
+
 }

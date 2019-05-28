@@ -176,6 +176,9 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
 }
 
 \examples{
+
+\dontrun{
+
 # construct a new Payltic object and examine the default formulae#'
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                   time='Time', phase='Phase')
@@ -235,15 +238,16 @@ t1$time_powers
 
 # automatically select the ARMA model for residual correlation getAR_order
 # this runs slow because a model is selected for each individual
-\dontrun{
 t1$GroupAR_order()
 t1$corStructs
-}
+
 
 # construct a new Payltic object with no phase variable
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                   time='Time', phase=NULL)
 t1$plot()
+
+}
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}
