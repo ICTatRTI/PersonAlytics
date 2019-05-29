@@ -736,6 +736,13 @@ pwtime <- function(time, phase)
     stop('`time` should be integer valued.')
   }
 
+  # if phase is not numeric, convert to numeric
+  phaseNames <- levels(phase) # not needed yet, may need to recoved labels
+  if( !is.numeric(phase) )
+  {
+    phase <- as.numeric(phase)
+  }
+
   # unique phases
   up <- unique(phase)
 

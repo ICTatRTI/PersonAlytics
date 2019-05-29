@@ -463,6 +463,8 @@ PersonAlytic <- function(output          = NULL                                 
                          cores           = parallel::detectCores()-1             ,
                          ...)
 {
+  #message('alignPhase=',alignPhase)
+
   if(length(whichIC)>1) whichIC <- whichIC[1]
   if(is.null(correlation)) correlation <- "NULL"
 

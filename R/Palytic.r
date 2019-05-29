@@ -1051,6 +1051,14 @@ Palytic <- R6::R6Class("Palytic",
                            #  read
                            #}
 
+                           if(alignPhase == 'piecewise' &
+                              length(table(data$phase)) <= 1)
+                           {
+                             message("\nThere are 0 or 1 phases, changing",
+                                     "\nalignPhase to 'none'.")
+                             alignPhase <- 'none'
+                           }
+
                            # checks that get used multiple times
                            is.min <- !(is.null(ids) | is.null(dv) | is.null(time))
                            is.lme <- !(is.null(fixed) | is.null(random))

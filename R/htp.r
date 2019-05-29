@@ -40,7 +40,7 @@ htp <- function(data                                                ,
   ##############################################################################
   # log files - create a log directory and overwrite all logs
   ##############################################################################
-  dir.create('PAlogs')
+  if(!file.exists('PAlogs')) dir.create('PAlogs')
   cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=FALSE)
   cat( 'Start $lme.log\n\n', file = "./PAlogs/$lme.log", append=FALSE)
 
@@ -99,19 +99,20 @@ htp <- function(data                                                ,
       # pre-clean loop
       if(exists("t0")) rm(t0)
       # set up the  palytic object
-      t0 <- Palytic$new(data=data,
-                        ids=ids,
-                        dv=dvs[[dv]],
-                        time=time,
-                        phase=phase,
-                        ivs=ivs,
-                        interactions=interactions,
-                        standardize=standardize,
-                        time_power=time_power,
-                        alignPhase=alignPhase,
-                        correlation=correlation,
-                        family=family,
-                        method="ML" # requested method used in final estimation
+      t0 <- Palytic$new(data=data                 ,
+                        ids=ids                   ,
+                        dv=dvs[[dv]]              ,
+                        time=time                 ,
+                        phase=phase               ,
+                        ivs=ivs                   ,
+                        interactions=interactions ,
+                        standardize=standardize   ,
+                        time_power=time_power     ,
+                        alignPhase=alignPhase     ,
+                        correlation=correlation   ,
+                        family=family             ,
+                        method="ML"
+
       )
       # TODO make this an update method that doesn't need to write back to a
       # named object
