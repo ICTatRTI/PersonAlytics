@@ -687,6 +687,12 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
       ivvs <- unique( c(ivvs[!wsplit],
                         unlist( strsplit(unlist(ivvs[wsplit]), "\\*") ) ) )
     }
+    wsplit <- unlist(lapply(ivvs, grepl, pattern="\\+"))
+    if( any(wsplit) )
+    {
+      ivvs <- unique( c(ivvs[!wsplit],
+                        unlist( strsplit(unlist(ivvs[wsplit]), "\\+") ) ) )
+    }
     ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
     ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
                            function(x) !all(duplicated(x)[-1L])) )

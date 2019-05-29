@@ -344,7 +344,7 @@ mare1 <- PersonAlytic(output   = 'Mare1'          ,
                       subgroup = OvaryICT$Mare==1
                       )
 message('\\n\\nDoes batch run match a single run?\\n', all.equal( c(t(mare1$tTable[2:5,])),
-unname(unlist(t1[t1$Mare==1,41:56]))) )
+unname(unlist(t1[t1$Mare==1,42:57]))) )
 
 # full sample model with a finite population correction (FPC)
 t0fpc <- PersonAlytic(output  = 'Test0'  ,
