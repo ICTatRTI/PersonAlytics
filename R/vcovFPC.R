@@ -172,9 +172,9 @@ vcovFPC.merMod <- function(object, popsize2 = NULL,
     return(vcov(object))
   }
   A <- PR$Lambdat %*% PR$Zt # equivalent to: A <- getME(object, "A")
-  Astar <- A * sqrt(fpc2)
+  Astar <- as.matrix( A * sqrt(fpc2) )
   X <- PR$X
-  Astar_X <- as.matrix( Astar %*% X )
+  Astar_X <- Astar %*% X
   D <- Matrix::Diagonal(nrow(Astar), fpc1) + tcrossprod(Astar)
   Fisher_I <- (crossprod(X) - crossprod(solve(t(chol(D)), Astar_X))) / fpc1
   Phi <- solve(Fisher_I) * sigma(object)^2
