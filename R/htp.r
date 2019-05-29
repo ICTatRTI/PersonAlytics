@@ -55,6 +55,17 @@ htp <- function(data                                                ,
   }
 
   ##############################################################################
+  # detectTO not implemented for alignPhase == "piecewise"
+  ##############################################################################
+  if(alignPhase == "piecewise" & detectTO == TRUE)
+  {
+    detectTO <- FALSE
+    message("\n`alignPhase=='piecewise'` and `detectTO` has been set to FALSE",
+            "\nbecause automatic decection of the time order is not implemented",
+            "within phases.")
+  }
+
+  ##############################################################################
   # functions to export
   ##############################################################################
   exports <- c("forms")
