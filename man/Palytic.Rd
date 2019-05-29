@@ -247,6 +247,18 @@ t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                   time='Time', phase=NULL)
 t1$plot()
 
+# picewise example
+OvaryICT$TimeP <- round(30*OvaryICT$Time)
+t1 <- Palytic$new(data = OvaryICT, ids = 'Mare',
+                  dv = 'follicles', time = 'TimeP', phase = 'Phase',
+                  alignPhase = 'piecewise')
+t1$time
+t1$lme()
+
+# piecewise with finite population correction for a population of N=200
+t1$lme()$tTable
+t1$lme(fpc = TRUE, popsize2 = 200)$FPCtTable
+
 }
 }
 \author{

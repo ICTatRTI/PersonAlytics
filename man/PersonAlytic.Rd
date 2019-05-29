@@ -379,7 +379,7 @@ t3 <- PersonAlytic(output          = 'TargetIVStest'       ,
                    target_ivs      = names(OvaryICT)[6:11] )
 
 # multiple DVs with no target_ivs and group models
-t3 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
+t4 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
                    data            = OvaryICT                   ,
                    ids             = "Mare"                     ,
                    dvs             = names(OvaryICT)[c(3,9:11)] ,
@@ -390,10 +390,10 @@ t3 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
                    target_ivs      = NULL                       ,
                    detectAR        = FALSE                      ,
                    detectTO        = FALSE                      )
-}
 
-# repeat t3 with finite population correction
-t4 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
+
+# repeat t4 with finite population correction
+t5 <- PersonAlytic(output          = 'MultiDVnoIDnoIVFPC'       ,
                    data            = OvaryICT                   ,
                    ids             = "Mare"                     ,
                    dvs             = names(OvaryICT)[c(3,9:11)] ,
@@ -406,9 +406,25 @@ t4 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
                    detectTO        = FALSE                      ,
                    fpc             = 200                        )
 
+# repeat t5 with piecewise model
+OvaryICT$TimeP <- round(30*OvaryICT$Time)
+t6 <- PersonAlytic(output          = 'PiecewiseExample'         ,
+                   data            = OvaryICT                   ,
+                   ids             = "Mare"                     ,
+                   dvs             = names(OvaryICT)[c(3,9:11)] ,
+                   phase           = "Phase"                    ,
+                   time            = "TimeP"                    ,
+                   package         = "lme"                      ,
+                   individual_mods = FALSE                      ,
+                   target_ivs      = NULL                       ,
+                   detectAR        = FALSE                      ,
+                   detectTO        = FALSE                      ,
+                   fpc             = 200                        ,
+                   alignPhase      = "piecewise"                )
+
 # clean up
 file.remove( dir(getwd(), glob2rx("*.txt")) )
 file.remove( dir(getwd(), glob2rx("*.csv")) )
 
-
+}
 }
