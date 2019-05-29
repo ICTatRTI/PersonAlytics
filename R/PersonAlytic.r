@@ -672,7 +672,7 @@ paHTP <- function(e=parent.frame())
   # Set standardize to FALSE here, standardization will be done later if
   # requested by the user (this avoids standardizing standardized variables,
   # which may differ under different subsets, e.g., individual_models = TRUE).
-  e$data <- PersonAlytics:::clean(
+  e$data <- clean(
     data        = e$data                                ,
     ids         = e$ids                                 ,
     dv          = NULL                                  ,
@@ -687,7 +687,7 @@ paHTP <- function(e=parent.frame())
     dvs         = e$dvs                                 ,
     target_ivs  = e$target_ivs                          ,
     standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
-    alignPhase  = e$alignPhase                          )
+    alignPhase  = "none"                                )
 
   # standardize target_ivs
   if(e$standardize$iv)
