@@ -936,7 +936,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
   {
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- toString( "ML" )
-    err_id['analyzed_N'] <- paste(modid$arima$nobs, 'cases were analyzed.')
+    err_id['analyzed_N'] <- paste(modid$arima$nobs, 'observations were analyzed.')
     armaOrder <- forecast::arimaorder(modid$arima)
     err_id['call'] <- paste( "arima(y=", t1$dv,
                              ", order=c(",

@@ -333,18 +333,6 @@ t1 <- PersonAlytic(output          = 'Test1'     ,
 summary(t0)
 summary(t1)
 
-# verify a single model run against batch model run in t1 (`individual_mods = TRUE`)
-mare1 <- PersonAlytic(output   = 'Mare1'          ,
-                      data     = OvaryICT         ,
-                      ids      = "Mare"           ,
-                      dvs      = "follicles"      ,
-                      phase    = "Phase"          ,
-                      time     = "Time"           ,
-                      package  = "arma"           ,
-                      subgroup = OvaryICT$Mare==1
-                      )
-message('\\n\\nDoes batch run match a single run?\\n', all.equal( c(t(mare1$tTable[2:5,])),
-unname(unlist(t1[t1$Mare==1,42:57]))) )
 
 # full sample model with a finite population correction (FPC)
 t0fpc <- PersonAlytic(output  = 'Test0'  ,
