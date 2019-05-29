@@ -1188,7 +1188,7 @@ Palytic$set("public", "describe",
 
               # subset the data
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
-              tempData <- self$data[subgroup, c(self$dv, ivall)]
+              tempData <- self$datac[subgroup, c(self$dv, ivall)]
 
               # get descriptive statistics for each variable from the raw data
               ivstats <- list()

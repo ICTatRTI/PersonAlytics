@@ -540,7 +540,7 @@ PersonAlytic <- function(output          = NULL                                 
     popsize2 <- fpc
     fpc <- TRUE
   }
-  else
+  if( !is.numeric(fpc) | fpc <= n )
   {
     popsize2 <- NULL
     fpc <- FALSE
