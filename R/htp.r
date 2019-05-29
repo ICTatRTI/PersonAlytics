@@ -108,6 +108,7 @@ htp <- function(data                                                ,
                         interactions=interactions,
                         standardize=standardize,
                         time_power=time_power,
+                        alignPhase=alignPhase,
                         correlation=correlation,
                         family=family,
                         method="ML" # requested method used in final estimation
@@ -641,6 +642,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['target_iv']    <- toString( target_iv )
   err_id['interactions'] <- toString( t1$interactions )
   err_id['time_power']   <- t1$time_power # updated later
+  err_id['alignPhase']   <- t1$alignPhase
   if(package=="arma") err_id['correlation']  <- "See 'call' column'"
   if(package!="arma") err_id['correlation']  <- t1$correlation
   err_id['family']       <- t1$family[[1]][2]
