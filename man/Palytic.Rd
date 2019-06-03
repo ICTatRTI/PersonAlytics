@@ -194,13 +194,12 @@ t1$random
 t1$formula
 t1$correlation
 
-# compare gamlss and lme output, in which the models of the default formulae are fit
+# Compare gamlss and lme output, in which the models of the default formulae
+# are fit. Note that the estimates are the same (within rounding) but that
+# the gamlss SE are much smaller. This is due to gamlss modeling the variance
+# which reduces the redisudual variance
 (t1.gamlss <- summary(t1$gamlss()))
 (t1.lme    <- summary(t1$lme()))
-
-# parameter estimates are equal within 0.01
-message('\\n\\nAre `lme` and `gamlss` results equivalent?\\n',
-all.equal(t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01) )
 
 # now change the correlation structure and compare gamlss and lme output,
 # noting that the intercepts are very different now
