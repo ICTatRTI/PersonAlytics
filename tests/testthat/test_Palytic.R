@@ -3,6 +3,8 @@ library(PersonAlytics)
 
 test_that("PalyticBasics",
 {
+  OvaryICT <- PersonAlytics::OvaryICT
+
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase')
 
@@ -27,7 +29,7 @@ test_that("PalyticBasics",
 
   # repeat 'by hand' to check that gamlss is using AR1
   formar <- t1.gamlss.ar1$PalyticSummary$formula
-  t1.gamlss.ar1s2 <- summary( gamlss(form, data = OvaryICT) )
+  t1.gamlss.ar1s2 <- summary( gamlss(form1, data = OvaryICT) )
   expect_equal(t1.gamlss.ar1s2, t1.gamlss.ar1s, tolerance = 0.01)
 
   # WIP - the lme varFuncs are not working
@@ -81,6 +83,7 @@ test_that("PalyticBasics",
 
 #Is it possible to get the same variance components and still get the AIC from gamlss? I have the sense ‘sigma.formula = ~ 0’ is not appropriate but the fact that it replicate the lme variances gives me pause. Any insight is appreciated. Thank you.
 
+if(1==2){
 test_that("PalyticICC",
 {
   ICC <- function(out)
@@ -121,4 +124,4 @@ test_that("PalyticICC",
   # no actual tests yet
 
 })
-
+}

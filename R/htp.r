@@ -651,6 +651,8 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
                                         t1$standardize, sep='='), collapse=', ')
   err_id['method']       <- t1$method
   err_id['package']      <- package
+  err_id['Personalytics']<- paste('Version', packageVersion("PersonAlytics"))
+  err_id['Date_Time']    <- format(Sys.time(), format='%Y%m%d_%H.%M%p')
 
   # check for adequate data
   nrt            <- length(unique(temp[[t1$time[1]]]))

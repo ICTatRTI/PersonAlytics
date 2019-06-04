@@ -20,7 +20,7 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
 \item{output}{Character. The default is \code{NULL}.
 
 A character string that will be used to name a file for saving
-output. If left \code{NULL}, the date and time will prefix
+output. If left \code{NULL}, the default is
 `PersonAlytic_Output`. Do not give a file extension, these will be added
 automatically. For example, if  \code{output='MyResults'}, the output file will
 be called \code{'MyResults.csv'} if high throughput options are used, or
