@@ -664,6 +664,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['dvVar'] <- paste( 'The variance of `', t1$dv, '` is ', dvVar,
                             ifelse(all(dims$ID=="All Cases"), ".",
                                    paste(' for ', t1$ids, ' = ', id, '.', sep='')),
+                            ' If unexpected, check your settings in `standardize`.',
                             sep='')
 
   # time should be monotonically increasing

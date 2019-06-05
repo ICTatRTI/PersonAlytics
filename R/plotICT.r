@@ -144,3 +144,58 @@ plotICT <- function(self, data, legendName=NULL,
 
   return( list(d=d, s=s) )
 }
+
+
+#' plotICTraw - function to plot ICT data.
+#'
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#'
+#' @param x A data set
+#'
+#' @param npg The number of observations per group to sample for plotting
+#'
+#' @param id The name of the id variable
+#'
+#' @param group The name of the grouping variable, if there is no grouping
+#' variable, set to NULL
+#'
+#' @param Time The name of the time variable
+#'
+#' @param y The name of the dependent variable
+#'
+#' @param seed The random seed for selecting \code{npg} individuals per group
+#' for sampling
+#'
+#' @export
+#' @import ggplot2
+#' @import gridExtra
+#'
+
+plotICTraw <- function(x, npg, id='id', group='group', Time='Time', y='y', seed=2)
+{
+  if(! is.data.frame(x)) x <- data.frame(x)
+  if(! any(names(x)==group) | is.null(group) ) x$group <- 'group1'
+
+  names(x)[names(x)==id]    <- 'id'
+  names(x)[names(x)==group] <- 'group'
+  names(x)[names(x)==Time]  <- 'Time'
+  names(x)[names(x)==y]     <- 'y'
+
+  uid <- data.frame( table(x$id, x$group) )
+  names(uid) <- c('id', 'group', 'Freq')
+  groups <- unique(x$group)
+  pd <- list()
+  for(g in seq_along(groups))
+  {
+    set.seed(seed + g)
+    wid <- sample(uid$id[uid$group==groups[g]], npg, replace = FALSE)
+    pd[[g]]  <- x[x$id %in% wid,]
+  }
+  pd <- do.call(rbind, pd)
+  pd$id <- factor(pd$id)
+  pd$group <- factor(pd$group)
+  g <- ggplot(pd, aes(x=Time, y=y, group=id)) + geom_line()
+  if(length(groups) > 1) g <- g + facet_wrap(.~group)
+  print(g)
+
+}
