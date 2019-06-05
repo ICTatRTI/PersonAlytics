@@ -20,7 +20,7 @@ test_that("PalyticBasics",
 
   expect_equal(
   t1.gamlss.ar1$PalyticSummary$formula,
-  t1.lme.ar1$PalyticSummary$formula)
+  t1.lme.ar1$PalyticSummary$formula$formula)
 
   # this test will fail, I don't know why we get hugely different results
   # when adding a residual correlation structure
