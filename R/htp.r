@@ -43,6 +43,7 @@ htp <- function(data                                                ,
   if(!file.exists('PAlogs')) dir.create('PAlogs')
   cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=FALSE)
   cat( 'Start $lme.log\n\n', file = "./PAlogs/$lme.log", append=FALSE)
+  cat( 'Start formula.log\n\n', file = "./PAlogs/formula.log", append=FALSE)
 
   ##############################################################################
   # determine which loop type to use, if dvLoop==TRUE, a non-parallelized
@@ -119,7 +120,7 @@ htp <- function(data                                                ,
       t0 <- autoDetect(t0, userFormula, dims, detectTO, detectAR,
                        maxOrder, whichIC, PQ, doForeach=FALSE)
       .htp(t0, id=1, iv=1, dv, dvs, ivs,
-           dims, package, target_ivs, PQ, family, fpc, popsize2)
+           dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
     }# end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
@@ -205,7 +206,7 @@ htp <- function(data                                                ,
         #i=1; id<-DIM$ID[i]; iv<-DIM$IV[i]
         t1 <- t0$clone(deep=TRUE)
         .htp(t1, id, iv, dv, dvs, ivs,
-             dims, package, target_ivs, PQ, family, fpc, popsize2)
+             dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
 
       } # end of foreach
       # stop the cluster
@@ -344,8 +345,17 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
 #' .htp
 #' @keywords internal
 .htp <- function(t1, id, iv, dv, dvs, ivs, dims,
-            package, target_ivs, PQ, family, fpc, popsize2)
+            package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
 {
+  #-------------------------------------------------------------------------
+  # save information needed to help debug
+  #-------------------------------------------------------------------------
+  if(debugforeach)
+  {
+    cat(Reduce(paste, deparse(t1$formula)),
+        '\n\n', file = "./PAlogs/formula.log", append = TRUE)
+  }
+
   #-------------------------------------------------------------------------
   # initialize the model as NA
   #-------------------------------------------------------------------------
@@ -932,8 +942,8 @@ fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
     err_id['converge']   <- modid$arima
     #t1$method --- ML currently default in arma, REML not an option
     err_id['estimator']  <- toString( "ML" )
-    err_id['analyzed_N'] <- NA
-    err_id['call'] <- NA
+    err_id['analyzed_N'] <- toString( NA )
+    err_id['call']       <- toString( NA )
   }
   if(  "coeftest"  %in%  class(modid$tTable) )
   {
