@@ -713,7 +713,7 @@ paHTP <- function(e=parent.frame())
   DV <- seq_along(e$dvs)
   dims <- list(ID=ID, IV=IV, DV=DV, indID=indID)
 
-  if(debugforeach)
+  if(e$debugforeach)
   {
     print(head(e$data)   )
     print(dims           )

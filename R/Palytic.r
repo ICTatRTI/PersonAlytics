@@ -1141,7 +1141,7 @@ Palytic <- R6::R6Class("Palytic",
 
 # add methods
 Palytic$set("public", "summary",
-            function()
+            function(wm=NULL)
             {
               variables <- all.vars( self$formula )
               dropvars  <- grep(pattern = '\\(', variables)
@@ -1151,6 +1151,10 @@ Palytic$set("public", "summary",
                                         self$correlation)
 
               varsInData <- names(self$data)[names(self$data) %in% variables]
+
+              augmentFormula <- self$formula
+              if(!is.null(wm)) augmentFormula <- list(formula = self$formula,
+                                                      whichPalyticMod = wm)
 
               # return the summary
               list(      ids          = self$ids            ,
@@ -1165,7 +1169,7 @@ Palytic$set("public", "summary",
                          package      = self$package        ,
                          fixed        = self$fixed          ,
                          random       = self$random         ,
-                         formula      = self$formula        ,
+                         formula      = augmentFormula      ,
                          method       = self$method         ,
                          standardize  = self$standardize    ,
                          corStructs   = self$corStructs     ,
@@ -1362,7 +1366,7 @@ Palytic$set("public", "lme",
               cor <- eval(parse(text = ifelse(!is.null(self$correlation),
                                               self$correlation,
                                               'NULL')))
-              wm <- 1
+              wm <- "Full Model"
               m1 <- try(nlme::lme(fixed=self$fixed,
                                   data=tempData,
                                   random=self$random,
@@ -1375,7 +1379,7 @@ Palytic$set("public", "lme",
 
               if( "try-error" %in% class(m1) )# | !eds(m1) )
               {
-                wm <- 2
+                wm <- "Full Model, opt='optim'"
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
                                     data=tempData,
@@ -1388,7 +1392,7 @@ Palytic$set("public", "lme",
               # try without correlation structure
               if( "try-error" %in% class(m1) )# | !eds(m1) )
               {
-                wm <- 3
+                wm <- "No correlation structure, opt='optim'"
                 ctrl <- nlme::lmeControl(opt="optim")
                 self$correlation <- "NULL" # not updating
                 m1 <- try(nlme::lme(fixed=self$fixed,
@@ -1402,7 +1406,7 @@ Palytic$set("public", "lme",
               # try without random slopes or correlation structure
               if( "try-error" %in% class(m1) )# | !eds(m1) )
               {
-                wm <- 4
+                wm <- "No correlation structure, no slopes, opt='optim'"
                 newformula <- forms(data       = self$datac ,
                                     PalyticObj = self       ,
                                     dropTime   = "time"     )
@@ -1420,7 +1424,7 @@ Palytic$set("public", "lme",
               # if the model is piecewise, try taking out the time X phase
               if( "try-error" %in% class(m1) )
               {
-                wm <- 5
+                wm <- "No correlation structure, no slopes, no time X phase, opt='optim'"
                 newformula <- forms(data = self$datac,
                                     PalyticObj = self,
                                     dropTime = "int" )
@@ -1492,8 +1496,8 @@ Palytic$set("public", "lme",
               {
                 if( fpc ) m1$FPCtTable <- as.matrix(FPC(object=m1, popsize2=popsize2))
                 m1$tTable <- summary(m1)$tTable # easier for simulation studies
-                m1$PalyticSummary <- self$summary()
-                m1$whichPalyticMod <- paste('Palytic lme model #', wm)
+                m1$PalyticSummary <- self$summary(wm)
+                m1$whichPalyticMod <- wm
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
                 return(m1)
               }
