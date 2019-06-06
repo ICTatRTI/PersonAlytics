@@ -101,9 +101,6 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
 7. If patients have < 2 observations, they are dropped from the data set.
 8. Phase alignment (if any, see \code{alignPhase}).}
 
-\item{\code{warnings}}{A list of warnings that will be populated as methods are called on a
-\code{Palytic} object.}
-
 \item{\code{errors}}{A list of errors that will be populated as methods are called on a
 \code{Palytic} object.}
 

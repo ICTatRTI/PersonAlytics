@@ -40,10 +40,13 @@ htp <- function(data                                                ,
   ##############################################################################
   # log files - create a log directory and overwrite all logs
   ##############################################################################
-  if(!file.exists('PAlogs')) dir.create('PAlogs')
-  cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=FALSE)
-  cat( 'Start $lme.log\n\n', file = "./PAlogs/$lme.log", append=FALSE)
-  cat( 'Start formula.log\n\n', file = "./PAlogs/formula.log", append=FALSE)
+  if(debugforeach)
+  {
+    if(!file.exists('PAlogs')) dir.create('PAlogs')
+    cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=FALSE)
+    cat( 'Start $lme.log\n\n', file = "./PAlogs/$lme.log", append=FALSE)
+    cat( 'Start formula.log\n\n', file = "./PAlogs/formula.log", append=FALSE)
+  }
 
   ##############################################################################
   # determine which loop type to use, if dvLoop==TRUE, a non-parallelized
@@ -77,7 +80,7 @@ htp <- function(data                                                ,
   ##############################################################################
   # parralelization option 1: iterate over dvs only
   ##############################################################################
-  if(!dvLoop)
+  if(!dvLoop )
   {
     DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
     if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
@@ -103,7 +106,7 @@ htp <- function(data                                                ,
       t0 <- Palytic$new(data=data                 ,
                         ids=ids                   ,
                         dv=dvs[[dv]]              ,
-                        time=time                 ,
+                        time=time$raw             ,
                         phase=phase               ,
                         ivs=ivs                   ,
                         interactions=interactions ,
@@ -164,7 +167,7 @@ htp <- function(data                                                ,
   # parralelization option 2: outer loop is DV so that correlation and time
   # order searches only need to happen 1x/DV
   ##############################################################################
-  if( dvLoop)
+  if( dvLoop )
   {
     DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
     if(is.factor(DIM$ID)) DIM$ID <- as.character(DIM$ID)
@@ -179,12 +182,13 @@ htp <- function(data                                                ,
       t0 <- Palytic$new(data=data,
                         ids=ids,
                         dv=dvs[[dv]],
-                        time=time,
+                        time=time$raw,
                         phase=phase,
                         ivs=ivs, # target_ivs added later
                         interactions=interactions,
                         standardize=standardize,
                         time_power=time_power,
+                        alignPhase=alignPhase,
                         correlation=correlation,
                         family=family,
                         method="ML" # requested method used in final estimation
@@ -352,6 +356,9 @@ autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
   #-------------------------------------------------------------------------
   if(debugforeach)
   {
+    cat(Reduce(paste, deparse(t1$time)),
+        '\n\n', file = "./PAlogs/formula.log", append = TRUE)
+
     cat(Reduce(paste, deparse(t1$formula)),
         '\n\n', file = "./PAlogs/formula.log", append = TRUE)
   }
@@ -665,7 +672,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['Date_Time']    <- format(Sys.time(), format='%Y%m%d_%H.%M%p')
 
   # check for adequate data
-  nrt            <- length(unique(temp[[t1$time[1]]]))
+  nrt            <- length(unique(temp[[t1$time$raw]]))
   err_id['Nobs'] <- paste('There are', nrt,
                           'time points with complete data.')
 

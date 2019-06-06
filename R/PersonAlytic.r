@@ -534,6 +534,11 @@ PersonAlytic <- function(output          = NULL                                 
     fpc <- FALSE
   }
 
+  # augment time
+  time <- list(raw      = time        ,
+               power    = time_power  ,
+               analysis = time        )
+
 
   #cat(package, file=paste(format(Sys.time(),"%Y-%m-%d-%H-%M-%S"), 'txt', sep='.'))
 
@@ -580,16 +585,16 @@ pa1 <- function(e=parent.frame())
   t1 <- Palytic$new(data=e$data                 ,
                     ids=e$ids                   ,
                     dv=e$dvs[[1]]               ,
-                    time=e$time                 ,
+                    time=e$time$raw             ,
                     phase=e$phase               ,
                     ivs=ivs                     ,
                     interactions=e$interactions ,
                     time_power=e$time_power     ,
+                    alignPhase=e$alignPhase     ,
                     correlation=e$correlation   ,
                     family=e$family             ,
                     method=e$method             ,
-                    standardize=e$standardize   ,
-                    alignPhase=e$alignPhase     )
+                    standardize=e$standardize   )
 
   # allow for formula override so that we can test intercept only and
   # slope only models
@@ -661,21 +666,22 @@ paHTP <- function(e=parent.frame())
   # requested by the user (this avoids standardizing standardized variables,
   # which may differ under different subsets, e.g., individual_models = TRUE).
   e$data <- clean(
-    data        = e$data                                ,
-    ids         = e$ids                                 ,
-    dv          = NULL                                  ,
-    time        = e$time                                ,
-    phase       = e$phase                               ,
-    ivs         = e$ivs                                 ,
-    fixed       = NULL                                  ,
-    random      = NULL                                  ,
-    formula     = NULL                                  ,
-    correlation = e$correlation                         ,
-    family      = e$family                              ,
-    dvs         = e$dvs                                 ,
-    target_ivs  = e$target_ivs                          ,
-    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
-    alignPhase  = "none"                                )
+    data         = e$data                                ,
+    ids          = e$ids                                 ,
+    dv           = NULL                                  ,
+    time         = e$time                                ,
+    phase        = e$phase                               ,
+    ivs          = e$ivs                                 ,
+    fixed        = NULL                                  ,
+    random       = NULL                                  ,
+    formula      = NULL                                  ,
+    correlation  = e$correlation                         ,
+    family       = e$family                              ,
+    dvs          = e$dvs                                 ,
+    target_ivs   = e$target_ivs                          ,
+    standardize  = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
+    alignPhase   = "none"                                ,
+    debugforeach = e$debugforeach                        )
 
   # standardize target_ivs
   if(e$standardize$iv)
@@ -715,32 +721,34 @@ paHTP <- function(e=parent.frame())
 
   if(e$debugforeach)
   {
-    print(head(e$data)   )
-    print(dims           )
-    print(e$dvs          )
-    print(e$phase        )
-    print(e$ids          )
-    print(uids           )
-    print(e$time         )
-    print(e$ivs          )
-    print(e$target_ivs   )
-    print(e$interactions )
-    print(e$time_power   )
-    print(e$alignPhase   )
-    print(e$correlation  )
-    print(e$family       )
-    print(e$standardize  )
-    print(e$fpc          )
-    print(e$popsize2     )
-    print(e$package      )
-    print(e$detectAR     )
-    print(e$PQ           )
-    print(e$whichIC      )
-    print(e$detectTO     )
-    print(e$maxOrder     )
-    print(e$sigma.formula)
-    print(e$debugforeach )
-    print(e$cores        )
+    cat('\n\n\n')
+    print(head(e$data)   ); cat('\n')
+    print(dims           ); cat('\n')
+    print(e$dvs          ); cat('\n')
+    print(e$phase        ); cat('\n')
+    print(e$ids          ); cat('\n')
+    print(uids           ); cat('\n')
+    print(e$time         ); cat('\n')
+    print(e$ivs          ); cat('\n')
+    print(e$target_ivs   ); cat('\n')
+    print(e$interactions ); cat('\n')
+    print(e$time_power   ); cat('\n')
+    print(e$alignPhase   ); cat('\n')
+    print(e$correlation  ); cat('\n')
+    print(e$family       ); cat('\n')
+    print(e$standardize  ); cat('\n')
+    print(e$fpc          ); cat('\n')
+    print(e$popsize2     ); cat('\n')
+    print(e$package      ); cat('\n')
+    print(e$detectAR     ); cat('\n')
+    print(e$PQ           ); cat('\n')
+    print(e$whichIC      ); cat('\n')
+    print(e$detectTO     ); cat('\n')
+    print(e$maxOrder     ); cat('\n')
+    print(e$sigma.formula); cat('\n')
+    print(e$debugforeach ); cat('\n')
+    print(e$cores        ); cat('\n')
+    cat('\n\n\n')
   }
 
   #

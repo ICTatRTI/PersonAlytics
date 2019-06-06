@@ -30,27 +30,27 @@ plotICT <- function(self, data, legendName=NULL,
   # check whetehr the time variable is continuous, if yes it
   # needs to be aggregated so that we don't have time points with only
   # one observation
-  time <- data[[self$time]]
+  time <- data[[self$time$raw]]
   if(!all(round(time) == time, na.rm = TRUE))
   {
     breaks <- hist(time, plot = FALSE)$breaks
     r      <- nchar(strsplit(as.character(breaks), "\\.")[[1]][2])
-    data[[self$time]] <- round(time, r)
+    data[[self$time$raw]] <- round(time, r)
   }
   rm(time)
 
   # clean out observations with missing time variables
-  data <- data[!is.na(data[[self$time]]),]
+  data <- data[!is.na(data[[self$time$raw]]),]
 
   # summarize the data for plotting
-  summData <- summarySE(data=data, measurevar=self$dv, groupvars=self$time,
+  summData <- summarySE(data=data, measurevar=self$dv, groupvars=self$time$raw,
                         phase=self$phase, na.rm=TRUE)
   # set up grouping variable(s)
   group <- 1
   #*#if(length(groupvars)>1) group <- groupvars[2] # TODO general to 2+ groupvars
 
   # calculate dodging & range
-  xrange <- range(data[[self$time]], na.rm=TRUE)
+  xrange <- range(data[[self$time$raw]], na.rm=TRUE)
   pd <- position_dodge(0.1*(xrange[2]-xrange[1]))
   #ylim <- range(c(summData$sdlo, summData$sdhi), na.rm=TRUE) # this results in truncated tails
   if(is.null(ylim)) ylim <- range(self$datac[[self$dv]], na.rm=TRUE)
@@ -63,7 +63,7 @@ plotICT <- function(self, data, legendName=NULL,
     phaseDup  <- !duplicated(summData[[self$phase]])
     rect      <- summData[phaseDup,]
     phaseEnd  <- which(phaseDup) - 1
-    rect$xmax <- summData[[self$time]][c(phaseEnd[2:length(phaseEnd)]+1,
+    rect$xmax <- summData[[self$time$raw]][c(phaseEnd[2:length(phaseEnd)]+1,
                                          length(phaseDup))]
     # + 1 b/c requires 3+ colors, this allows for 1 & 2 phase studies
     rect$cols <- RColorBrewer::brewer.pal(nrow(rect) + 1, 'Accent')[1:nrow(rect)]
@@ -85,7 +85,7 @@ plotICT <- function(self, data, legendName=NULL,
 
 
   # trajectory plot
-  s <- ggplot(summData, aes_string(x=self$time, y=self$dv,
+  s <- ggplot(summData, aes_string(x=self$time$raw, y=self$dv,
                                    group=group, col=group)) +
     geom_errorbar(aes(ymin=sdlo, ymax=sdhi),
                   width = .1, position = pd) +
@@ -97,7 +97,7 @@ plotICT <- function(self, data, legendName=NULL,
   if(!is.null(self$phase))
   {
     s <- s + geom_rect(data=rect,
-                       aes_string(xmin=self$time, xmax='xmax',
+                       aes_string(xmin=self$time$raw, xmax='xmax',
                                   ymin=-Inf, ymax=Inf,
                                   fill=self$phase),
                        alpha=0.4, color=NA, inherit.aes=F) +

@@ -54,7 +54,7 @@ eds <- function(x)
 monotone <- function(ids, time, data)
 {
   .m <- function(x) all( diff(x) >= 0 )
-  monotonic <- by(data[[time[[1]]]], INDICES = data[[ids]], FUN = .m)
+  monotonic <- by(data[[time]], INDICES = data[[ids]], FUN = .m)
   monotonic <- unlist( as.list(monotonic) )
   data.frame(ids=unique(data[[ids]]), monotonic=monotonic)
 }
@@ -163,11 +163,7 @@ forms <- function(data                     ,
     # unpack PalyticObj
     if(is.null(ids         )) ids          <- PalyticObj$ids
     if(is.null(dv          )) dv           <- PalyticObj$dv
-    if(is.null(time        ))
-    {
-      if(!piecewise) time <- PalyticObj$time[[1]]
-      if( piecewise) time <- PalyticObj$time
-    }
+    if(is.null(time        )) time         <- PalyticObj$time
     if(is.null(phase       )) phase        <- PalyticObj$phase
     if(is.null(ivs         )) ivs          <- PalyticObj$ivs
     if(is.null(interactions)) interactions <- PalyticObj$interactions
@@ -186,11 +182,12 @@ forms <- function(data                     ,
     if(!is.null(random))
     {
       random.t <- gsub(" ", "", unlist( strsplit(as.character(random), "\\|") ) )
-      time     <- unlist( strsplit(random.t[2], '\\+') )
-      rint     <- time[1]
-      time     <- time[2]
+      time.t   <- unlist( strsplit(random.t[2], '\\+') )
+      rint     <- time.t[1]
+      time.t   <- time.t[2]
       if(rint=="1") dropTime <- "time"
-      if(is.na(time)) time <- PalyticObj$time
+      if( is.na(time.t)) time <- PalyticObj$time
+      if(!is.na(time.t)) time$analysis <- time.t; rm(time.t, rint)
       ids      <- random.t[3]
     }
   }
@@ -199,13 +196,13 @@ forms <- function(data                     ,
   {
     if(!is.null(formula))
     {
-      theInputs   <- decompFormula(formula)
-      ids         <- theInputs$ids
-      dv          <- theInputs$dv
-      time        <- theInputs$time
-      ivs         <- theInputs$ivs
-      correlation <- theInputs$correlation
-      method      <- theInputs$method
+      theInputs     <- decompFormula(formula)
+      ids           <- theInputs$ids
+      dv            <- theInputs$dv
+      time$analysis <- theInputs$time
+      ivs           <- theInputs$ivs
+      correlation   <- theInputs$correlation
+      method        <- theInputs$method
     }
   }
 
@@ -214,29 +211,53 @@ forms <- function(data                     ,
   {
     if(time_power > 1)
     {
-      time <- c(time, paste("I(", time, "^", 2:time_power, ")", sep=''))
+      time$analysis <- c(time$raw, paste("I(", time$raw, "^", 2:time_power, ")", sep=''))
     }
-    if(time_power == 1 & !piecewise) time <- time[[1]]
+    if(time_power == 1 & !piecewise) time$analysis <- time$raw
+    # clean up interactions with time
+    if(time_power > 1 | piecewise)
+    {
+      wi <- unlist(lapply(interactions, function(x) any(x == time$raw)))
+      newinteractions <- list(); ii <- 1
+      for(i in seq_along(wi))
+      {
+        if(!wi[i])
+        {
+          newinteractions[[ii]] <- interactions[[i]]; ii <- ii + 1
+        }
+        if(wi[i])
+        {
+          # which not time
+          wnt <- which(interactions[[i]] != time$raw)
+          for(j in seq_along(time$analysis))
+          {
+            newinteractions[[ii]] <- c(interactions[[i]][wnt], time$analysis[j])
+            ii <- ii + 1
+          }
+        }
+      }
+      interactions <- newinteractions
+    }
   }
 
-  theForms <- makeForms(ids          = ids         ,
-                        dv           = dv          ,
-                        time         = time        ,
-                        phase        = phase       ,
-                        ivs          = ivs         ,
-                        interactions = interactions,
-                        rint         = rint        ,
-                        correlation  = correlation ,
-                        family       = family      ,
-                        dropTime     = dropTime    ,
-                        method       = method      )
+  theForms <- makeForms(ids          = ids           ,
+                        dv           = dv            ,
+                        time         = time$analysis ,
+                        phase        = phase         ,
+                        ivs          = ivs           ,
+                        interactions = interactions  ,
+                        rint         = rint          ,
+                        correlation  = correlation   ,
+                        family       = family        ,
+                        dropTime     = dropTime      ,
+                        method       = method        )
   fixed   <- theForms$fixed
   random  <- theForms$random
   formula <- theForms$formula
 
   # check that the variables are in the data
   ivs.test <- unlist(lapply(ivs, strsplit, ":"))
-  vars <- unique( c(ids, dv, time, phase, ivs.test,
+  vars <- unique( c(ids, dv, time$analysis, phase, ivs.test,
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- as.character( vars )
   vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, '\\*|\\+'), unlist))) )
@@ -249,7 +270,7 @@ forms <- function(data                     ,
 
   if( length(wvars) > 0 )
   {
-    stop( paste('\n`', vars[wvars], '` is not in the data\n'))
+    stop( paste('\n`', vars[wvars], '` is not in the data\n', sep='') )
   }
 
   # return
@@ -733,7 +754,7 @@ pwtime <- function(time, phase)
   # if the time variable is not integer, stop
   if( !all(round(time)==time) )
   {
-    stop('`time` should be integer valued.')
+    stop('The `time` variable must be integer valued.')
   }
 
   # if phase is not numeric, convert to numeric

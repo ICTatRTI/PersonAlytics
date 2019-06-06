@@ -147,7 +147,7 @@
         private$.formula      <- frms$formula
         private$.method       <- frms$method
         private$.ismonotone   <- monotone(private$.ids,
-                                          private$.time,
+                                          private$.time$raw,
                                           private$.data)
         self
       }
@@ -708,10 +708,16 @@
         private$.try_silent <- value
         self
       }
+    },
+
+    debugforeach = function(value)
+    {
+      if( missing(value) ) private$.debugforeach
+      else
+      {
+        stop("`$debugforeach is read only", call. = FALSE)
+      }
     }
-
-    ### need to add active bindings for warnings, errors
-
 
   )
 }
@@ -824,8 +830,6 @@
 #' 7. If patients have < 2 observations, they are dropped from the data set.
 #' 8. Phase alignment (if any, see \code{alignPhase}).
 #'
-#' @field warnings A list of warnings that will be populated as methods are called on a
-#' \code{Palytic} object.
 #'
 #' @field errors A list of errors that will be populated as methods are called on a
 #' \code{Palytic} object.
@@ -989,25 +993,24 @@ Palytic <- R6::R6Class("Palytic",
                          .ids         = NULL,
                          .dv          = NULL,
                          .time        = NULL,
-                         .phase       = NULL,
-                         .ivs         = NULL,
-                         .interactions= NULL,
-                         .time_power  = NULL,
-                         .correlation = NULL,
-                         .family      = NULL,
-                         .fixed       = NULL,
-                         .random      = NULL,
-                         .formula     = NULL,
-                         .method      = NULL,
-                         .standardize = list(dv=FALSE, iv=FALSE, byids=FALSE),
-                         .corStructs  = NULL,
-                         .time_powers = NULL,
-                         .alignPhase  = NULL,
-                         .ismonotone  = NULL,
-                         .datac       = NULL,
-                         .warnings    = list(),
-                         .errors      = list(),
-                         .try_silent  = TRUE
+                         .phase        = NULL,
+                         .ivs          = NULL,
+                         .interactions = NULL,
+                         .time_power   = NULL,
+                         .correlation  = NULL,
+                         .family       = NULL,
+                         .fixed        = NULL,
+                         .random       = NULL,
+                         .formula      = NULL,
+                         .method       = NULL,
+                         .standardize  = list(dv=FALSE, iv=FALSE, byids=FALSE),
+                         .corStructs   = NULL,
+                         .time_powers  = NULL,
+                         .alignPhase   = NULL,
+                         .ismonotone   = NULL,
+                         .datac        = NULL,
+                         .debugforeach = NULL,
+                         .try_silent   = TRUE
                        ),
                        active = .active(),
 
@@ -1018,28 +1021,27 @@ Palytic <- R6::R6Class("Palytic",
                          initialize = function
                          (
                            data                                                ,
-                           ids         = NULL                                  ,
-                           dv          = NULL                                  ,
-                           time        = NULL                                  ,
-                           phase       = NULL                                  ,
-                           ivs         = NULL                                  ,
-                           interactions= NULL                                  ,
-                           time_power  = NULL                                  ,
-                           correlation = NULL                                  ,
-                           family      = gamlss.dist::NO()                     ,
-                           fixed       = NULL                                  ,
-                           random      = NULL                                  ,
-                           formula     = NULL                                  ,
-                           method      = "REML"                                ,
-                           standardize = list(dv=FALSE, iv=FALSE, byids=FALSE) ,
-                           corStructs  = NULL                                  ,
-                           time_powers = NULL                                  ,
-                           ismonotone  = NULL                                  ,
-                           alignPhase  = 'none'                                ,
-                           datac       = NULL                                  ,
-                           warnings    = list()                                ,
-                           errors      = list()                                ,
-                           try_silent  = TRUE
+                           ids          = NULL                                  ,
+                           dv           = NULL                                  ,
+                           time         = NULL                                  ,
+                           phase        = NULL                                  ,
+                           ivs          = NULL                                  ,
+                           interactions = NULL                                  ,
+                           time_power   = NULL                                  ,
+                           correlation  = NULL                                  ,
+                           family       = gamlss.dist::NO()                     ,
+                           fixed        = NULL                                  ,
+                           random       = NULL                                  ,
+                           formula      = NULL                                  ,
+                           method       = "REML"                                ,
+                           standardize  = list(dv=FALSE, iv=FALSE, byids=FALSE) ,
+                           corStructs   = NULL                                  ,
+                           time_powers  = NULL                                  ,
+                           ismonotone   = NULL                                  ,
+                           alignPhase   = 'none'                                ,
+                           datac        = NULL                                  ,
+                           debugforeach = FALSE                                 ,
+                           try_silent   = TRUE
                          )
                          {
                            ### consider adding option to read a file, could
@@ -1050,8 +1052,10 @@ Palytic <- R6::R6Class("Palytic",
                            #  read
                            #}
 
+                           if(debugforeach) message("\nDebugging is ON.\n\n")
+
                            if(alignPhase == 'piecewise' &
-                              length(table(data$phase)) <= 1)
+                              length(table(data[[phase]])) <= 1)
                            {
                              message("\nThere are 0 or 1 phases, changing",
                                      "\nalignPhase to 'none'.")
@@ -1073,16 +1077,39 @@ Palytic <- R6::R6Class("Palytic",
                              )
                            }
 
+                           # update the time variable
+                           time <- list(raw      = time        ,
+                                        power    = time_power  ,
+                                        analysis = time        )
+
                            # clean the data
-                           datac <- clean(data, ids, dv, time, phase, ivs,
-                                         fixed, random, formula, correlation, family,
-                                         dvs=NULL, target_ivs=NULL, standardize,
-                                         sortData=TRUE, alignPhase)
+                           if(is.null(datac))
+                           {
+                             datac <- clean(
+                               data         = data            ,
+                               ids          = ids             ,
+                               dv           = dv              ,
+                               time	        = time            ,
+                               phase	      = phase           ,
+                               ivs	        = ivs             ,
+                               fixed        = fixed           ,
+                               random       = random          ,
+                               formula	    = formula         ,
+                               correlation  = correlation     ,
+                               family       = family          ,
+                               dvs	        = NULL            ,
+                               target_ivs   = NULL            ,
+                               standardize  = standardize     ,
+                               sortData	    = TRUE            ,
+                               alignPhase   = alignPhase      ,
+                               debugforeach = debugforeach           )
+                           }
+
 
                            # if alignPhase == 'piecewise' update time
                            if(alignPhase == 'piecewise')
                            {
-                             time <- names(datac)[grepl('pwtime', names(datac))]
+                             time$analysis <- names(datac)[grepl('pwtime', names(datac))]
                            }
 
                            # create the formulae
@@ -1103,7 +1130,7 @@ Palytic <- R6::R6Class("Palytic",
                                          method=method             )
 
                            # check whether time is monotorically increasing
-                           ismonotone <- monotone(ids, time, datac)
+                           ismonotone <- monotone(ids, time$raw, datac)
 
                            # populate private
                            private$.data         <- data
@@ -1126,8 +1153,7 @@ Palytic <- R6::R6Class("Palytic",
                            private$.ismonotone   <- ismonotone
                            private$.alignPhase   <- alignPhase
                            private$.datac        <- datac
-                           private$.warnings     <- warnings
-                           private$.errors       <- errors
+                           private$.debugforeach <- debugforeach
                            private$.try_silent   <- try_silent
 
                            # cleanup
@@ -1157,28 +1183,27 @@ Palytic$set("public", "summary",
                                                       whichPalyticMod = wm)
 
               # return the summary
-              list(      ids          = self$ids            ,
-                         dv           = self$dv             ,
-                         time         = self$time           ,
-                         phase        = self$phase          ,
-                         ivs          = self$ivs            ,
-                         interactions = self$interactions   ,
-                         time_power   = self$time_power     ,
-                         correlation  = tempCorrelation     ,
-                         family       = self$family         ,
-                         package      = self$package        ,
-                         fixed        = self$fixed          ,
-                         random       = self$random         ,
-                         formula      = augmentFormula      ,
-                         method       = self$method         ,
-                         standardize  = self$standardize    ,
-                         corStructs   = self$corStructs     ,
-                         time_powers  = self$time_powers    ,
-                         ismonotone   = self$ismonotone     ,
-                         warnings     = self$warnings       ,
-                         errors       = self$errors         ,
-                         try_silent   = self$try_silent     ,
-                         datac        = summary(self$datac[,variables]) ,
+              list(      ids          = self$ids                         ,
+                         dv           = self$dv                          ,
+                         time         = self$time                        ,
+                         phase        = self$phase                       ,
+                         ivs          = self$ivs                         ,
+                         interactions = self$interactions                ,
+                         time_power   = self$time_power                  ,
+                         correlation  = tempCorrelation                  ,
+                         family       = self$family                      ,
+                         package      = self$package                     ,
+                         fixed        = self$fixed                       ,
+                         random       = self$random                      ,
+                         formula      = augmentFormula                   ,
+                         method       = self$method                      ,
+                         standardize  = self$standardize                 ,
+                         corStructs   = self$corStructs                  ,
+                         time_powers  = self$time_powers                 ,
+                         ismonotone   = self$ismonotone                  ,
+                         debugforeach = self$debugforeach                ,
+                         try_silent   = self$try_silent                  ,
+                         datac        = summary(self$datac[,variables])  ,
                          data         = summary(self$data[,varsInData])  )
             })
 
@@ -1189,7 +1214,7 @@ Palytic$set("public", "describe",
               ivall <- all.vars(self$fixed)[-1]
               ivall <- ivall[! ivall %in% c("0", "1")] # 0,1 make come from random effects
 
-              if(! self$time[1] %in% ivall ) ivall <- c(ivall, self$time[1])
+              if(! self$time$raw %in% ivall ) ivall <- c(ivall, self$time$raw)
               if(length(self$phase) > 0)
               {
                 if(! self$phase %in% ivall ) ivall <- c(ivall, self$phase)
@@ -1867,9 +1892,6 @@ Palytic$set("public", "plot",
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- subset(self$datac, subgroup,
                                  c(all.vars(self$formula), groupvar))
-              # get summary data
-              #*#if(!is.null(groupvars)) groupvars <- c(self$time, groupvars)
-              #*#if( is.null(groupvars)) groupvars <- self$time
 
               if(!is.null(groupvar)) ug <- unique(tempData[[groupvar]])
               if( is.null(groupvar)) ug <- 1

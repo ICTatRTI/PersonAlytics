@@ -45,11 +45,13 @@ clean <- function(data		 	                                            ,
                   target_ivs    =	NULL	                                ,
                   standardize 	=	list(dv=FALSE, iv=FALSE, byids=FALSE)	,
                   sortData	    =	TRUE	                                ,
-                  alignPhase 	  =	"none"                                )
+                  alignPhase 	  =	"none"                                ,
+                  debugforeach  = debugforeach                          )
 {
   # check that variables are in the data set
-  vars <- unique( c(ids, dv, time[[1]], phase, unlist(ivs), unlist(dvs), unlist(target_ivs),
-                    all.vars(fixed), all.vars(random), all.vars(formula)) )
+  vars <- unique( c(ids, dv, time$raw, phase, unlist(ivs), unlist(dvs),
+                    unlist(target_ivs), all.vars(fixed), all.vars(random),
+                    all.vars(formula)) )
   vars <- vars[which(vars!='1' & vars!='0')]
   #vars <- gsub(" ", "", vars) # this will be a problem if var names have spaces...
   wvars <- which( ! vars %in% names(data) )
@@ -73,7 +75,7 @@ clean <- function(data		 	                                            ,
   # see issue #12 on github
   # check that time is monotonically increasing - this fails for
   # time that is a trigonometric function of raw time
-  #by(data[[time]], data[[ids]], function(x) all( diff(x) > 0) )
+  #by(data[[time$raw]], data[[ids]], function(x) all( diff(x) > 0) )
 
   # check for missing data and perform missing data handling.
   # I'm hesitant to do it here b/c it changes the data, do it on the fly
@@ -108,28 +110,32 @@ clean <- function(data		 	                                            ,
   # this doesn't work for trigonometric functions of time
   if(sortData)
   {
-    data <- data[order(data[[ids]], data[[time]]),]
+    if(debugforeach)
+    {
+      print(time)
+    }
+    data <- data[order(data[[ids]], data[[time$raw]]),]
   }
   # data <- data[order(data[[ids]]), ] # see issue #12 on github
 
   # if any cases have only 1 observation, drop them
   tuid <- table(data[[ids]])
-  tofew <- names(tuid)[ tuid<2 ]
-  if(length(tofew)>0)
+  toofew <- names(tuid)[ tuid<2 ]
+  if(length(toofew)>0)
   {
     warning(paste('\nThe following have less than 2 observations and will be dropped:\n\n'),
-            paste(paste(ids, tofew), collapse='\n'))
-    data <- data[!data[[ids]]%in%as.numeric(tofew),]
+            paste(paste(ids, toofew), collapse='\n'))
+    data <- data[!data[[ids]]%in%as.numeric(toofew),]
   }
 
   # align the data
   if(!is.null(phase))
   {
     if(alignPhase == 'align') data <- alignPhases(dat = data, id = ids,
-                                                 phase = phase, time = time)
+                                      phase = phase, time = time$raw)
     if(alignPhase == 'piecewise')
     {
-      data <- data.frame(data, pwtime(time = data[[time[1]]],
+      data <- data.frame(data, pwtime(time = data[[time$raw]],
                                       phase = data[[phase]])
       )
     }
@@ -251,7 +257,7 @@ pstand <- function(data, standardize, dv, ivs, family, ids)
 }
 
 
-#' align the time variable to be zero at the transition between 
+#' align the time variable to be zero at the transition between
 #' the first and second phase
 #'
 #' @param data See \code{\link{PersonAlytic}}.
