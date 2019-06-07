@@ -1166,6 +1166,8 @@ Palytic <- R6::R6Class("Palytic",
 )
 
 # add methods
+
+# $summary() ####
 Palytic$set("public", "summary",
             function(wm=NULL)
             {
@@ -1207,6 +1209,7 @@ Palytic$set("public", "summary",
                          data         = summary(self$data[,varsInData])  )
             })
 
+# $describe() ####
 Palytic$set("public", "describe",
             function(subgroup=NULL)
             {
@@ -1278,6 +1281,7 @@ Palytic$set("public", "describe",
               return( ivstats )
             })
 
+# $arma() ####
 Palytic$set("public", "arma",
             function(subgroup=NULL, max.p=3, max.q=3, dropVars=NULL,
                      max.P=0, max.Q=0, max.d=0, max.D=0, ...)
@@ -1371,6 +1375,7 @@ Palytic$set("public", "arma",
             overwrite = TRUE
 )
 
+# $lme() ####
 #TODO(Stephen) you can't just add ... to lme() and get things passed, you'll
 #need to add some sort of evaluation, e.g.
 # > args <- list(...)
@@ -1435,7 +1440,8 @@ Palytic$set("public", "lme",
                 newformula <- forms(data       = self$datac ,
                                     PalyticObj = self       ,
                                     dropTime   = "time"     )
-                self$random <- newformula$random # dummy, this re-updates!!!!
+                # this re-updates, so this step is moved to cleancall for now
+                #self$random <- newformula$random
                 self$correlation <- NULL
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
@@ -1453,7 +1459,8 @@ Palytic$set("public", "lme",
                 newformula <- forms(data = self$datac,
                                     PalyticObj = self,
                                     dropTime = "int" )
-                self$fixed <- newformula$fixed # dummy, this re-updates!!!!
+                # this re-updates, so this step is moved to cleancall for now
+                #self$fixed <- newformula$fixed
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=newformula$fixed,
                                     data=tempData,
@@ -1483,8 +1490,20 @@ Palytic$set("public", "lme",
                           silent = TRUE)
               }
 
-              # clean up the call - may not need this
-              m1 <- cleanCall(modelResult=m1, PalyticObj=self)
+              # clean up the call for accurate printing and model.matrix() in FPC
+              if( exists("newformula") )
+              {
+                m1 <- cleanCall(modelResult=m1, PalyticObj=self,
+                                newformula)
+              }
+              if(!exists("newformula") )
+              {
+                m1 <- cleanCall(modelResult=m1, PalyticObj=self)
+              }
+              #!#m1 <<- m1
+              #!#print( formula(m1) )
+              #!#m1 <- cleanCall(modelResult=m1, PalyticObj=self,
+              #!#                newformula)
 
               # lrt
               # H0: m1 == m0
@@ -1546,14 +1565,23 @@ Palytic$set("public", "lme",
             overwrite = TRUE
 )
 
+# cleanCall ####
 #' cleanCall - clean up the call in in palytic objects
 #' @keywords internal
-cleanCall <- function(modelResult, PalyticObj)
+cleanCall <- function(modelResult, PalyticObj, newformula=NULL)
 {
   if("lme" %in% class(modelResult) )
   {
-    modelResult$call$fixed       <- PalyticObj$fixed
-    modelResult$call$random      <- PalyticObj$random
+    if(!is.null(newformula))
+    {
+      modelResult$call$fixed       <- newformula$fixed
+      modelResult$call$random      <- newformula$random
+    }
+    if( is.null(newformula))
+    {
+      modelResult$call$fixed       <- PalyticObj$fixed
+      modelResult$call$random      <- PalyticObj$random
+    }
     modelResult$call$correlation <- PalyticObj$correlation
     modelResult$call$method      <- PalyticObj$method
   }
@@ -1566,6 +1594,7 @@ cleanCall <- function(modelResult, PalyticObj)
   return(modelResult)
 }
 
+# getARnEQ1 ####
 #' getARnEQ1
 #' @keywords internal
 getARnEQ1 <- function(m, PQ, dv)
@@ -1595,6 +1624,7 @@ getARnEQ1 <- function(m, PQ, dv)
   return( correlation )
 }
 
+# $gamlss() ####
 ### TODO(Stephen) add residual correlation search for n=1
 Palytic$set("public", "gamlss",
             function(subgroup=NULL, sigma.formula = ~1, family=NULL,
@@ -1635,7 +1665,8 @@ Palytic$set("public", "gamlss",
                                     PalyticObj = self ,
                                     dropTime = "time" ,
                                     family = currentFamily)
-                self$formula <- newformula$formula # dummy, these re-update
+                # this re-updates, so this step is moved to cleancall for now
+                #self$formula <- newformula$formula
                 self$family  <- newformula$family
                 self$fixed   <- newformula$fixed
                 ctrl <- gamlss::gamlss.control(n.cyc=100)

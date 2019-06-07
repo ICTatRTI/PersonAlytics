@@ -4,7 +4,7 @@
 \alias{cleanCall}
 \title{cleanCall - clean up the call in in palytic objects}
 \usage{
-cleanCall(modelResult, PalyticObj)
+cleanCall(modelResult, PalyticObj, newformula = NULL)
 }
 \description{
 cleanCall - clean up the call in in palytic objects
