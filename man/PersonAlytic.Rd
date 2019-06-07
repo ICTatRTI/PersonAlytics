@@ -335,14 +335,14 @@ summary(t1)
 
 
 # full sample model with a finite population correction (FPC)
-t0fpc <- PersonAlytic(output  = 'Test0'  ,
-                   data    = OvaryICT    ,
-                   ids     = "Mare"      ,
-                   dvs     = "follicles" ,
-                   phase   = "Phase"     ,
-                   time    = "Time"      ,
-                   package = "nlme"      ,
-                   fpc     = 100         )
+t0fpc <- PersonAlytic(output  = 'Test0FPC'   ,
+                      data    = OvaryICT     ,
+                      ids     = "Mare"       ,
+                      dvs     = "follicles"  ,
+                      phase   = "Phase"      ,
+                      time    = "Time"       ,
+                      package = "nlme"       ,
+                      fpc     = 100          )
 
 # gamlss with two distributions - features not implemented
 #OvaryICT$follicles01 <- to01(OvaryICT$follicles)

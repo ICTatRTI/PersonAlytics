@@ -324,14 +324,14 @@
 #'
 #'
 #' # full sample model with a finite population correction (FPC)
-#' t0fpc <- PersonAlytic(output  = 'Test0'  ,
-#'                    data    = OvaryICT    ,
-#'                    ids     = "Mare"      ,
-#'                    dvs     = "follicles" ,
-#'                    phase   = "Phase"     ,
-#'                    time    = "Time"      ,
-#'                    package = "nlme"      ,
-#'                    fpc     = 100         )
+#' t0fpc <- PersonAlytic(output  = 'Test0FPC'   ,
+#'                       data    = OvaryICT     ,
+#'                       ids     = "Mare"       ,
+#'                       dvs     = "follicles"  ,
+#'                       phase   = "Phase"      ,
+#'                       time    = "Time"       ,
+#'                       package = "nlme"       ,
+#'                       fpc     = 100          )
 #'
 #' # gamlss with two distributions - features not implemented
 #' #OvaryICT$follicles01 <- to01(OvaryICT$follicles)
@@ -459,7 +459,7 @@ PersonAlytic <- function(output          = NULL                                 
   # output labeling ####
   #TODO(Stephen) consider adding date/time/version info to output
   if(is.null(output))  fileLabel <- "PersonAlytics_Output"
-  if(!is.null(output)) fileLabel <- output
+  if(!is.null(output)) fileLabel <- paste(output, 'PersonAlytic', sep='_')
 
   # check the subgroup input ####
   if(!is.logical(subgroup) & !is.null(subgroup))
@@ -523,16 +523,17 @@ PersonAlytic <- function(output          = NULL                                 
 
   # finite population correction (fpc) settings
   if( fpc > n ) fpcCheck(fpc, n)
-  if( is.numeric(fpc) & fpc > n )
+  if( is.numeric(fpc) )
   {
     popsize2 <- fpc
-    fpc <- TRUE
+    .fpc <- TRUE
   }
   if( !is.numeric(fpc) | fpc <= n )
   {
     popsize2 <- NULL
-    fpc <- FALSE
+    .fpc <- FALSE
   }
+  fpc <- .fpc; rm(.fpc)
 
   # augment time
   time <- list(raw      = time        ,
