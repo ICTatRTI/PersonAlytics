@@ -672,7 +672,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['Date_Time']    <- format(Sys.time(), format='%Y%m%d_%H.%M%p')
 
   # check for adequate data
-  nrt            <- length(unique(temp[[t1$time$raw]]))
+  nrt            <- length(unique(temp[[t1$time$analysis[1]]]))
   err_id['Nobs'] <- paste('There are', nrt,
                           'time points with complete data.')
 
