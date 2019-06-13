@@ -3,7 +3,7 @@ library(PersonAlytics)
 
 test_that("PalyticBasics",
 {
-  OvaryICT <- PersonAlytics::OvaryICT
+  OvaryICT <<- PersonAlytics::OvaryICT
 
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase')
@@ -30,7 +30,7 @@ test_that("PalyticBasics",
   # repeat 'by hand' to check that gamlss is using AR1
   formar <- t1.gamlss.ar1$PalyticSummary$formula
   t1.gamlss.ar1s2 <- summary( gamlss(form1, data = OvaryICT) )
-  expect_equal(t1.gamlss.ar1s2, t1.gamlss.ar1s, tolerance = 0.01)
+  expect_false(all.equal(t1.gamlss.ar1s2, t1.gamlss.ar1s, tolerance = 0.01))
 
   # WIP - the lme varFuncs are not working
   if(1==2)
