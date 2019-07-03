@@ -585,7 +585,7 @@ getParameters <- function(Model, package, target_iv, data, fpc)
       {
         if(!fpc)
         {
-          IDoutSum <- rcm(summary(Model)$tTable, target_iv, data)
+          IDoutSum <- rcm(Model$tTable, target_iv, data)
         }
 
         if(fpc)

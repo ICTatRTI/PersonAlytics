@@ -400,8 +400,15 @@
 #'                    alignPhase      = "piecewise"                )
 #'
 #' # clean up
-#' file.remove( dir(getwd(), glob2rx("*.txt")) )
-#' file.remove( dir(getwd(), glob2rx("*.csv")) )
+#' file.remove( 'PiecewiseExample_PersonAlytic.csv' )
+#' file.remove( 'REMLlme.txt' )
+#' file.remove( 'MultiDVnoIDnoIVFPC_PersonAlytic.csv' )
+#' file.remove( 'MultiDVnoIDnoIV_PersonAlytic.csv' )
+#' file.remove( 'TargetIVStest_PersonAlytic.csv' )
+#' file.remove( 'NotREMLarma.txt' )
+#' file.remove( 'Test0FPC.txt' )
+#' file.remove( 'Test1_PersonAlytic.csv' )
+#' file.remove( 'Test0.txt' )
 #'
 #' }
 

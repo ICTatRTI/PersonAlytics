@@ -1,7 +1,7 @@
 Package: PersonAlytics
 Type: Package
 Title: PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
-Version: 0.2.6.9
+Version: 0.2.7.0
 Authors@R: person("Stephen", "Tueller", email = "stueller@rti.org", role = c("aut", "cre"))
 Maintainer: Stephen Tueller <stueller@rti.org>
 Description: Tools and illustrations for fitting idiographic trial data using gamlss and nlme, or ARMA models for n=1 studies.
@@ -9,17 +9,18 @@ License: RTI, see https://personalytics.rti.org/
 Encoding: UTF-8
 LazyData: true		
 Depends:
+	  R (>= 3.5.0),
     doSNOW (>= 1.0.16),
     forecast (>= 8.4),
     foreach (>= 1.4.4),
     gamlss (>= 5.1-2),
+    gamlss.tr (>= 5.1.0),
     gridExtra (>= 2.3),
     ggplot2 (>= 2.2.1),
   	multilevel (>= 2.6),
     nlme (>= 3.1-131),
     parallel (>= 3.5.1),
     plyr (>= 1.8.4),
-	  R (>= 3.5.0),
 	  R6 (>= 2.3.0),
     RColorBrewer (>= 1.1.2),
     snow (>= 0.4-3),

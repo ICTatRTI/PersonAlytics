@@ -1,7 +1,9 @@
 ## ----setup, include=FALSE------------------------------------------------
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
-library(nlme)
+papv <- packageVersion("PersonAlytics")
+
+
 
 ## ----eval=FALSE----------------------------------------------------------
 #  install.deps <- function(pkg)
@@ -16,43 +18,8 @@ library(nlme)
 #  install.deps(packages)
 
 ## ---- message=FALSE------------------------------------------------------
-#library(PersonAlytics)
+library(PersonAlytics)
 
 ## ------------------------------------------------------------------------
-#' t1 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  time="Time")
-#' # individual level analyses
-#' w <- OvaryICT$Mare==1
-#' t2 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  time="Time",
-#'                  subgroup=w)
-#' summary(t2)
-#' # individual level analyses with standardized data
-#' t3 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  time="Time",
-#'                  subgroup=w,
-#'                  standardize=TRUE)
-#' summary(t3)
-#' # interaction terms with nlme estimation
-#' set.seed(123)
-#' OvaryICT$iv1 <- factor(cut(runif(nrow(OvaryICT)), breaks=2), labels=c(0,1))
-#' t4 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  interactions=list(c('Time', 'Phase'),
-#'                                    c('Time', 'iv1'),
-#'                                    c('Phase',   'iv1')),
-#'                  time="Time",
-#'                  package="nlme")
-#' summary(t4)
+?PersonAlytic
 

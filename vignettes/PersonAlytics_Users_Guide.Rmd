@@ -1,8 +1,12 @@
 ---
-title: "PersonAlytics User's Guide"
-author: "Stephen Tueller"
+title: "PersonAlytics&copy; User's Guide"
+author: "Stephen Tueller, Ty Ridenour, Derek Ramirez"
 date: "`r Sys.Date()`"
-output: rmarkdown::html_vignette
+output: 
+  rmarkdown::html_vignette:
+    number_sections: true
+    toc: true
+urlcolor: blue
 vignette: >
   %\VignetteIndexEntry{PersonAlytics User's Guide}
   %\VignetteEngine{knitr::rmarkdown}
@@ -12,19 +16,55 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
-library(nlme)
+
+depends <- function()
+{
+  d <- scan('../DESCRIPTION', what = 'character', sep='\n')
+  wd <- which( grepl("*Depends*", d) )
+  wr <- which( grepl("RoxygenNote*", d) )
+  pkgs <- c(d[(wd+1):(wr-1)])
+  pkgs <- gsub( " ", "", pkgs)
+  pkgs <- gsub( "\t", "", pkgs)
+  pkgs <- gsub( ",", "", pkgs)
+  pkgs
+}
+pkgs <- depends()
+pkgss <-  matrix( unlist( strsplit(pkgs, "\\(") ), ncol=2, byrow=TRUE)[,1]
 ```
 
-## Introduction
-The pupropose of this vignette is to illustrate how to use `PersonAlytics` to analyze single case time series data (also knows as single subject or N-of-1 studies), small sample intensivel longitudinal design data, and ideographic clinical trial data (ICT). An ICT is a single-case or small sample longitudinal data set multiple treatment conditions (at a minimum, a control and treatment conditions).
+# Introduction
 
-The `PersonAlytic` framework 
+The pupropose of this vignette is to illustrate how to use `PersonAlytics` to analyze 
 
-## Installing `PersonAlytics`
+1. Single case time series data (also known as single subject or N-of-1 studies)
+
+2. Small sample intensive longitudinal design data
+
+3. Ideographic clinical trial data (ICT), which a single-case or small sample longitudinal data set multiple treatment conditions (at a minimum, a baseline and follow-up condition) where all partipants exerience all treatment conditions. 
+
+4. Automated high throughput analyses of these models in situations where the combination of predictors, outcomes, and/or individual level models yields an unweildly number of analyses to implement manually. 
+
+These three types of data are analyzed using longitudinal mixed effects models, also known as hierarchical linear models, multilevel models, latent growth curve models, or mixed method trajectory analysis. There are already several R packages such as `nlme` and `gamlss` that can be used to implement these models. The purpose of the Personalytics package is to automate the following: 
+
+1. Model selection for detecting the shape of the trajectory over time. Using a good fitting trajectory shape yields parameters that correspond to the shape and improve interpretability. Current options include polynomial growth and piecewise growth. 
+
+2. Model selection for detecting an appropriate time series model for the residuals. Getting a good fitting residual covariance model improves standard error estimation.
+
+3. Automate studies which may have thousands or millions of combinations of
+  
+  * outcomes
+  
+  * predictors
+  
+  * individual level models
+
+The `PersonAlytic` framework -- Ty -- 
+
+# Installing `PersonAlytics`
 
 First you must install `R`, available at `https://cran.r-project.org/`. It is also suggested that you use a modern code editor such as Rstudio (`https://www.rstudio.com/`). 
 
-`PersonAlytics` requries several packages which can be installed (or updated if you already have them) by pasting the following code[^1] into your `R` console:
+`PersonAlytics` requries several packages which can be installed (or updated if you already have them) by pasting the following function[^1] into your `R` console:
 
 [^1]: See https://gist.github.com/stevenworthington/3178163 for original function.
 
@@ -38,64 +78,95 @@ install.deps <- function(pkg)
                                         repos = "https://cran.rstudio.com/")
   if (length(old.pkg)) update.packages(old.pkg, dependencies = TRUE)
 }
-packages <- c("gamlss", "ggplot2", "multilevel", "nlme", "R6")
-install.deps(packages)
 ```
 
-The packages on which `PersonAlytics` builds include
+The following packages should then be installed using the `install.deps` function as follows:
 
-* `gamlss` which is used to fit mixed effects models with multiple distributions
-* `ggplot2` for plotting results (not yet implemented)
-* `multilevel` for illustrating intraclass correlation estimation
-* `nlme` which is used to fit mixed effects models with normal outcomes
-* `R6` an object-oriented approach to programming in R for creating `Palytic` objects, which can be thought of as a suitecase containing all your data and tools for fitting models and displaying results
+```{r, echo=FALSE, comment=NA}
+cat(paste("install.deps(c(", paste("'", pkgss[-1], "'", collapse=', ', sep=""), "))", 
+          sep=""), "\n")
+```
 
 Now you're ready to install `PersonAlytics` `install.packages(".../path/on/your/computer/PersonAlytics_0.0.1.tar.gz", repos = NULL, type = "source")`. To obtain this file, contact the authors at [https://personalytics.rti.org/](https://personalytics.rti.org/). 
 
-## Starting `PersonAlytics`
+# Starting `PersonAlytics`
 
 Now we can load `PersonAlytics`:
 
 ```{r, message=FALSE}
-#library(PersonAlytics)
+library(PersonAlytics)
 ```
 
+We will illustrate the basic options of the `PersonAlytic()` function using the Ovary data from the `nlme` package which have been modified to represent an ICT. The `PersonAlytic()` function is the primary user interface for the `PersonAlytics` package. You can access the documentation for `PersonAlytic()` by typing
+
+```{r, eval=FALSE}
+?PersonAlytic
+```
+
+The first six rows of the OvaryICT data are shown in Table x where it can be seen that the original Ovary data set has been augmented with Phase variables (which are an essentialy component of an ICT) and six randomly generated predictors named Target1 to Target6 (these will be used later). 
+
+```{r, echo=FALSE}
+kable(head(OvaryICT))
+```
+
+The first five parameters that can be provided to `PersonAlytic()` are
+
+1. `data`: the name of your data set. This data needs to have been read into R prior to using `PersonAlytic()`. A web search can be used to learn how to read in multiple types of data into R, including (but not limited to) csv, xlsx, sas, stata, spss, and most database formats. Since we assume that the data has alread y been read into R, it has an R variable name and no quotes are needed.
+
+2. `ids`: the name of the identification variable. This must be a quoted variable name matching your ID variable in the data set that you provided to the parameter `data`. 
+
+3. `dvs`: the name of the dependent variable. This must be a quoted variable name matching your dependent variable in the data set that you provided to the parameter `data`. For multiple dependent variables, see Section xx. 
+
+4. `phase`: the name of the phase variable. This is required for an ICT but is not required by `PersonAlytic()`. This must be a quoted variable name matching your dependent variable in the data set that you provided to the parameter `data`.
+
+5. `time`: the name of the time variable. This must be a quoted variable name matching your dependent varibale in the data set that you provided to the parameter `data`.
 
 ```{r}
-#' t1 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  time="Time")
-#' # individual level analyses
-#' w <- OvaryICT$Mare==1
-#' t2 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  time="Time",
-#'                  subgroup=w)
-#' summary(t2)
-#' # individual level analyses with standardized data
-#' t3 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  time="Time",
-#'                  subgroup=w,
-#'                  standardize=TRUE)
-#' summary(t3)
-#' # interaction terms with nlme estimation
-#' set.seed(123)
-#' OvaryICT$iv1 <- factor(cut(runif(nrow(OvaryICT)), breaks=2), labels=c(0,1))
-#' t4 <- PersonAlytic(data=OvaryICT,
-#'                  ids="Mare",
-#'                  dv="follicles",
-#'                  phase="Phase",
-#'                  interactions=list(c('Time', 'Phase'),
-#'                                    c('Time', 'iv1'),
-#'                                    c('Phase',   'iv1')),
-#'                  time="Time",
-#'                  package="nlme")
-#' summary(t4)
+t1 <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time")
 ```
+
+In the console output shows two automations implemented in PersonAlytics. The first is 'Automatic detection of the time/outcome relationship' and the second is 'Automatic detection of the residual correlation structure'. These will be described in detail in Section x and Section x, respectively. 
+
+The object 't1' is has class `lme` 
+
+```{r}
+class(t1)
+```
+
+If you are familiar with the `lme` package, this is an implementation of the linear (normal) mixed effects model. 
+
+# `PersonAlytics` Features
+
+## Naming your output
+
+## Automatic detection of the time/outcome relationship
+
+## Automatic detection of the residual correlation structure
+
+## High throughput analyses
+
+### Paralellization
+
+### False discovery rate (FDR) and Type-I error adjustments
+
+### Selecting predictors with the largest effect sizes
+
+## Generalized linear mixed effects models
+
+# Additional Considerations
+
+## Interaction terms
+
+## Standardizing data
+
+## Phase alignment
+
+## Character substitution
+
+## Modeling the variance in linear models
+
+## Finite population correction

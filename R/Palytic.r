@@ -970,7 +970,7 @@
 #'                   time='Time', phase=NULL)
 #' t1$plot()
 #'
-#' # picewise example
+#' # piecewise example
 #' OvaryICT$TimeP <- round(30*OvaryICT$Time)
 #' t1 <- Palytic$new(data = OvaryICT, ids = 'Mare',
 #'                   dv = 'follicles', time = 'TimeP', phase = 'Phase',
