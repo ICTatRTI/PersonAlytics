@@ -16,6 +16,7 @@ vignette: >
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
+library(PersonAlytics)
 
 depends <- function()
 {
@@ -106,7 +107,7 @@ We will illustrate the basic options of the `PersonAlytic()` function using the 
 The first six rows of the OvaryICT data are shown in Table x where it can be seen that the original Ovary data set has been augmented with Phase variables (which are an essentialy component of an ICT) and six randomly generated predictors named Target1 to Target6 (these will be used later). 
 
 ```{r, echo=FALSE}
-kable(head(OvaryICT))
+kable(head(PersonAlytics::OvaryICT))
 ```
 
 The first five parameters that can be provided to `PersonAlytic()` are
