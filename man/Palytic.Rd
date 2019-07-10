@@ -111,6 +111,21 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
 
 \describe{
 
+  \item{\code{dist(count=FALSE, to01=FALSE, multinom=FALSE, model=NULL,
+  parallel="snow", plot=TRUE)}}
+  {This method plots the density of your dependent variable if \code{plot=TRUE} and
+  lets the user implement \code{gamlss} automated
+  distribution comparisons. If \code{model=NULL}, the \code{\link{fitDist}}
+  function is used to compare unconditional models for all applicable distributions.
+  If \code{model} is a \code{gamlss} model, the condition models are fit for
+  all applicable distributions using \code{\link{chooseDist}}. Whether your
+  dependent variable is a count variable cannot be automatically detected, set
+  \code{count=TRUE}. If you want to rescale your dependent variable to the (0,1)
+  range, set \code{to01=TRUE}. If your depedent variable is multinomial, automated
+  distribution comparisons are not implemented, but you should manually change
+  your family to one of the \code{\link{MULTIN}} families.
+  }
+
   \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
   and the raw data.}
 
@@ -184,6 +199,10 @@ t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
 t1$summary()
 t1$describe()
 t1$plot()
+
+# check the distribution, noting that calling $dist() updates $family
+t1$dist()
+t1$family
 
 # check the formulae creation
 t1$fixed

@@ -428,7 +428,7 @@
       if( missing(value) ) private$.family
       else
       {
-        if(! "gamlss.family" %in% class(value) )
+        if(! "gamlss.family" %in% class(as.gamlss.family(value)) )
         {
           stop("`family`=", value, " is not in ",
                "gamlss.family, see `?gamlss.dist::gamlss.family`")
@@ -443,7 +443,7 @@
                       interactions = NULL,
                       time_power   = NULL,
                       correlation  = NULL,
-                      family       = value,
+                      family       = as.gamlss.family(value),
                       fixed        = NULL,
                       random       = NULL,
                       formula      = NULL,
@@ -736,6 +736,7 @@
 #' @importFrom nlme corSymm
 #' @import gamlss
 #' @importFrom gamlss re
+#' @import moments
 #'
 #' @export
 #'
@@ -839,6 +840,21 @@
 #' @section Methods:
 #' \describe{
 #'
+#'   \item{\code{dist(count=FALSE, to01=FALSE, multinom=FALSE, model=NULL,
+#'   parallel="snow", plot=TRUE)}}
+#'   {This method plots the density of your dependent variable if \code{plot=TRUE} and
+#'   lets the user implement \code{gamlss} automated
+#'   distribution comparisons. If \code{model=NULL}, the \code{\link{fitDist}}
+#'   function is used to compare unconditional models for all applicable distributions.
+#'   If \code{model} is a \code{gamlss} model, the condition models are fit for
+#'   all applicable distributions using \code{\link{chooseDist}}. Whether your
+#'   dependent variable is a count variable cannot be automatically detected, set
+#'   \code{count=TRUE}. If you want to rescale your dependent variable to the (0,1)
+#'   range, set \code{to01=TRUE}. If your depedent variable is multinomial, automated
+#'   distribution comparisons are not implemented, but you should manually change
+#'   your family to one of the \code{\link{MULTIN}} families.
+#'   }
+#'
 #'   \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
 #'   and the raw data.}
 #'
@@ -911,6 +927,10 @@
 #' t1$summary()
 #' t1$describe()
 #' t1$plot()
+#'
+#' # check the distribution, noting that calling $dist() updates $family
+#' t1$dist()
+#' t1$family
 #'
 #' # check the formulae creation
 #' t1$fixed
@@ -1054,13 +1074,22 @@ Palytic <- R6::R6Class("Palytic",
 
                            if(debugforeach) message("\nDebugging is ON.\n\n")
 
-                           if(alignPhase == 'piecewise' &
-                              length(table(data[[phase]])) <= 1)
+                           if( is.null(phase))
                            {
-                             message("\nThere are 0 or 1 phases, changing",
+                             message("\nThere is no phase variable, changing",
                                      "\nalignPhase to 'none'.")
-                             alignPhase <- 'none'
                            }
+                           if(!is.null(phase))
+                           {
+                             if(alignPhase == 'piecewise' &
+                                length(table(data[[phase]])) <= 1)
+                             {
+                               message("\nThere are 0 or 1 phases, changing",
+                                       "\nalignPhase to 'none'.")
+                               alignPhase <- 'none'
+                             }
+                           }
+
 
                            # checks that get used multiple times
                            is.min <- !(is.null(ids) | is.null(dv) | is.null(time))
@@ -1207,6 +1236,114 @@ Palytic$set("public", "summary",
                          try_silent   = self$try_silent                  ,
                          datac        = summary(self$datac[,variables])  ,
                          data         = summary(self$data[,varsInData])  )
+            })
+
+
+# $dist() ####
+Palytic$set("public", "dist",
+            function(count=FALSE, to01=FALSE, multinom=FALSE, model=NULL,
+                     parallel="snow", plot=TRUE)
+            {
+              #
+              options(warn = -1)
+
+              # extract the dv for convenience
+              dv <- self$datac[[self$dv]]
+
+              # descriptive statistics
+              cat("\nDescriptive statistics:\n")
+              print(
+              c(mean     = mean(dv)              ,
+                median   = median(dv)            ,
+                skewness = moments::skewness(dv) ,
+                kurtosis = moments::kurtosis(dv) )
+              )
+              cat("\n\n")
+
+              # plot
+              if(plot)
+              {
+                y  <- data.frame(y=dv)
+                yq <- ggplot(y, aes(sample=y)) + stat_qq() + stat_qq_line()
+                yd <- ggplot(y, aes(x=y)) + geom_density() + xlab(self$dv)
+                grid.arrange(yq, yd, nrow=2)
+              }
+
+              # beta
+              if(to01) dv <- to01(dv)
+
+              # get the bounds on the dv
+              isInt <- all.equal(dv, round(dv,0))
+              isBin <- length(table(dv))==2
+              is01  <- min(dv) >= 0 & max(dv) <= 1
+              min0  <- min(dv) >= 0
+
+              # check count
+              if(count & !isInt)
+              {
+                stop("\nYou specified that ", self$dv, " was a count variable, but",
+                     "\nnon-integer values are present in the data.")
+              }
+
+              # check multinomial
+              if(multinom & !isInt)
+              {
+                stop("\nYou specified that ", self$dv, " was a multinomial variable,",
+                     "\nbut non-integer values are present in the data.")
+              }
+
+              # set the type parameter
+              type <- as.character(NA)
+              if(!count & !min0) type <- "realline"
+              if(!count &  min0) type <- "realplus"
+              if(is01)           type <- "real0to1"
+              if( count & isInt) type <- "counts"
+              if(isBin)          type <- "binom"
+              if(multinom)       type <- "multinom"
+              if(is.na(type))
+              {
+                stop("\nDistribution comparison cannot be implemented for ", self$dv)
+              }
+              if(type == "multinom")
+              {
+                stop("\nDistribution comparisons are not implemented for multinomial",
+                     "\noutcomes.")
+              }
+
+              if(!is.null(model) & ! "gamlss" %in% class(model))
+              {
+                stop("\nThe model you provided is not a `gamlss` object.\n",
+                     self$dv, " will be used univariately instead of the model.")
+                model <- NULL
+              }
+
+              if(is.null(model))
+              {
+                sink(file='sink.txt')
+                family <- fitDist(dv, type = type, try.gamlss = TRUE)
+                sink(); file.remove('sink.txt')
+                print(family)
+                message("\nTo explore this distribution, type\n",
+                        "\nlibrary(gamlss.demo)",
+                        "\ndev.new()",
+                        "\ngamlss.demo()\n",
+                        "\ninto the console, find your distribution, and use the",
+                        "\nslider bars to select the parameters printed above",
+                        "\n(mu, sigma, nu, and tau).")
+                family <- family$family[1]
+              }
+
+              if(!is.null(model) & "gamlss" %in% class(model))
+              {
+                family <- chooseDist(model, type = type, parallel = parallel,
+                                     ncpus = parallel::detectCores() - 1)
+                family <- names(getOrder(family))[which.min(family)]
+              }
+
+              self$family <- as.gamlss.family(family)
+
+              options(warn =  0)
+
             })
 
 # $describe() ####
@@ -1392,7 +1529,7 @@ Palytic$set("public", "lme",
               n <- length(table(tempData[[self$ids]]))
               if(fpc) fpcCheck(popsize2, n)
 
-              # github issue #1
+              # eval parse ok b/c correlation is validated
               cor <- eval(parse(text = ifelse(!is.null(self$correlation),
                                               self$correlation,
                                               'NULL')))

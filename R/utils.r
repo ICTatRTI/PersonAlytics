@@ -153,7 +153,7 @@ forms <- function(data                     ,
   #corFromPalyticObj
 
   # a placeholder for (r)andom (int)ercepts designations
-  rint <- ""
+  rint <<- ""
 
   # check whether piecewise model has been requested
   piecewise <- any(grepl('pwtime', names(data)))

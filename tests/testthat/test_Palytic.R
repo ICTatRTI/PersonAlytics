@@ -30,7 +30,7 @@ test_that("PalyticBasics",
   # repeat 'by hand' to check that gamlss is using AR1
   formar <- t1.gamlss.ar1$PalyticSummary$formula
   t1.gamlss.ar1s2 <- summary( gamlss(form1, data = OvaryICT) )
-  expect_false(all.equal(t1.gamlss.ar1s2, t1.gamlss.ar1s, tolerance = 0.01))
+  expect_false(identical(t1.gamlss.ar1s2, t1.gamlss.ar1s))
 
   # WIP - the lme varFuncs are not working
   if(1==2)
