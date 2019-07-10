@@ -125,3 +125,30 @@ test_that("PalyticICC",
 
 })
 }
+
+# there are still some small differences that I need to track down between
+# the manual model
+test_that("groupAR_Order",
+{
+  # 'manual' model
+  OvaryICT <<- PersonAlytics::OvaryICT
+
+  ctrl <- nlme::lmeControl(opt="optim")
+  m1 <- lme(follicles ~ Time * Phase, data = OvaryICT, random = ~ Time | Mare,
+            correlation = corARMA(p=0,q=2), control = ctrl, method = "REML")
+  #m1$call
+  #dim(m1$data)
+
+  t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                    time='Time', phase='Phase')
+  t1$GroupAR_order()
+  m1t <- t1$lme()
+  #m1t$call
+  #dim(m1t$data)
+
+  expect_equal(summary(m1)$tTable, m1t$tTable, tolerance = .01)
+
+  expect_equal(m1$modelStruct, m1t$modelStruct, tolerance = .01)
+
+}
+)

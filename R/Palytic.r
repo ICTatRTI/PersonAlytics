@@ -1796,6 +1796,10 @@ Palytic$set("public", "GroupAR_order",
               message("\nAutomatic detection of the residual\n",
                       "correlation structure took: ",
                       capture.output(Sys.time() - start), ".\n\n")
+
+              message("\nThe best correlation structure among those tested is ", bestCor, "\n\n")
+
+              self$correlation <- bestCor
             },
             overwrite = TRUE
 )
