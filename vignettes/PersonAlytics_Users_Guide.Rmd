@@ -123,7 +123,7 @@ The first five parameters that can be provided to `PersonAlytic()` are
 5. `time`: the name of the time variable. This must be a quoted variable name matching your dependent varibale in the data set that you provided to the parameter `data`.
 
 ```{r}
-t1 <- PersonAlytic(data=OvaryICT,
+t1 <- PersonAlytic(data=PersonAlytics::OvaryICT,
                 ids="Mare",
                 dvs="follicles",
                 phase="Phase",

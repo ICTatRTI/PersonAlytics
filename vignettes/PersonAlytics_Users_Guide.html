@@ -10,16 +10,16 @@
 
 <meta name="viewport" content="width=device-width, initial-scale=1">
 
-<meta name="author" content="Stephen Tueller" />
+<meta name="author" content="Stephen Tueller, Ty Ridenour, Derek Ramirez" />
 
-<meta name="date" content="2018-08-21" />
+<meta name="date" content="2019-07-11" />
 
-<title>PersonAlytics User’s Guide</title>
+<title>PersonAlytics© User’s Guide</title>
 
 
 
 <style type="text/css">code{white-space: pre;}</style>
-<style type="text/css">
+<style type="text/css" data-origin="pandoc">
 div.sourceCode { overflow-x: auto; }
 table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
   margin: 0; padding: 0; vertical-align: baseline; border: none; }
@@ -55,7 +55,29 @@ code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
 code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
 code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
 code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
 </style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
 
 
 
@@ -68,21 +90,67 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
 
 
 
-<h1 class="title toc-ignore">PersonAlytics User’s Guide</h1>
-<h4 class="author"><em>Stephen Tueller</em></h4>
-<h4 class="date"><em>2018-08-21</em></h4>
+<h1 class="title toc-ignore">PersonAlytics© User’s Guide</h1>
+<h4 class="author"><em>Stephen Tueller, Ty Ridenour, Derek Ramirez</em></h4>
+<h4 class="date"><em>2019-07-11</em></h4>
 
 
-
-<div id="introduction" class="section level2">
-<h2>Introduction</h2>
-<p>The pupropose of this vignette is to illustrate how to use <code>PersonAlytics</code> to analyze single case time series data (also knows as single subject or N-of-1 studies), small sample intensivel longitudinal design data, and ideographic clinical trial data (ICT). An ICT is a single-case or small sample longitudinal data set multiple treatment conditions (at a minimum, a control and treatment conditions).</p>
-<p>The <code>PersonAlytic</code> framework</p>
+<div id="TOC">
+<ul>
+<li><a href="#introduction"><span class="toc-section-number">1</span> Introduction</a></li>
+<li><a href="#installing-personalytics"><span class="toc-section-number">2</span> Installing <code>PersonAlytics</code></a></li>
+<li><a href="#starting-personalytics"><span class="toc-section-number">3</span> Starting <code>PersonAlytics</code></a></li>
+<li><a href="#personalytic-features"><span class="toc-section-number">4</span> <code>PersonAlytic()</code> Features</a><ul>
+<li><a href="#naming-your-output"><span class="toc-section-number">4.1</span> Naming your output</a></li>
+<li><a href="#automatic-detection-of-the-timeoutcome-relationship"><span class="toc-section-number">4.2</span> Automatic detection of the time/outcome relationship</a></li>
+<li><a href="#automatic-detection-of-the-residual-correlation-structure"><span class="toc-section-number">4.3</span> Automatic detection of the residual correlation structure</a></li>
+<li><a href="#high-throughput-analyses"><span class="toc-section-number">4.4</span> High throughput analyses</a><ul>
+<li><a href="#false-discovery-rate-fdr-and-type-i-error-adjustments"><span class="toc-section-number">4.4.1</span> False discovery rate (FDR) and Type-I error adjustments</a></li>
+<li><a href="#selecting-predictors-with-the-largest-effect-sizes"><span class="toc-section-number">4.4.2</span> Selecting predictors with the largest effect sizes</a></li>
+</ul></li>
+<li><a href="#generalized-linear-mixed-effects-models"><span class="toc-section-number">4.5</span> Generalized linear mixed effects models</a></li>
+</ul></li>
+<li><a href="#reading-the-output"><span class="toc-section-number">5</span> Reading the Output</a><ul>
+<li><a href="#single-analysis-output"><span class="toc-section-number">5.1</span> Single analysis output</a></li>
+<li><a href="#high-throughput-output"><span class="toc-section-number">5.2</span> High throughput output</a></li>
+</ul></li>
+<li><a href="#additional-considerations"><span class="toc-section-number">6</span> Additional Considerations</a><ul>
+<li><a href="#interaction-terms"><span class="toc-section-number">6.1</span> Interaction terms</a></li>
+<li><a href="#standardizing-data"><span class="toc-section-number">6.2</span> Standardizing data</a></li>
+<li><a href="#phase-alignment"><span class="toc-section-number">6.3</span> Phase alignment</a></li>
+<li><a href="#character-substitution-in-variable-names"><span class="toc-section-number">6.4</span> Character substitution in variable names</a></li>
+<li><a href="#modeling-the-variance-in-linear-models"><span class="toc-section-number">6.5</span> Modeling the variance in linear models</a></li>
+<li><a href="#finite-population-correction"><span class="toc-section-number">6.6</span> Finite population correction</a></li>
+</ul></li>
+</ul>
 </div>
-<div id="installing-personalytics" class="section level2">
-<h2>Installing <code>PersonAlytics</code></h2>
+
+<div id="introduction" class="section level1">
+<h1><span class="header-section-number">1</span> Introduction</h1>
+<p>The pupropose of this vignette is to illustrate how to use <code>PersonAlytics</code> to analyze</p>
+<ol style="list-style-type: decimal">
+<li><p>Single case time series data, also known as single subject or N-of-1 studies.</p></li>
+<li><p>Small sample intensive longitudinal design data.</p></li>
+<li><p>Ideographic clinical trial data (ICT), which a single-case or small sample longitudinal data set multiple treatment conditions (at a minimum, a baseline and follow-up condition) where all partipants exerience all treatment conditions.</p></li>
+<li><p>Automated high throughput analyses of these models in situations where the combination of predictors, outcomes, and/or individual level models yields an unweildly number of analyses to implement manually.</p></li>
+</ol>
+<p>These three types of data are analyzed using longitudinal mixed effects models, also known as hierarchical linear models, multilevel models, latent growth curve models, or mixed method trajectory analysis. There are already several R packages such as <code>nlme</code> and <code>gamlss</code> that can be used to implement these models. The purpose of the Personalytics package is to automate the following:</p>
+<ol style="list-style-type: decimal">
+<li><p>Model selection for detecting the shape of the trajectory over time. Using a good fitting trajectory shape yields parameters that correspond to the shape and improve interpretability. Current options include polynomial growth and piecewise growth.</p></li>
+<li><p>Model selection for detecting an appropriate time series model for the residuals. Getting a good fitting residual covariance model improves standard error estimation.</p></li>
+<li><p>Automate studies which may have thousands or millions of combinations of</p></li>
+</ol>
+<ul>
+<li><p>outcomes</p></li>
+<li><p>predictors</p></li>
+<li><p>individual level models</p></li>
+</ul>
+<p>The <code>PersonAlytic</code> framework – Ty –</p>
+</div>
+<div id="installing-personalytics" class="section level1">
+<h1><span class="header-section-number">2</span> Installing <code>PersonAlytics</code></h1>
 <p>First you must install <code>R</code>, available at <code>https://cran.r-project.org/</code>. It is also suggested that you use a modern code editor such as Rstudio (<code>https://www.rstudio.com/</code>).</p>
-<p><code>PersonAlytics</code> requries several packages which can be installed (or updated if you already have them) by pasting the following code<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> into your <code>R</code> console:</p>
+<p><code>PersonAlytics</code> requries several packages which can be installed (or updated if you already have them) by pasting the following function<a href="#fn1" class="footnoteRef" id="fnref1"><sup>1</sup></a> into your <code>R</code> console:</p>
 <div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">install.deps &lt;-<span class="st"> </span><span class="cf">function</span>(pkg)
 {
   new.pkg &lt;-<span class="st"> </span>pkg[<span class="op">!</span>(pkg <span class="op">%in%</span><span class="st"> </span><span class="kw">installed.packages</span>()[, <span class="st">&quot;Package&quot;</span>])]
@@ -90,59 +158,282 @@ code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Inf
   <span class="cf">if</span> (<span class="kw">length</span>(new.pkg)) <span class="kw">install.packages</span>(new.pkg, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>,
                                         <span class="dt">repos =</span> <span class="st">&quot;https://cran.rstudio.com/&quot;</span>)
   <span class="cf">if</span> (<span class="kw">length</span>(old.pkg)) <span class="kw">update.packages</span>(old.pkg, <span class="dt">dependencies =</span> <span class="ot">TRUE</span>)
-}
-packages &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">&quot;gamlss&quot;</span>, <span class="st">&quot;ggplot2&quot;</span>, <span class="st">&quot;multilevel&quot;</span>, <span class="st">&quot;nlme&quot;</span>, <span class="st">&quot;R6&quot;</span>)
-<span class="kw">install.deps</span>(packages)</code></pre></div>
-<p>The packages on which <code>PersonAlytics</code> builds include</p>
-<ul>
-<li><code>gamlss</code> which is used to fit mixed effects models with multiple distributions</li>
-<li><code>ggplot2</code> for plotting results (not yet implemented)</li>
-<li><code>multilevel</code> for illustrating intraclass correlation estimation</li>
-<li><code>nlme</code> which is used to fit mixed effects models with normal outcomes</li>
-<li><code>R6</code> an object-oriented approach to programming in R for creating <code>Palytic</code> objects, which can be thought of as a suitecase containing all your data and tools for fitting models and displaying results</li>
-</ul>
+}</code></pre></div>
+<p>The following packages should then be installed using the <code>install.deps</code> function as follows:</p>
+<pre><code>install.deps(c('doSNOW', 'forecast', 'foreach', 'gamlss', 'gamlss.tr', 'gridExtra', 'ggplot2', 'multilevel', 'nlme', 'parallel', 'plyr', 'R6', 'RColorBrewer', 'snow', 'tryCatchLog', 'moments')) </code></pre>
 <p>Now you’re ready to install <code>PersonAlytics</code> <code>install.packages(&quot;.../path/on/your/computer/PersonAlytics_0.0.1.tar.gz&quot;, repos = NULL, type = &quot;source&quot;)</code>. To obtain this file, contact the authors at <a href="https://personalytics.rti.org/" class="uri">https://personalytics.rti.org/</a>.</p>
 </div>
-<div id="starting-personalytics" class="section level2">
-<h2>Starting <code>PersonAlytics</code></h2>
+<div id="starting-personalytics" class="section level1">
+<h1><span class="header-section-number">3</span> Starting <code>PersonAlytics</code></h1>
 <p>Now we can load <code>PersonAlytics</code>:</p>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#library(PersonAlytics)</span></code></pre></div>
-<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co">#' t1 &lt;- PersonAlytic(data=OvaryICT,</span>
-<span class="co">#'                  ids=&quot;Mare&quot;,</span>
-<span class="co">#'                  dv=&quot;follicles&quot;,</span>
-<span class="co">#'                  phase=&quot;Phase&quot;,</span>
-<span class="co">#'                  time=&quot;Time&quot;)</span>
-<span class="co">#' # individual level analyses</span>
-<span class="co">#' w &lt;- OvaryICT$Mare==1</span>
-<span class="co">#' t2 &lt;- PersonAlytic(data=OvaryICT,</span>
-<span class="co">#'                  ids=&quot;Mare&quot;,</span>
-<span class="co">#'                  dv=&quot;follicles&quot;,</span>
-<span class="co">#'                  phase=&quot;Phase&quot;,</span>
-<span class="co">#'                  time=&quot;Time&quot;,</span>
-<span class="co">#'                  subgroup=w)</span>
-<span class="co">#' summary(t2)</span>
-<span class="co">#' # individual level analyses with standardized data</span>
-<span class="co">#' t3 &lt;- PersonAlytic(data=OvaryICT,</span>
-<span class="co">#'                  ids=&quot;Mare&quot;,</span>
-<span class="co">#'                  dv=&quot;follicles&quot;,</span>
-<span class="co">#'                  phase=&quot;Phase&quot;,</span>
-<span class="co">#'                  time=&quot;Time&quot;,</span>
-<span class="co">#'                  subgroup=w,</span>
-<span class="co">#'                  standardize=TRUE)</span>
-<span class="co">#' summary(t3)</span>
-<span class="co">#' # interaction terms with nlme estimation</span>
-<span class="co">#' set.seed(123)</span>
-<span class="co">#' OvaryICT$iv1 &lt;- factor(cut(runif(nrow(OvaryICT)), breaks=2), labels=c(0,1))</span>
-<span class="co">#' t4 &lt;- PersonAlytic(data=OvaryICT,</span>
-<span class="co">#'                  ids=&quot;Mare&quot;,</span>
-<span class="co">#'                  dv=&quot;follicles&quot;,</span>
-<span class="co">#'                  phase=&quot;Phase&quot;,</span>
-<span class="co">#'                  interactions=list(c('Time', 'Phase'),</span>
-<span class="co">#'                                    c('Time', 'iv1'),</span>
-<span class="co">#'                                    c('Phase',   'iv1')),</span>
-<span class="co">#'                  time=&quot;Time&quot;,</span>
-<span class="co">#'                  package=&quot;nlme&quot;)</span>
-<span class="co">#' summary(t4)</span></code></pre></div>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(PersonAlytics)</code></pre></div>
+<p>We will illustrate the basic options of the <code>PersonAlytic()</code> function using the Ovary data from the <code>nlme</code> package which have been modified to represent an ICT. The <code>PersonAlytic()</code> function is the primary user interface for the <code>PersonAlytics</code> package. You can access the documentation for <code>PersonAlytic()</code> by typing</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">?PersonAlytic</code></pre></div>
+<p>The first six rows of the OvaryICT data are shown in Table x where it can be seen that the original Ovary data set has been augmented with Phase variables (which are an essentialy component of an ICT) and six randomly generated predictors named Target1 to Target6 (these will be used later).</p>
+<table>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">Mare</th>
+<th align="right">Time</th>
+<th align="right">follicles</th>
+<th align="right">Phase</th>
+<th align="left">Phase2</th>
+<th align="left">Target1</th>
+<th align="left">Target2</th>
+<th align="left">Target3</th>
+<th align="right">Target4</th>
+<th align="right">Target5</th>
+<th align="right">Target6</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>83</td>
+<td align="right">1</td>
+<td align="right">-0.1363636</td>
+<td align="right">9</td>
+<td align="right">0</td>
+<td align="left">1</td>
+<td align="left">2</td>
+<td align="left">1</td>
+<td align="left">4</td>
+<td align="right">-0.5333721</td>
+<td align="right">0.1833521</td>
+<td align="right">0.7350656</td>
+</tr>
+<tr class="even">
+<td>84</td>
+<td align="right">1</td>
+<td align="right">-0.0909091</td>
+<td align="right">9</td>
+<td align="right">0</td>
+<td align="left">1</td>
+<td align="left">2</td>
+<td align="left">1</td>
+<td align="left">2</td>
+<td align="right">-1.3722695</td>
+<td align="right">1.3395570</td>
+<td align="right">0.6338167</td>
+</tr>
+<tr class="odd">
+<td>85</td>
+<td align="right">1</td>
+<td align="right">-0.0454546</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="left">1</td>
+<td align="left">4</td>
+<td align="left">4</td>
+<td align="left">4</td>
+<td align="right">-2.2079198</td>
+<td align="right">1.2023291</td>
+<td align="right">1.2387443</td>
+</tr>
+<tr class="even">
+<td>86</td>
+<td align="right">1</td>
+<td align="right">0.0000000</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left">3</td>
+<td align="left">4</td>
+<td align="right">1.8221225</td>
+<td align="right">0.8718355</td>
+<td align="right">0.2318962</td>
+</tr>
+<tr class="odd">
+<td>87</td>
+<td align="right">1</td>
+<td align="right">0.0454546</td>
+<td align="right">7</td>
+<td align="right">0</td>
+<td align="left">1</td>
+<td align="left">3</td>
+<td align="left">1</td>
+<td align="left">4</td>
+<td align="right">-0.6533934</td>
+<td align="right">-0.1164268</td>
+<td align="right">-0.3144379</td>
+</tr>
+<tr class="even">
+<td>88</td>
+<td align="right">1</td>
+<td align="right">0.0909091</td>
+<td align="right">6</td>
+<td align="right">0</td>
+<td align="left">1</td>
+<td align="left">1</td>
+<td align="left">2</td>
+<td align="left">3</td>
+<td align="right">-0.2846812</td>
+<td align="right">0.3428285</td>
+<td align="right">1.4997037</td>
+</tr>
+</tbody>
+</table>
+<p>The first five parameters that can be provided to <code>PersonAlytic()</code> are</p>
+<ol style="list-style-type: decimal">
+<li><p><code>data</code>: the name of your data set. This data needs to have been read into R prior to using <code>PersonAlytic()</code>. A web search can be used to learn how to read in multiple types of data into R, including (but not limited to) csv, xlsx, sas, stata, spss, and most database formats. Since we assume that the data has alread y been read into R, it has an R variable name and no quotes are needed.</p></li>
+<li><p><code>ids</code>: the name of the identification variable. This must be a quoted variable name matching your ID variable in the data set that you provided to the parameter <code>data</code>.</p></li>
+<li><p><code>dvs</code>: the name of the dependent variable. This must be a quoted variable name matching your dependent variable in the data set that you provided to the parameter <code>data</code>. For multiple dependent variables, see Section xx.</p></li>
+<li><p><code>phase</code>: the name of the phase variable. This is required for an ICT but is not required by <code>PersonAlytic()</code>. This must be a quoted variable name matching your dependent variable in the data set that you provided to the parameter <code>data</code>.</p></li>
+<li><p><code>time</code>: the name of the time variable. This must be a quoted variable name matching your dependent varibale in the data set that you provided to the parameter <code>data</code>.</p></li>
+</ol>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">t1 &lt;-<span class="st"> </span><span class="kw">PersonAlytic</span>(<span class="dt">data=</span>PersonAlytics<span class="op">::</span>OvaryICT,
+                <span class="dt">ids=</span><span class="st">&quot;Mare&quot;</span>,
+                <span class="dt">dvs=</span><span class="st">&quot;follicles&quot;</span>,
+                <span class="dt">phase=</span><span class="st">&quot;Phase&quot;</span>,
+                <span class="dt">time=</span><span class="st">&quot;Time&quot;</span>)</code></pre></div>
+<pre><code>## 
+## 
+## PersonAlytics: Automatic detection of the
+## time/outcome relationship starting...</code></pre>
+<pre><code>## 
+## Automatic detection of the time/outcome
+## relationship took: Time difference of 1.702417 secs.</code></pre>
+<pre><code>## 
+## 
+## PersonAlytics: Automatic detection of the
+## residual correlation structure starting...</code></pre>
+<pre><code>## 
+  |                                                                       
+  |======================                                           |  33%
+  |                                                                       
+  |===========================================                      |  67%
+  |                                                                       
+  |=================================================================| 100%</code></pre>
+<pre><code>## 
+## Automatic detection of the residual
+## correlation structure took: Time difference of 26.46047 secs.</code></pre>
+<pre><code>## 
+## The best correlation structure among those tested is NULL</code></pre>
+<p>In the console output shows two automations implemented in PersonAlytics. The first is ‘Automatic detection of the time/outcome relationship’ and the second is ‘Automatic detection of the residual correlation structure’. These will be described in detail in Section x and Section x, respectively.</p>
+<p>The object ‘t1’ is has class <code>lme</code></p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">class</span>(t1)</code></pre></div>
+<pre><code>## [1] &quot;lme&quot;</code></pre>
+<p>If you are familiar with the <code>lme</code> package, this is an implementation of the linear (normal) mixed effects model.</p>
+</div>
+<div id="personalytic-features" class="section level1">
+<h1><span class="header-section-number">4</span> <code>PersonAlytic()</code> Features</h1>
+<div id="naming-your-output" class="section level2">
+<h2><span class="header-section-number">4.1</span> Naming your output</h2>
+<p>The argument <code>output</code> is character string that will be used to name a file for saving output. If left <code>NULL</code>, the default is ‘PersonAlytic_Output’. Do not give a file extension, these will be added automatically. For example, if output=‘MyResults’, the output file will be called ‘MyResults.csv’ if high throughput options are used, or ‘MyResults.txt’ if only one model is fit. A full path with ‘/’ instead of ‘' can also be used. For example, output=’C:/MyResults’ will produce the files ‘C:/MyResults.csv’ or ‘C:/MyResults.txt’. If a full path is not given, the results will be saved in the working directory (see <code>?getwd</code>).</p>
+</div>
+<div id="automatic-detection-of-the-timeoutcome-relationship" class="section level2">
+<h2><span class="header-section-number">4.2</span> Automatic detection of the time/outcome relationship</h2>
+<ol style="list-style-type: decimal">
+<li><p><code>detectTO</code> turns automatic detection of the time/outcome relationship on or off. Options are <code>TRUE</code> and <code>FALSE</code>. Automatic detection is implemented using likelihood ratio test of the model with <span class="math inline">\(Y=Time + Time^2 + \dots + Time^{O}\)</span> vs. <span class="math inline">\(Y=Time + Time^2 + \dots + Time^{O - 1}\)</span> where <span class="math inline">\(O\)</span> is the polynomial order of the time variable.</p></li>
+<li><p><code>maxOrder</code> is the largest value of <span class="math inline">\(O\)</span> to test. Only used if <code>detectTO=TRUE</code> and <code>alignPhase='none'</code> or <code>alignPhase='align'</code> .</p></li>
+<li><p><code>alignPhase</code> gives options for aligning the time variable with the phase variable.</p>
+<ul>
+<li><p><code>alignPhase='none'</code> is the default and the time variable is left as-is.</p></li>
+<li><p><code>alignPhase='align'</code> aligns the time variable at the transition from the first and second phase within each participant. This alignment makes it so the effect at time=0 is the start of the second phase. For example, if the second phase starts at time 6 for participant A, and at time 8 for participant B, and there are 15 timepoints for each starting at 1:</p>
+<ul>
+<li>Participant A’s resulting time variable will be -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.</li>
+<li>Participant B’s resulting time variable will be -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7.</li>
+</ul></li>
+<li><p><code>alignPhase='piecewise'</code> create a piecewise straight-line growth model within each phase. This option can be use to simplify complex trajectories when the within-phase trajectory is approximately linear within each phase. Although this may make results easier to interprent than a curvelinear model (e.g., when O=3), the piecewise model may have many more random effects and therefore be less parsimonious than a model with polynomial time. If <code>alignPhase='piecewise'</code>, <code>detectTO</code> and <code>maxOrder</code> are ignored.</p></li>
+</ul></li>
+<li><p><code>time_power</code> is used when <code>detecTO=FALSE</code> and you want to specify a value for <span class="math inline">\(O\)</span>.</p></li>
+</ol>
+</div>
+<div id="automatic-detection-of-the-residual-correlation-structure" class="section level2">
+<h2><span class="header-section-number">4.3</span> Automatic detection of the residual correlation structure</h2>
+<ol style="list-style-type: decimal">
+<li><p><code>detectAR</code> turns automatic detection of the residual correlation structure on or off. Options are <code>TRUE</code> and <code>FALSE</code>.</p>
+<ul>
+<li><p>If n=1, automatic detection is implemented using the <code>auto.arima</code> function of the <code>forecast</code> package. See <code>?auto.arima</code>.</p></li>
+<li><p>If n&gt;1, automatic detection is implemented by comparing the random intercept model with time as specified in the prior section, adding all combinations of <code>ARMA(p,q)</code> models for the residuals where <span class="math inline">\(p=0,\dots,P\)</span> and <span class="math inline">\(q=0,\dots,Q\)</span>. The values of <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span> are specified in the argument <code>PQ</code>. Model comparisons are done using either Akaike’s Information Criterion (AIC) or the Bayesian Information Criterion (BIC) as specified by the argument <code>whichIC</code>. Likelihood ratio tests are not an option here as not all <code>ARMA(p,q)</code> models are nested.</p></li>
+</ul></li>
+<li><p><code>PQ</code> is a pair of numbers specifying the maximum order of <span class="math inline">\(P\)</span> and <span class="math inline">\(Q\)</span> in ARMA models to be compared for detecting an adequate residual correlation structure. The default is <code>PQ=c(3,3)</code>. See also <code>max.p</code> and <code>max.q</code> in <code>?auto.arima</code> (not to be confused with <code>max.P</code> and <code>max.Q</code> which are parameters for a seasonal model and are not currently implemented).</p></li>
+<li><p><code>whichIC</code> specifies the information criterion for selectiong the best fitting ARMA(p,q) model. Options are <code>whichIC='BIC'</code> and <code>whichIC='AIC'</code>. BIC is the default.</p></li>
+<li><p><code>correlation</code> is used to specify a correlation structure when <code>detectAR=FALSE</code>. All correlation structures in the <code>nlme</code> package are options. Load <code>nlme</code> using <code>library(nlme</code>) and type <code>?corStruct</code> into the R console for options. The value given must be quoted, e.g., <code>correlation='corAR1()'</code>.</p></li>
+</ol>
+</div>
+<div id="high-throughput-analyses" class="section level2">
+<h2><span class="header-section-number">4.4</span> High throughput analyses</h2>
+<p>High throughput analyses are automatically implemented when any of the following are present. If all are present, all possible combinations are fit.</p>
+<ol style="list-style-type: decimal">
+<li><p><code>dvs</code> has more than one dependent variable.</p></li>
+<li><p><code>target_ivs</code> has more than one target independent variable that should be added to the model one at a time (as opposed to <code>ivs</code> which are all included in every model across all combinations of <code>dvs</code>, <code>target_ivs</code>, and indivdiuals).</p></li>
+<li><p><code>individual_mods=TRUE</code>, which fits the model separately for each individual specified in <code>ids</code>.</p></li>
+</ol>
+<p>When high throughput analyses are invoked, the following arguments control the model fitting and output:</p>
+<ul>
+<li><code>cores</code>: Parallelization is the process of splitting all the models across the processing cores on your computer to speed model estimation. By default, <code>ICTpower</code> uses one fewer cores than are available on your machine. You can override this using the <code>cores</code> argument. It is not recommended that you specify more cores than are available on your machine as it may cause R or your computer to crash. Use an internet search (including your operating system in the search terms) to find instructions on determining the number of cores your computer has.</li>
+</ul>
+<div id="false-discovery-rate-fdr-and-type-i-error-adjustments" class="section level3">
+<h3><span class="header-section-number">4.4.1</span> False discovery rate (FDR) and Type-I error adjustments</h3>
+<p><code>p.method</code>: When <code>target_ivs</code> has more than one target independent variable, p-value adjustments can be made across <code>target_ivs</code> within each depedent variable in <code>dvs</code> and/or each individual in <code>ids</code> if <code>individual_mods=TRUE</code>. The options are those availble in the <code>p.adjust</code> function whose documentation can be viewed by typing <code>?p.adjust</code> into the R console. The default is <code>p.method='BY'</code>. <code>alpha</code> is the Type I error rate used for adjusting p-values.</p>
+</div>
+<div id="selecting-predictors-with-the-largest-effect-sizes" class="section level3">
+<h3><span class="header-section-number">4.4.2</span> Selecting predictors with the largest effect sizes</h3>
+<ul>
+<li><code>nbest</code>: When <code>target_ivs</code> has more than one target independent variable, an additional report can extract the <code>nbest</code> target independent variables as defined by those target indepedent variable with the largest coefficients among those with <span class="math inline">\(p&lt;=\alpha\)</span>. If the target independent variables are on different scales, you should standardize them first using the <code>standardize</code> argument (descriped in detail later in its own section).</li>
+</ul>
+</div>
+</div>
+<div id="generalized-linear-mixed-effects-models" class="section level2">
+<h2><span class="header-section-number">4.5</span> Generalized linear mixed effects models</h2>
+</div>
+</div>
+<div id="reading-the-output" class="section level1">
+<h1><span class="header-section-number">5</span> Reading the Output</h1>
+<p>Output is named by the <code>output</code> argument of the <code>PersonAlytic</code> function.</p>
+<div id="single-analysis-output" class="section level2">
+<h2><span class="header-section-number">5.1</span> Single analysis output</h2>
+</div>
+<div id="high-throughput-output" class="section level2">
+<h2><span class="header-section-number">5.2</span> High throughput output</h2>
+<p>The high throughput output is a *.csv file that can be opened in any spreadsheet program. The rows are all possible combinations of <code>dvs</code>, <code>target_ivs</code>, and <code>ids</code> (if <code>individual_mods=TRUE</code>). The column variables are in five sets:</p>
+<ol style="list-style-type: decimal">
+<li><p>Variables identify the combination of user inputs that lead to a given row’s analysis.</p></li>
+<li><p>Variables describing whether the analysis converged and variables to help diagnose a failed run (e.g., zero variance in an outcome or indepedent variable.).</p></li>
+<li><p>Descriptive statistics.</p></li>
+<li>Model results with a parameter estimate, standard error, t-value, degrees of freedom, and p-value.</li>
+<li><p>If <code>fpc&gt;0</code>. model relusts repeated with a finite population correction for the standard error (and consequently, the p-value).</p></li>
+</ol>
+</div>
+</div>
+<div id="additional-considerations" class="section level1">
+<h1><span class="header-section-number">6</span> Additional Considerations</h1>
+<div id="interaction-terms" class="section level2">
+<h2><span class="header-section-number">6.1</span> Interaction terms</h2>
+<p>The argument <code>interactions</code> can be use to specify interactions between independent variables. By default, the <code>time</code> by <code>phase</code> interaction is always included. Additional interactions are specified as a list of paired variables. For example, if you want all interactions between <code>x</code>, <code>y</code>, and <code>z</code>, you would use <code>interactions = list(c('x', 'y'), c('x', 'z'), c('y', 'z'))</code>.</p>
+</div>
+<div id="standardizing-data" class="section level2">
+<h2><span class="header-section-number">6.2</span> Standardizing data</h2>
+<p>Comparisons across multiple depedent variables, or across multiple indepedent variables are made possible by standardizing these variables. This can be done by the user prior to analysis, or via the <code>standardize</code> argument. The <code>standardize</code> argument is a list with three slots named ‘dv’, ‘iv’, and ‘byids’. If <code>dv=TRUE</code> the dependent variables are standardized. If <code>iv=TRUE</code> all of indepedent variables in <code>ivs</code> and <code>target_ivs</code> are standardized. If <code>byids=TRUE</code> standardization is done within each individual rather than across invidivuals.</p>
+</div>
+<div id="phase-alignment" class="section level2">
+<h2><span class="header-section-number">6.3</span> Phase alignment</h2>
+<p><code>alignPhase</code> gives options for aligning the time variable with the phase variable.</p>
+<ul>
+<li><p><code>alignPhase='none'</code> is the default and the time variable is left as-is.</p></li>
+<li><p><code>alignPhase='align'</code> aligns the time variable at the transition from the first and second phase within each participant. This alignment makes it so the effect at time=0 is the start of the second phase. For example, if the second phase starts at time 6 for participant A, and at time 8 for participant B, and there are 15 timepoints for each starting at 1:</p>
+<ul>
+<li>Participant A’s resulting time variable will be -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.</li>
+<li>Participant B’s resulting time variable will be -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7.</li>
+</ul></li>
+<li><p><code>alignPhase='piecewise'</code> create a piecewise straight-line growth model within each phase. This option can be use to simplify complex trajectories when the within-phase trajectory is approximately linear within each phase. Although this may make results easier to interprent than a curvelinear model (e.g., when O=3), the piecewise model may have many more random effects and therefore be less parsimonious than a model with polynomial time. If <code>alignPhase='piecewise'</code>, <code>detectTO</code> and <code>maxOrder</code> are ignored.</p></li>
+</ul>
+</div>
+<div id="character-substitution-in-variable-names" class="section level2">
+<h2><span class="header-section-number">6.4</span> Character substitution in variable names</h2>
+<p><code>charSub</code> is a character list. The default in charSub=NULL.</p>
+<p>A list of paired character strings for character substitution in the output. If the names of the target predictors in <code>target_ivs</code> had to be edited to make valid variable names (see <code>?make.names</code>), this parameter allows users put the illegal characters back in. For example, if the original variable name was “17.00_832.2375m/z”, a letter would need to prefix the variable name and the “/” would need to be replaced with another character, e.g., “X17.00_832.2375m.z”. To get the row names of the output back to original variable name, use charSub=list(c(“X”, “”), c(“m.z”, “m/z”)). Note that inputs to charSub must be in double quotes and are case sensitive. All duplicates will be substituted. For example, if the variable name was “X1X23.x” and charSub=list(c(“X”, “”)), the resulting row label for this variable would be “123.x”.</p>
+</div>
+<div id="modeling-the-variance-in-linear-models" class="section level2">
+<h2><span class="header-section-number">6.5</span> Modeling the variance in linear models</h2>
+</div>
+<div id="finite-population-correction" class="section level2">
+<h2><span class="header-section-number">6.6</span> Finite population correction</h2>
+<p>A finite population correction (FPC) can be used when you sample more than 5% of the population without replacement. In this situation the central limit theorem doesn’t hold and the standard errors of your parameter estimates will be to large. Before illustrating how to implement a finite population correction, we first discuss the conditions under which a finite population correction may make a difference in a power analysis. This will only occur in situation where a large number of the <code>B</code> replications have p-values just larger than alpha and the FPC results in these p-values being less than alpha. In our experience, we rarely run into conditions where this is the case. The p-value distributions are usually smoothly positively skewed or near uniform. Neither of this distributions puts enough p-values near alpha for the FPC to have a large effect on power. This isn’t to say users shouldn’t apply the FPC for real data analyses using the <code>PersonAlytics</code> package, only that they should not expect the FPC to yield large improvement in power.</p>
+<p>The argument <code>fpc</code> can be set to your finite population size and an FPC will be included in the analyses and output.</p>
+</div>
 </div>
 <div class="footnotes">
 <hr />

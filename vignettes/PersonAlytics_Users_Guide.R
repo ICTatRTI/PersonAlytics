@@ -37,3 +37,16 @@ library(PersonAlytics)
 ## ---- eval=FALSE---------------------------------------------------------
 #  ?PersonAlytic
 
+## ---- echo=FALSE---------------------------------------------------------
+kable(head(PersonAlytics::OvaryICT))
+
+## ------------------------------------------------------------------------
+t1 <- PersonAlytic(data=PersonAlytics::OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time")
+
+## ------------------------------------------------------------------------
+class(t1)
+
