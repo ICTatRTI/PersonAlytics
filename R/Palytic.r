@@ -1244,21 +1244,8 @@ Palytic$set("public", "dist",
             function(count=FALSE, to01=FALSE, multinom=FALSE, model=NULL,
                      parallel="snow", plot=TRUE)
             {
-              #
-              options(warn = -1)
-
               # extract the dv for convenience
               dv <- self$datac[[self$dv]]
-
-              # descriptive statistics
-              cat("\nDescriptive statistics:\n")
-              print(
-              c(mean     = mean(dv)              ,
-                median   = median(dv)            ,
-                skewness = moments::skewness(dv) ,
-                kurtosis = moments::kurtosis(dv) )
-              )
-              cat("\n\n")
 
               # plot
               if(plot)
@@ -1273,10 +1260,10 @@ Palytic$set("public", "dist",
               if(to01) dv <- to01(dv)
 
               # get the bounds on the dv
-              isInt <- all.equal(dv, round(dv,0))
+              isInt <- identical(dv, round(dv,0))
               isBin <- length(table(dv))==2
-              is01  <- min(dv) >= 0 & max(dv) <= 1
-              min0  <- min(dv) >= 0
+              is01  <- min(dv, na.rm=TRUE) >= 0 & max(dv, na.rm=TRUE) <= 1
+              min0  <- min(dv, na.rm=TRUE) >= 0
 
               # check count
               if(count & !isInt)
@@ -1319,10 +1306,16 @@ Palytic$set("public", "dist",
 
               if(is.null(model))
               {
-                sink(file='sink.txt')
+                # waring suppresion works, but error suppresion not working, I've tried
+                # suppressWarnings, suppressMessages, sink, capture.output,
+                # R.utils::captureOutput, try, tryCatch, invisible,
+
+                options(warn = -1, error = utils::recover)
                 family <- fitDist(dv, type = type, try.gamlss = TRUE)
-                sink(); file.remove('sink.txt')
+                options(warn =  0, error = NULL)
+
                 print(family)
+
                 message("\nTo explore this distribution, type\n",
                         "\nlibrary(gamlss.demo)",
                         "\ndev.new()",
@@ -1330,6 +1323,7 @@ Palytic$set("public", "dist",
                         "\ninto the console, find your distribution, and use the",
                         "\nslider bars to select the parameters printed above",
                         "\n(mu, sigma, nu, and tau).")
+
                 family <- family$family[1]
               }
 
@@ -1342,7 +1336,15 @@ Palytic$set("public", "dist",
 
               self$family <- as.gamlss.family(family)
 
-              options(warn =  0)
+              # descriptive statistics
+              cat("\nDescriptive statistics:\n")
+              print(
+                c(mean     = mean(dv, na.rm=TRUE)              ,
+                  median   = median(dv, na.rm=TRUE)            ,
+                  skewness = moments::skewness(dv, na.rm=TRUE) ,
+                  kurtosis = moments::kurtosis(dv, na.rm=TRUE) )
+              )
+              cat("\n\n")
 
             })
 
