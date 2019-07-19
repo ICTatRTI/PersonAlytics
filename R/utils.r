@@ -44,6 +44,23 @@ eds <- function(x)
   exists( deparse( substitute(x) ) )
 }
 
+#' dstats - print mena, median, sd, skewness, and kurtosis - 3
+#' @export
+dstats <- function(dv)
+{
+  descriptives <- c(mean     = mean(dv, na.rm=TRUE)                ,
+                    median   = median(dv, na.rm=TRUE)              ,
+                    sd       = sd(dv, na.rm=TRUE)                  ,
+                    skewness = moments::skewness(dv, na.rm=TRUE)   ,
+                    kurtosis = moments::kurtosis(dv, na.rm=TRUE)-3 )
+  # descriptive statistics
+  cat("\nDescriptive statistics:\n")
+  print( descriptives )
+  cat("\n\n")
+
+  invisible( descriptives )
+}
+
 #' monotone
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #' @param ids See \code{\link{PersonAlytic}}.

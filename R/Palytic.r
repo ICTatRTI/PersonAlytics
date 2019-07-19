@@ -1336,15 +1336,8 @@ Palytic$set("public", "dist",
 
               self$family <- as.gamlss.family(family)
 
-              # descriptive statistics
-              cat("\nDescriptive statistics:\n")
-              print(
-                c(mean     = mean(dv, na.rm=TRUE)              ,
-                  median   = median(dv, na.rm=TRUE)            ,
-                  skewness = moments::skewness(dv, na.rm=TRUE) ,
-                  kurtosis = moments::kurtosis(dv, na.rm=TRUE) )
-              )
-              cat("\n\n")
+              # print descriptive statistics to the console
+              dstats(dv)
 
             })
 
