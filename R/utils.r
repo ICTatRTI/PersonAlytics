@@ -48,11 +48,12 @@ eds <- function(x)
 #' @export
 dstats <- function(dv)
 {
-  descriptives <- c(mean     = mean(dv, na.rm=TRUE)                ,
-                    median   = median(dv, na.rm=TRUE)              ,
-                    sd       = sd(dv, na.rm=TRUE)                  ,
-                    skewness = moments::skewness(dv, na.rm=TRUE)   ,
-                    kurtosis = moments::kurtosis(dv, na.rm=TRUE)-3 )
+  descriptives <- c(mean            = mean(dv, na.rm=TRUE)                ,
+                    median          = median(dv, na.rm=TRUE)              ,
+                    sd              = sd(dv, na.rm=TRUE)                  ,
+                    skewness        = moments::skewness(dv, na.rm=TRUE)   ,
+                    kurtosis        = moments::kurtosis(dv, na.rm=TRUE)   ,
+                    kurtosis.minus3 = moments::kurtosis(dv, na.rm=TRUE)-3 )
   # descriptive statistics
   cat("\nDescriptive statistics:\n")
   print( descriptives )
