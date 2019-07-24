@@ -182,21 +182,59 @@
 #' structures (in non-\code{NULL} this will override the automated correlation structure
 #' search), and user specified models via \code{formula}.
 #'
-#' @param detectAR Logical. The default is \code{detectAR=TRUE}.
+#' @param autoDetect List. The default is
+#' \code{
+#' list(AR=list(P=3, Q=3)     ,
+#'   TO=list(polyMax=3)       ,
+#'   DIST=list(count  = FALSE ,
+#'           to01     = FALSE ,
+#'           multinom = FALSE )) }.
 #'
-#' Should the residual autocorrelation structure be automatically selected from
+#' If no automated model selection for the residual covariance structure (\code{AR}),
+#' the polynomial order for the relationship between time and the dependent variable
+#' (\code{TO}), or the dependent variable distribution is desired, an empty list
+#' should be passed (e.g., \code{autoDetect=list()}).
+#'
+#' If \code{AR} is in the list,
+#' the residual correlation structure will be automatically selected from
 #' among \code{ARMA(p,q)} models? See \code{correlation}. Since these models are
 #' not generally nested, model selection is done using information information
-#' criterion (see \code{whichIC}).
-#'
-#' @param PQ Numeric vector of length 2. The default is \code{PQ=c(3,3)}.
-#'
-#' If \code{detectAR=TRUE}, automatic selection of the residual covariance
-#' structure is invoked initializing a search among
+#' criterion (see \code{whichIC}). Model selection for the residual covariance
+#' structure is searches among
 #' \code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
 #' from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
 #' are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
-#' testing (see \code{detectAR}).
+#' testing (see \code{detectAR}). If \code{individual_mods=FALSE}, this done
+#' comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
+#' this is done using the \code{\link{auto.arima}} function on the residuals for
+#' each individual. For more detail, see the \code{\link{$GroupAR_order()}}
+#' method in \code{\link{Palytic}}.
+#'
+#' If \code{TO} is in the list, models with polynomial powers of time from 1 to
+#' \code{polyMax} will be tested.
+#' For example, if \code{polyMax=3} (implying a cubic growth model), the models
+#' compared include \code{time}, \code{time + I(time^2)}, and
+#' \code{time + I(time^2)+I(time^3)}. Since these models are nested, the best
+#' fitting model is selected using likelihood ratio tests with mixed effects
+#' models fit using maximum likelihood estimators in \code{\link{lme}}.
+#' This is done separately for each individual in \code{ids} if
+#' \code{individual_mods=TRUE}. For more detail, see the \code{$getTime_Power()}
+#' method in \code{\link{Palytic}}.
+#'
+#' If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
+#' variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
+#' the gamlss package, and the best fitting distribution will be used for each
+#' depedent variable. For more detail, see the \code{$dist()} method in
+#' \code{\link{Palytic}}. To narrow the distributions that will be tested,
+#' the user must specify whether the dependent is a \code{count}, whether to
+#' rescale the dependent variable to the (0,1) range with \code{to01}, and
+#' whether the variable is multinomial with \code{multinom} in which case
+#' model comparisons are not conducted and a multinomial regression model is
+#' fit (note that only up to five categories are supported). Currently settings
+#' for \code{DIST} apply to all depedent variables in \code{dvs}. This will be
+#' generalized to dependent variable specifics settings in a future release. If
+#' your dependent variables require different \code{DIST} settings, use separate
+#' calls to \code{PersonAlytic}.
 #'
 #' @param whichIC Character. The default is \code{whichIC="BIC"}.
 #'
@@ -212,22 +250,6 @@
 #' Residual autocorrelation structure is detected separately for each individual
 #' in \code{ids} if \code{individual_mods=TRUE}.
 #'
-#' @param detectTO Logical. The default is \code{detectTO=TRUE}.
-#'
-#' Should the \code{time_power} value
-#' be automatically selected? Values from 1 to \code{maxOrder} will be tested.
-#' For example, if \code{maxOrder=3} (implying a cubic growth model), the models
-#' compared include \code{time}, \code{time + I(time^2)}, and
-#' \code{time + I(time^2)+I(time^3)}. Since these models are nested, the best
-#' fitting model is selected using likelihood ratio tests with mixed effects
-#' models fit using maximum likelihood estimators in \code{\link{lme}}.
-#'
-#' This is done separately for each individual in \code{ids} if
-#' \code{individual_mods=TRUE}.
-#'
-#' @param maxOrder Numeric. The default is \code{maxOrder=3}.
-#'
-#' See \code{detectTO}.
 #'
 #' @param charSub Character list. The default in \code{charSub=NULL}.
 #'
@@ -442,11 +464,12 @@ PersonAlytic <- function(output          = NULL                                 
                          package         = 'nlme'                                ,
                          individual_mods = FALSE                                 ,
                          PalyticObj      = NULL                                  ,
-                         detectAR        = TRUE                                  ,
-                         PQ              = c(3,3)                                ,
+						             autoDetect      = list(AR=list(P=3, Q=3)     ,
+						                                 TO=list(polyMax=3)       ,
+						                                 DIST=list(count  = FALSE ,
+						                                         to01     = FALSE ,
+						                                         multinom = FALSE ))         ,
                          whichIC         = c("BIC", "AIC")                       ,
-                         detectTO        = TRUE                                  ,
-                         maxOrder        = 3                                     ,
                          charSub         = NULL                                  ,
                          sigma.formula   = ~1                                    ,
                          p.method        = "BY"                                  ,
@@ -602,7 +625,8 @@ pa1 <- function(e=parent.frame())
                     correlation=e$correlation   ,
                     family=e$family             ,
                     method=e$method             ,
-                    standardize=e$standardize   )
+                    standardize=e$standardize   ,
+                    autoDetect=e$autoDetect     )
 
   # allow for formula override so that we can test intercept only and
   # slope only models
@@ -621,16 +645,16 @@ pa1 <- function(e=parent.frame())
     if( isnnform(e$userFormula$formula) ) t1$formula <- e$userFormula$formula
   }
 
-  # check time order first, that way the time order carries over to
-  # the AR, which should be residuals on the fullest model
+  # autodetection
+  if(e$package=="nlme")
+  {
+    temp <- t1$autoDetect
+    temp$DIST <- NULL
+    t1$autoDetect <- temp; rm(temp)
+  }
+  t1$detect(model=NULL, parallel="snow", plot=FALSE, userFormula=e$userFormula,
+            dims=list(ID="All Cases"))
 
-  if(e$detectTO) t1$GroupTime_Power(e$subgroup, e$maxOrder, e$whichIC[1])
-  # t1$time_power
-  # t1$formula
-
-  if(e$detectAR & e$package!="arma") t1$GroupAR_order(P = e$PQ[1]  ,
-                                      Q = e$PQ[2]  ,
-                                      whichIC= e$whichIC[1]  )
   # t1$correlation
   # t1$formula
 
@@ -717,6 +741,12 @@ paHTP <- function(e=parent.frame())
     stop('target_ivs and ivs cannot share any variables.')
   }
 
+  # autodetection
+  if(e$package=="nlme" | e$package=="arma")
+  {
+    e$autoDetect$DIST <- NULL
+  }
+
   # unique ids
   uids <- sort(unique(e$data[[e$ids]]))
 
@@ -752,7 +782,7 @@ paHTP <- function(e=parent.frame())
     print(e$PQ           ); cat('\n')
     print(e$whichIC      ); cat('\n')
     print(e$detectTO     ); cat('\n')
-    print(e$maxOrder     ); cat('\n')
+    print(e$polyMax     ); cat('\n')
     print(e$sigma.formula); cat('\n')
     print(e$debugforeach ); cat('\n')
     print(e$cores        ); cat('\n')
@@ -780,11 +810,8 @@ paHTP <- function(e=parent.frame())
                  fpc           = e$fpc           ,
                  popsize2      = e$popsize2      ,
                  package       = e$package       ,
-                 detectAR      = e$detectAR      ,
-                 PQ            = e$PQ            ,
+                 autoDetect    = e$autoDetect    ,
                  whichIC       = e$whichIC       ,
-                 detectTO      = e$detectTO      ,
-                 maxOrder      = e$maxOrder      ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,
                  cores         = e$cores         )
@@ -812,11 +839,8 @@ paHTP <- function(e=parent.frame())
                  fpc           = e$fpc           ,
                  popsize2      = e$popsize2      ,
                  package       = e$package       ,
-                 detectAR      = e$detectAR      ,
-                 PQ            = e$PQ            ,
+                 autoDetect    = e$autoDetect    ,
                  whichIC       = e$whichIC       ,
-                 detectTO      = e$detectTO      ,
-                 maxOrder      = e$maxOrder      ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,
                  cores         = e$cores         )

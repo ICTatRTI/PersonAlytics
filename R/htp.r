@@ -5,36 +5,37 @@
 # the current state of using Palytic is to create one object for
 # loops across individuals, but overwrite the the Palytic object
 # for loops across dvs/ivs
-htp <- function(data                                                ,
-                dims                                                ,
-                dvs                                                 ,
-                phase                                               ,
-                ids                                                 ,
-                uids                                                ,
-                time                                                ,
-                ivs                                                 ,
-                target_ivs                                          ,
-                interactions=NULL                                   ,
-                time_power=1                                        ,
-                alignPhase='none'                                   ,
-                correlation=NULL                                    ,
-                family = gamlss.dist::NO()                          ,
-                standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE) ,
-                fpc = FALSE                                         ,
-                popsize2 = 0                                        ,
-                package='gamlss'                                    ,
-                detectAR = TRUE                                     ,
-                PQ = c(3, 3)                                        ,
-                whichIC = "BIC"                                     ,
-                detectTO = TRUE                                     ,
-                maxOrder=3                                          ,
-                sigma.formula=~1                                    ,
-                debugforeach = FALSE                                ,
+htp <- function(data                                                   ,
+                dims                                                   ,
+                dvs                                                    ,
+                phase                                                  ,
+                ids                                                    ,
+                uids                                                   ,
+                time                                                   ,
+                ivs                                                    ,
+                target_ivs                                             ,
+                interactions=NULL                                      ,
+                time_power=1                                           ,
+                alignPhase='none'                                      ,
+                correlation=NULL                                       ,
+                family = gamlss.dist::NO()                             ,
+                standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE)    ,
+                fpc = FALSE                                            ,
+                popsize2 = 0                                           ,
+                package='gamlss'                                       ,
+                autoDetect = list(AR=list(P=3, Q=3)    ,
+                               TO=list(polyMax=3)      ,
+                               DIST=list(count    = FALSE ,
+                                         to01     = FALSE ,
+                                         multinom = FALSE ))           ,
+                whichIC = "BIC"                                        ,
+                sigma.formula=~1                                       ,
+                debugforeach = FALSE                                   ,
                 userFormula = list(
                 fixed=NULL,
                 random=NULL,
-                formula=NULL)                                       ,
-                cores=parallel::detectCores()-1                     )
+                formula=NULL)                                          ,
+                cores=parallel::detectCores()-1                        )
 {
 
   ##############################################################################
@@ -61,10 +62,10 @@ htp <- function(data                                                ,
   ##############################################################################
   # detectTO not implemented for alignPhase == "piecewise"
   ##############################################################################
-  if(alignPhase == "piecewise" & detectTO == TRUE)
+  if(alignPhase == "piecewise" & !is.null(autoDetect$TO))
   {
-    detectTO <- FALSE
-    message("\n`alignPhase=='piecewise'` and `detectTO` has been set to FALSE",
+    autoDetect$TO <- NULL
+    message("\n`alignPhase=='piecewise'` and `autoDetect$TO` has been set to NULL",
             "\nbecause automatic decection of the time order is not implemented",
             "within phases.")
   }
@@ -111,6 +112,7 @@ htp <- function(data                                                ,
                         ivs=ivs                   ,
                         interactions=interactions ,
                         standardize=standardize   ,
+                        autoDetect=autoDetect     ,
                         time_power=time_power     ,
                         alignPhase=alignPhase     ,
                         correlation=correlation   ,
@@ -120,8 +122,8 @@ htp <- function(data                                                ,
       )
       # TODO make this an update method that doesn't need to write back to a
       # named object
-      t0 <- autoDetect(t0, userFormula, dims, detectTO, detectAR,
-                       maxOrder, whichIC, PQ, doForeach=FALSE)
+      t0$detect(model=NULL, parallel="no", plot=FALSE,
+                userFormula, dims)
       .htp(t0, id=1, iv=1, dv, dvs, ivs,
            dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
     }# end of foreach
@@ -187,6 +189,7 @@ htp <- function(data                                                ,
                         ivs=ivs, # target_ivs added later
                         interactions=interactions,
                         standardize=standardize,
+                        autoDetect=autoDetect,
                         time_power=time_power,
                         alignPhase=alignPhase,
                         correlation=correlation,
@@ -194,8 +197,8 @@ htp <- function(data                                                ,
                         method="ML" # requested method used in final estimation
       )
 
-      t0 <- autoDetect(t0, userFormula, dims, detectTO, detectAR,
-                       maxOrder, whichIC, PQ, doForeach=TRUE)
+      t0$detect(model=NULL, parallel="snow", plot=FALSE,
+                userFormula, dims)
 
       # parralelization setup -- must reoccur for each dv in dims$DV
       pkgs  <- c("gamlss", "nlme", "foreach")
@@ -299,51 +302,6 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   }
   start <- Sys.time()
   return(start)
-}
-
-#' autoDetect
-#' @keywords internal
-autoDetect <- function(t0, userFormula, dims, detectTO, detectAR,
-                       maxOrder, whichIC, PQ, doForeach=TRUE)
-{
-  # allow for formula override so that we can test intercept only and
-  # slope only models
-  if( any(unlist(lapply(userFormula, function(x) !is.null(x)))) )
-  {
-    if( isNullOrForm(userFormula$fixed) ) t0$fixed <- userFormula$fixed
-    if( isNullOrForm(userFormula$random) ) t0$random <- userFormula$random
-    if( isNullOrForm(userFormula$formula) ) t0$formula <- userFormula$formula
-  }
-
-  #...........................................................................
-  # get the TO and AR
-  #...........................................................................
-  if(dims$ID[1]!="All Cases")
-  {
-    if(detectTO) t0$getTime_Power(maxOrder, whichIC[1])
-    #t0$time_powers # things like this should be changed to unit tests
-    if(!detectTO) t0$time_powers <- data.frame(ids=dims$ID,
-                                               rep(1, length(dims$ID)))
-
-    # this is deprecated, if n=1, use getARnEQ1 in $lme (not implemented for $gamlss)
-    #if( detectAR & package != "arma") t0$getAR_order(PQ[1], PQ[2], whichIC[1])
-    if(!detectAR)
-    {
-      t0$corStructs <- data.frame(ids=dims$ID,
-                                  arma=rep( ifelse(is.null(t0$correlation),
-                                                   "NULL", t0$correlation),
-                                            length(dims$ID)) )
-    }
-    #t0$corStructs
-
-  }
-  if(dims$ID[1]=="All Cases")
-  {
-    if(detectTO) t0$GroupTime_Power(NULL, maxOrder, whichIC[1])
-    if(detectAR) t0$GroupAR_order(PQ[1], PQ[2], whichIC[1], doForeach=doForeach)
-  }
-
-  return(t0) #TODO check whether this causes inheritance issues across scopes
 }
 
 #' .htp

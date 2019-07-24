@@ -3,7 +3,7 @@
 \name{getLambdat}
 \alias{getLambdat}
 \title{getLambdat - get Lambdat from an lme object analogous to
-getME(object.merMod, "Lambdat"). See \code{\link{getMe}}.}
+getME(object.merMod, "Lambdat"). See \code{\link{getME}}.}
 \usage{
 getLambdat(object)
 }
@@ -12,7 +12,7 @@ getLambdat(object)
 }
 \description{
 getLambdat - get Lambdat from an lme object analogous to
-getME(object.merMod, "Lambdat"). See \code{\link{getMe}}.
+getME(object.merMod, "Lambdat"). See \code{\link{getME}}.
 }
 \examples{
 

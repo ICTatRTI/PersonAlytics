@@ -3,7 +3,7 @@
 \name{getZt}
 \alias{getZt}
 \title{getZt - get Zt from an lme object analogous to
-getME(object.merMod, "Zt"). See \code{\link{getMe}}.}
+getME(object.merMod, "Zt"). See \code{\link{getME}}.}
 \usage{
 getZt(object)
 }
@@ -12,7 +12,7 @@ getZt(object)
 }
 \description{
 getZt - get Zt from an lme object analogous to
-getME(object.merMod, "Zt"). See \code{\link{getMe}}.
+getME(object.merMod, "Zt"). See \code{\link{getME}}.
 }
 \examples{
 

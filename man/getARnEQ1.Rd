@@ -4,7 +4,7 @@
 \alias{getARnEQ1}
 \title{getARnEQ1}
 \usage{
-getARnEQ1(m, PQ, dv)
+getARnEQ1(m, PQ, dv, debug = FALSE)
 }
 \description{
 getARnEQ1

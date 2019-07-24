@@ -247,7 +247,7 @@ vcovFPC.lme <- function(object, popsize2 = NULL,
 }
 
 #' getLambdat - get Lambdat from an lme object analogous to
-#' getME(object.merMod, "Lambdat"). See \code{\link{getMe}}.
+#' getME(object.merMod, "Lambdat"). See \code{\link{getME}}.
 #'
 #' @export
 #'
@@ -269,7 +269,7 @@ getLambdat <- function(object)
 }
 
 #' getZt - get Zt from an lme object analogous to
-#' getME(object.merMod, "Zt"). See \code{\link{getMe}}.
+#' getME(object.merMod, "Zt"). See \code{\link{getME}}.
 #'
 #' @export
 #'
