@@ -38,6 +38,8 @@ htp <- function(data                                                   ,
                 cores=parallel::detectCores()-1                        )
 {
 
+  PQ <- c(t0$autoDetect$AR$P, t0$autoDetect$AR$Q)
+
   ##############################################################################
   # log files - create a log directory and overwrite all logs
   ##############################################################################

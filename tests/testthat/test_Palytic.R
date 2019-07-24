@@ -6,7 +6,7 @@ test_that("PalyticBasics",
   OvaryICT <<- PersonAlytics::OvaryICT
 
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-                    time='Time', phase='Phase')
+                    time='Time', phase='Phase', autoDetect = list())
 
   t1.gamlss <- summary(t1$gamlss())
   t1.lme    <- summary(t1$lme())
@@ -140,7 +140,7 @@ test_that("groupAR_Order",
   #dim(m1$data)
 
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-                    time='Time', phase='Phase')
+                    time='Time', phase='Phase', autoDetect = list())
   t1$GroupAR_order()
   m1t <- t1$lme()
   #m1t$call

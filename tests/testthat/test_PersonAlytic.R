@@ -13,7 +13,8 @@ test_that("ManyV1",
                      dvs     = "follicles" ,
                      phase   = "Phase"     ,
                      time    = "Time"      ,
-                     package = "nlme"      )
+                     package = "nlme"      ,
+                     autoDetect = list(TO=list(polyMax=3))   )
 
   expect_equal(t0$tTable[,1],
                c( `(Intercept)`     =   10.487701 ,
@@ -30,7 +31,7 @@ test_that("ManyV1",
   mod.lme <- lme(t0$PalyticSummary$fixed, data = OvaryICT,
              random = t0$PalyticSummary$random)
 
-  all.equal(summary(mod.lme)$tTable, t0$tTable)
+  expect_equal(summary(mod.lme)$tTable, t0$tTable)
 
   # individual models
   t1 <- PersonAlytic(output          = NULL        ,
