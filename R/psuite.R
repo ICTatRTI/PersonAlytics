@@ -208,8 +208,8 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
                     ivs = list("target_iv", "ivs"),
                     standardize = TRUE)
 
-  t1$GroupTime_Power()
-  t1$GroupAR_order()
+  t1$GroupTO()
+  t1$GroupAR()
 
   # predict is looking for self, for now est directly
   cor <- eval(parse(text = ifelse(!is.null(t1$correlation),

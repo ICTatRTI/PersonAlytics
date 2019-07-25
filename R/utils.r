@@ -46,14 +46,32 @@ eds <- function(x)
 
 #' dstats - print mena, median, sd, skewness, and kurtosis - 3
 #' @export
-dstats <- function(dv)
+dstats <- function(dv, more=FALSE)
 {
+
+  skewness = moments::skewness(dv, na.rm=TRUE)
+  kurtosis = moments::kurtosis(dv, na.rm=TRUE)
+
   descriptives <- c(mean            = mean(dv, na.rm=TRUE)                ,
                     median          = median(dv, na.rm=TRUE)              ,
                     sd              = sd(dv, na.rm=TRUE)                  ,
-                    skewness        = moments::skewness(dv, na.rm=TRUE)   ,
-                    kurtosis        = moments::kurtosis(dv, na.rm=TRUE)   ,
-                    kurtosis.minus3 = moments::kurtosis(dv, na.rm=TRUE)-3 )
+                    skewness        = skewness                            ,
+                    kurtosis        = kurtosis
+  )
+
+  if(more){
+  #sdv <- scale(dv)
+  #mmd <- median(sdv, na.rm=TRUE) - mean(sdv, na.rm=TRUE)
+  descriptives <- c(mean            = mean(dv, na.rm=TRUE)                ,
+                    median          = median(dv, na.rm=TRUE)              ,
+                    sd              = sd(dv, na.rm=TRUE)                  ,
+                    skewness        = skewness                            ,
+                    #std_M_Md_diff   = mmd                                 ,
+                    cubeRootSkew    = sign(skewness)*(abs(skewness))^(1/3),
+                    kurtosis        = kurtosis                            ,
+                    kurtosisMinus3  = kurtosis-3                          ,
+                    qurtRootKurt    = sign(kurtosis)*(abs(kurtosis))^(1/4)
+  )}
   # descriptive statistics
   cat("\nDescriptive statistics:\n")
   print( descriptives )

@@ -1,3 +1,57 @@
+if(1==2)
+{
+  library(PersonAlytics)
+
+  # set up the palytic object, turning off autoDetection for now
+  t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                    time='Time', phase='Phase', autoDetect = list(Done=TRUE))
+  t1$plot()
+
+  # get the best distribution via palytic
+  dev.new()
+  t1$dist(count = TRUE)
+
+  # try gamlss.demo - the density plot doesn't match the theoretical density,
+  # but that is limited to the count distributions
+  dev.new()
+  gamlss.demo::demoDist()
+
+  # the observed data don't look much like the theoretical DPO distn, try continuous
+  dev.new()
+  t1$dist()
+
+  # redo the dist demo
+  dev.new()
+
+  # compare normal, Double Poisson, and Weibull2
+  t1.NO   <- t1$gamlss(family = 'NO') # this is the default
+  t1.WEI2 <- t1$gamlss(family = 'WEI2')
+  t1.DPO  <- t1$gamlss(family = 'DPO')
+  t1.NO$tTable
+  t1.WEI2$tTable
+  t1.DPO$tTable
+
+  # Demo fully automatic DIST, TO, AR
+  t2 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+                    time='Time', phase='Phase',
+                    autoDetect=list(AR=list(P=3, Q=3)     ,
+                                    TO=list(polyMax=3)    ,
+                                    DIST=list(count    = FALSE ,
+                                              to01     = FALSE ,
+                                              multinom = FALSE )))
+  capture.output(m2 <- t2$gamlss(), file = 'NUL')
+  m2$tTable
+
+}
+
+
+
+
+
+
+
+
+
 
 if(1==2)
 {

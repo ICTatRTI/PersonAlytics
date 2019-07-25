@@ -38,7 +38,7 @@ htp <- function(data                                                   ,
                 cores=parallel::detectCores()-1                        )
 {
 
-  PQ <- c(t0$autoDetect$AR$P, t0$autoDetect$AR$Q)
+  PQ <- c(autoDetect$AR$P, autoDetect$AR$Q)
 
   ##############################################################################
   # log files - create a log directory and overwrite all logs
@@ -122,10 +122,15 @@ htp <- function(data                                                   ,
                         method="ML"
 
       )
-      # TODO make this an update method that doesn't need to write back to a
-      # named object
-      t0$detect(model=NULL, parallel="no", plot=FALSE,
-                userFormula, dims)
+
+      # autodetect
+      t0$detect(subgroup    = NULL        ,
+                model       = NULL        ,
+                parallel    = "no"        ,
+                plot        = FALSE       ,
+                userFormula = userFormula ,
+                dims        = dims        ,
+                package     = package     )
       .htp(t0, id=1, iv=1, dv, dvs, ivs,
            dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
     }# end of foreach
@@ -183,24 +188,30 @@ htp <- function(data                                                   ,
     for(dv in dims$DV)
     {
       # set up the parent palytic object
-      t0 <- Palytic$new(data=data,
-                        ids=ids,
-                        dv=dvs[[dv]],
-                        time=time$raw,
-                        phase=phase,
-                        ivs=ivs, # target_ivs added later
-                        interactions=interactions,
-                        standardize=standardize,
-                        autoDetect=autoDetect,
-                        time_power=time_power,
-                        alignPhase=alignPhase,
-                        correlation=correlation,
-                        family=family,
-                        method="ML" # requested method used in final estimation
+      t0 <- Palytic$new(data         = data         ,
+                        ids          = ids          ,
+                        dv           = dvs[[dv]]    ,
+                        time         = time$raw     ,
+                        phase        = phase        ,
+                        ivs          = ivs          , # target_ivs added later
+                        interactions = interactions ,
+                        standardize  = standardize  ,
+                        autoDetect   = autoDetect   ,
+                        time_power   = time_power   ,
+                        alignPhase   = alignPhase   ,
+                        correlation  = correlation  ,
+                        family       = family       ,
+                        method       = "ML"         # requested method used later
       )
 
-      t0$detect(model=NULL, parallel="snow", plot=FALSE,
-                userFormula, dims)
+      # autodetect
+      t0$detect(subgroup    = NULL        ,
+                model       = NULL        ,
+                parallel    = "snow"      ,
+                plot        = FALSE       ,
+                userFormula = userFormula ,
+                dims        = dims        ,
+                package     = package     )
 
       # parralelization setup -- must reoccur for each dv in dims$DV
       pkgs  <- c("gamlss", "nlme", "foreach")

@@ -862,7 +862,7 @@
 #' testing (see \code{detectAR}). If \code{individual_mods=FALSE}, this done
 #' comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
 #' this is done using the \code{\link{auto.arima}} function on the residuals for
-#' each individual. For more detail, see the \code{\link{$GroupAR_order()}}
+#' each individual. For more detail, see the \code{\link{$GroupAR()}}
 #' method.
 #'
 #' If \code{TO} is in the list, models with polynomial powers of time from 1 to
@@ -873,7 +873,7 @@
 #' fitting model is selected using likelihood ratio tests with mixed effects
 #' models fit using maximum likelihood estimators in \code{\link{lme}}.
 #' This is done separately for each individual in \code{ids} if
-#' \code{individual_mods=TRUE}. For more detail, see the \code{$getTime_Power()}
+#' \code{individual_mods=TRUE}. For more detail, see the \code{$getTO()}
 #' method.
 #'
 #' If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
@@ -995,18 +995,18 @@
 #'    (LRT). This is used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
 #'   The other parameters are as in \code{\link{auto.arima}}.}
 #'
-#'   \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", alpha=.05)}}{The
-#'   same as \code{getAR_order} when the ARMA order is desired for the full sample.}
-#'   \item{\code{getTime_Power(subset, polyMax)}}{This method automates the task of
+#'   \item{\code{GroupAR(dv, P=3, Q=3, whichIC="BIC", alpha=.05)}}{The
+#'   same as \code{getAR} when the ARMA order is desired for the full sample.}
+#'   \item{\code{getTO(subset, polyMax)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
 #'   (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}). For example,
-#'   if \code{getTime_Power} returns \code{time_power=3},
+#'   if \code{getTO} returns \code{time_power=3},
 #'   then \code{time + time^2 + time^3}
 #'   will be added to the fixed effects of the model.
-#'   Calling \code{getTime_Power} populates the
+#'   Calling \code{getTO} populates the
 #'   \code{GroupTime_power} field of a \code{Palytic} object. For usage, see the examples.}
 #'
-#'   \item{\code{groupTime_Power(subset, polyMax)}}{The same as \code{getTime_power} when
+#'   \item{\code{groupTO(subset, polyMax)}}{The same as \code{getTime_power} when
 #'   the polynomial of time is desired for the full sample.}
 #' }
 #'
@@ -1016,16 +1016,12 @@
 #'
 #' # construct a new Payltic object and examine the default formulae#'
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-#'                   time='Time', phase='Phase')
+#'                   time='Time', phase='Phase', autoDetect=list())
 #'
 #' # summary, descriptive, and plot methods
 #' t1$summary()
 #' t1$describe()
 #' t1$plot()
-#'
-#' # check the distribution, noting that calling $dist() updates $family
-#' t1$dist()
-#' t1$family
 #'
 #' # check the formulae creation
 #' t1$fixed
@@ -1037,18 +1033,20 @@
 #' # are fit. Note that the estimates are the same (within rounding) but that
 #' # the gamlss SE are much smaller. This is due to gamlss modeling the variance
 #' # which reduces the redisudual variance
-#' (t1.gamlss <- summary(t1$gamlss()))
-#' (t1.lme    <- summary(t1$lme()))
+#' t1.gamlss <- t1$gamlss()
+#' t1.lme    <- t1$lme()
+#' t1.gamlss$tTable
+#' t1.lme$tTable
 #'
 #' # now change the correlation structure and compare gamlss and lme output,
 #' # noting that the intercepts are very different now
 #' t1$correlation <- "corARMA(p=1, q=0)"
-#' summary(t1$gamlss())
-#' summary(t1$lme())
+#' t1$gamlss()$tTable
+#' t1$lme()$tTable
 #'
 #' # fit the model only to the first mare with ML instead of REML
 #' t1$method <- 'ML'
-#' summary(t1$gamlss(OvaryICT$Mare==1))
+#' t1$gamlss(OvaryICT$Mare==1)$tTable
 #'
 #' # change the formula
 #' t2 <- t1$clone()
@@ -1068,17 +1066,35 @@
 #' t2$random
 #' t2$formula
 #'
-#' # automatically select the polynomial order of time with getTime_Power
+#' # note that prior examples set
+#' # `autoDetect=list()`, here we use the default, which is to autodetect
+#' # the correlation structure (AR), the polynomial order of time (TO) and
+#' # the distribution
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare',
-#'                   dv='follicles', time='Time', phase='Phase')
-#' t1$getTime_Power()
+#'                   dv='follicles', time='Time', phase='Phase',
+#'                   autoDetect=list(AR=list(P=3, Q=3)     ,
+#'                                TO=list(polyMax=3)    ,
+#'                                DIST=list(count    = FALSE ,
+#'                                          to01     = FALSE ,
+#'                                          multinom = FALSE ))  )
+#'
+#' # automatically select the polynomial order of time with getTO
+#' t1$getTO()
 #' t1$time_powers
 #'
-#' # automatically select the ARMA model for residual correlation getAR_order
-#' # this runs slow because a model is selected for each individual
-#' t1$GroupAR_order()
+#' # automatically select the ARMA model for residual correlation getAR
+#' t1$GroupAR()
 #' t1$corStructs
 #'
+#' # automatically select the distribution, noting that calling $dist() updates $family
+#' t1$dist()
+#' t1$family
+#'
+#' # automatically select all three which follows the order
+#' # 1. DIST (which will switch package to gamlss for TO and AR)
+#' # 2. TO (which can subsequently impact AR)
+#' # 3. AR
+#' t1$detect()
 #'
 #' # construct a new Payltic object with no phase variable
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
@@ -1089,7 +1105,7 @@
 #' OvaryICT$TimeP <- round(30*OvaryICT$Time)
 #' t1 <- Palytic$new(data = OvaryICT, ids = 'Mare',
 #'                   dv = 'follicles', time = 'TimeP', phase = 'Phase',
-#'                   alignPhase = 'piecewise')
+#'                   alignPhase = 'piecewise', autoDetect=list())
 #' t1$time
 #' t1$lme()
 #'
@@ -1131,9 +1147,9 @@ Palytic <- R6::R6Class("Palytic",
                        ),
                        active = .active(),
 
-                       #########################################################
+                       #--------------------------------------------------------
                        # initialize ####
-                       #########################################################
+                       #--------------------------------------------------------
                        public = list(
                          initialize = function
                          (
@@ -1352,14 +1368,19 @@ Palytic$set("public", "summary",
 
 # $detect() ####
 Palytic$set("public", "detect",
-            function(model=NULL, parallel="snow", plot=TRUE,
-                     userFormula=list(
-                       fixed=NULL,
-                       random=NULL,
-                       formula=NULL),
-                     dims=list(ID="All Cases")
+            function(subgroup    =  NULL                  ,
+                     model       =  NULL                  ,
+                     parallel    =  "snow"                ,
+                     plot        =  TRUE                  ,
+                     userFormula =  list(
+                                      fixed=NULL,
+                                      random=NULL,
+                                      formula=NULL),
+                     dims        =  list(ID="All Cases")  ,
+                     package     =  "nlme"
                      )
             {
+
               # prevent recursive calls to autodetect
               temp <- self$autoDetect
               temp$Done <- TRUE
@@ -1400,7 +1421,7 @@ Palytic$set("public", "detect",
               #...........................................................................
               if(dims$ID[1]!="All Cases")
               {
-                if(detectTO) self$getTime_Power(self$autoDetect$TO$polyMax, self$whichIC[1])
+                if( detectTO) self$getTO()
                 if(!detectTO) self$time_powers <- data.frame(ids=dims$ID,
                                                            rep(1, length(dims$ID)))
 
@@ -1420,12 +1441,10 @@ Palytic$set("public", "detect",
 
               if(dims$ID[1]=="All Cases")
               {
-                if(detectTO) self$GroupTime_Power(NULL, self$autoDetect$TO$polyMax,
-                                                  self$whichIC[1])
-                if(detectAR) self$GroupAR_order(self$autoDetect$AR$P,
-                                                self$autoDetect$AR$Q,
-                                                self$whichIC[1],
-                                                doForeach=parallel=="snow")
+                if(detectTO) self$GroupTO(subgroup, package)
+                if(detectAR) self$GroupAR(subgroup,
+                                                doForeach=parallel=="snow",
+                                                package)
               }
               # no return (for now)
             },
@@ -1446,7 +1465,11 @@ Palytic$set("public", "dist",
                 y  <- data.frame(y=dv)
                 yq <- ggplot(y, aes(sample=y)) + stat_qq() + stat_qq_line()
                 yd <- ggplot(y, aes(x=y)) + geom_density() + xlab(self$dv)
-                grid.arrange(yq, yd, nrow=2)
+                yh <- ggplot(y, aes(x=y)) + geom_histogram() + xlab(self$dv)
+                capture.output(
+                    suppressMessages(print(grid.arrange(yq, yd, yh, nrow=3))),
+                  file='NUL')
+                #grid.arrange(yq, yd, yh, nrow=3)
               }
 
               # beta
@@ -1533,7 +1556,7 @@ Palytic$set("public", "dist",
                         "\ngamlss.demo::demoDist()\n",
                         "\ninto the console, find your distribution, and use the",
                         "\nslider bars to select the parameters printed above",
-                        "\n(mu, sigma, nu, and tau).")
+                        "\n(mu, sigma, nu, and tau).\n\n")
 
                 family <- family$family[1]
               }
@@ -1780,7 +1803,7 @@ Palytic$set("public", "lme",
               {
                 wm <- "No correlation structure, opt='optim'"
                 ctrl <- nlme::lmeControl(opt="optim")
-                self$correlation <- "NULL" # not updating
+                self$correlation <- "NULL"
                 m1 <- try(nlme::lme(fixed=self$fixed,
                                     data=tempData,
                                     random=self$random,
@@ -1796,8 +1819,6 @@ Palytic$set("public", "lme",
                 newformula <- forms(data       = self$datac ,
                                     PalyticObj = self       ,
                                     dropTime   = "time"     )
-                # this re-updates, so this step is moved to cleancall for now
-                #self$random <- newformula$random
                 self$correlation <- NULL
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=self$fixed,
@@ -1815,8 +1836,6 @@ Palytic$set("public", "lme",
                 newformula <- forms(data = self$datac,
                                     PalyticObj = self,
                                     dropTime = "int" )
-                # this re-updates, so this step is moved to cleancall for now
-                #self$fixed <- newformula$fixed
                 ctrl <- nlme::lmeControl(opt="optim")
                 m1 <- try(nlme::lme(fixed=newformula$fixed,
                                     data=tempData,
@@ -2013,10 +2032,10 @@ Palytic$set("public", "gamlss",
                         silent = self$try_silent)
 
               # default model with increased n.cyc
-              if( "try-error" %in% class(m1) )# | !eds(m1) )
+              if( "try-error" %in% class(m1) )
               {
                 wm <- "Full Model, n.cyc=100"
-                ctrl <- gamlss::gamlss.control(n.cyc=100)
+                #ctrl <- gamlss::gamlss.control(n.cyc=100)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                sigma.formula = sigma.formula,
                                                data = tempData,
@@ -2033,11 +2052,7 @@ Palytic$set("public", "gamlss",
                                     PalyticObj = self ,
                                     dropTime = "time" ,
                                     family = currentFamily)
-                # this re-updates, so this step is moved to cleancall for now
-                #self$formula <- newformula$formula
-                self$family  <- newformula$family
                 self$fixed   <- newformula$fixed
-                ctrl <- gamlss::gamlss.control(n.cyc=100)
                 # this works but fails saving
                 m1 <- try(refit(gamlss::gamlss(formula = newformula$formula,
                                                data = tempData,
@@ -2053,11 +2068,7 @@ Palytic$set("public", "gamlss",
                                     PalyticObj = self ,
                                     dropTime = "time" ,
                                     family = currentFamily)
-                # this re-updates, so this step is moved to cleancall for now
-                #self$formula <- newformula$formula
-                self$family  <- newformula$family
                 self$fixed   <- newformula$fixed
-                ctrl <- gamlss::gamlss.control(n.cyc=100)
                 # this works but fails saving
                 m1 <- try(refit(gamlss::gamlss(formula = newformula$formula,
                                                data = tempData,
@@ -2073,11 +2084,7 @@ Palytic$set("public", "gamlss",
                                     PalyticObj = self ,
                                     dropTime = "int" ,
                                     family = currentFamily)
-                # this re-updates, so this step is moved to cleancall for now
-                #self$formula <- newformula$formula
-                self$family  <- newformula$family
                 self$fixed   <- newformula$fixed
-                ctrl <- gamlss::gamlss.control(n.cyc=100)
                 # this works but fails saving
                 m1 <- try(refit(gamlss::gamlss(formula = newformula$formula,
                                                data = tempData,
@@ -2155,24 +2162,47 @@ Palytic$set("public", "gamlss",
 )
 
 
-# GroupAR_order ####
-# whichIC can take AIC or BIC; need gamlss implementation for non-normal dist
-Palytic$set("public", "GroupAR_order",
-            function(P=3, Q=3, whichIC="BIC",
-                     subgroup=NULL, doForeach=TRUE)
+# GroupAR ####
+# whichIC can take AIC or BIC
+Palytic$set("public", "GroupAR",
+            function(subgroup=NULL, doForeach=TRUE, package="nlme")
             {
+              # check for autodetect inputs
+              if( is.null(self$autoDetect$AR$P) | is.null(self$autoDetect$AR$Q) )
+              {
+                stop("\nYour Palytic object does not contain both P and Q in",
+                     "\nthe `autoDetect$AR` field.")
+              }
+
+              # if family is !NO override package
+              if( self$family$family[2] != as.gamlss.family(NO)$family[2] )
+              {
+                package <- "gamlss"
+                message("\nFamily is set as `", self$family$family[2], "` which",
+                        "\nis not supported by package='nlme'.",
+                        "\nSwitching to package='gamlss'.")
+              }
+
+              # prevent recursive calls to autodetect
+              temp <- self$autoDetect
+              temp$Done <- TRUE
+              self$autoDetect <- temp; rm(temp)
+
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "residual correlation structure starting...")
               start <- Sys.time()
 
-              nullMod <- self$lme(subgroup)
+              if(package %in% c("nlme", "arma")) nullMod <- self$lme(subgroup)
+              if(package=="gamlss") nullMod <- self$gamlss(subgroup)
 
-              if( "lme" %in% class(nullMod) )
+              if( class(nullMod) %in% c("lme", "gamlss")  )
               {
-                DIMS <- expand.grid(p=0:P, q=0:Q)
+                DIMS <- expand.grid(p=0:self$autoDetect$AR$P,
+                                    q=0:self$autoDetect$AR$Q)
                 DIMS <- DIMS[-1,]
 
-                capture.output( pb <- txtProgressBar(max = P, style = 3),
+                capture.output( pb <- txtProgressBar(max = self$autoDetect$AR$P,
+                                                     style = 3),
                                 file='NUL')
 
                 if(doForeach)
@@ -2189,7 +2219,7 @@ Palytic$set("public", "GroupAR_order",
                                      .options.snow = opts)  %dopar%
                   {
                     clone <- t0$clone(deep=TRUE)
-                    ARpq(clone, p, q, subgroup)
+                    ARpq(clone, p, q, subgroup, package)
                   }
                   parallel::stopCluster(cl)
                 }
@@ -2199,10 +2229,9 @@ Palytic$set("public", "GroupAR_order",
                   for(i in seq_along(DIMS[,1]))
                   {
                     clone <- self$clone(deep=TRUE)
-                    corMods[[i]] <- ARpq(clone, DIMS$p[i], DIMS$q[i], subgroup)
-                    #setTxtProgressBar(pb, i) # this may be crossing wires with nested pb's
+                    corMods[[i]] <- ARpq(clone, DIMS$p[i], DIMS$q[i],
+                                         subgroup, package)
                   }
-                  #close(pb)
                 }
 
                 corMods <- corMods[!unlist(lapply(corMods, is.null))]
@@ -2211,16 +2240,16 @@ Palytic$set("public", "GroupAR_order",
                                     function(x) x$PalyticSummary$correlation) )
                 corMods <- corMods[!is.na(names(corMods))]
 
-                if(whichIC=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
-                if(whichIC=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
-                else( stop( paste(whichIC, "is not a valid value for `whichIC`,",
+                if(self$whichIC[1]=="AIC") ICs <- data.frame( unlist( lapply(corMods, AIC) ) )
+                if(self$whichIC[1]=="BIC") ICs <- data.frame( unlist( lapply(corMods, BIC) ) )
+                else( stop( paste(self$whichIC, "is not a valid value for `whichIC`,",
                                   "use AIC or BIC.")))
-                ICs <- rbind("NULL" = ifelse(whichIC=="AIC", AIC(nullMod),
+                ICs <- rbind("NULL" = ifelse(self$whichIC[1]=="AIC", AIC(nullMod),
                                              BIC(nullMod)), ICs)
                 bestCor <- c("NULL", names(corMods))[which.min(ICs[,1])]
 
               }
-              if(! "lme" %in% class(nullMod) )
+              if(! class(nullMod) %in% c("lme", "gamlss") )
               {
                 bestCor <- "NULL"
               }
@@ -2238,10 +2267,10 @@ Palytic$set("public", "GroupAR_order",
 )
 
 
-#' ARpq - helper function for $GroupAR_order
+#' ARpq - helper function for $GroupAR
 #' @keywords internal
 #' @author Stephen Tueller \email{stueller@@rti.org}
-ARpq <- function(clone, p, q, subgroup)
+ARpq <- function(clone, p, q, subgroup, package="nlme")
 {
   clone$method      <- "ML"
   clone$correlation <- "NULL"
@@ -2250,7 +2279,8 @@ ARpq <- function(clone, p, q, subgroup)
   cortemp <- gsub('\n', '', cortemp)
   cortemp <- gsub(' ', '', cortemp)
   clone$correlation <- cortemp
-  corMod <- clone$lme(subgroup)
+  if(package %in% c("nlme", "arma")) corMod <- clone$lme(subgroup)
+  if(package=="gamlss") corMod <- clone$gamlss(subgroup)
   if( class(corMod) != "lme" )
   {
     corMod <- NULL
@@ -2258,10 +2288,29 @@ ARpq <- function(clone, p, q, subgroup)
   return(corMod)
 }
 
-# TODO: hard coded lme at this point, option for gamlss later
-Palytic$set("public", "getTime_Power",
-            function(polyMax=3, whichIC="BIC")
+# getTO ####
+Palytic$set("public", "getTO",
+            function(package="nlme")
             {
+              # extract polyMax and whichIC, which should give an error if
+              # absent in $autoDetect
+              polyMax <- self$autoDetect$TO$polyMax
+              whichIC <- self$whichIC[1]
+
+              # if family is !NO override package
+              if( self$family$family[2] != as.gamlss.family(NO)$family[2] )
+              {
+                package <- "gamlss"
+                message("\nFamily is set as `", self$family$family[2], "` which",
+                        "\nis not supported by package='nlme'.",
+                        "\nSwitching to package='gamlss'.")
+              }
+
+              # prevent recursive calls to autodetect
+              temp <- self$autoDetect
+              temp$Done <- TRUE
+              self$autoDetect <- temp; rm(temp)
+
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "time/outcome relationship starting...")
               start <- Sys.time()
@@ -2279,8 +2328,10 @@ Palytic$set("public", "getTime_Power",
                   clone$method     <- "ML"
                   clone$time_power <- i
 
-                  mod0 <- clone$lme(self$datac[[self$ids]]==id)
-                  if("lme" %in% class(mod0))
+                  if(package=="nlme")   mod0 <- clone$lme(self$datac[[self$ids]]==id)
+                  if(package=="gamlss") mod0 <- clone$gamlss(self$datac[[self$ids]]==id)
+
+                  if( class(mod0) %in% c("lme", "gamlss") )
                   {
                     aics[[i]] <- AIC( mod0 )
                   }
@@ -2298,17 +2349,34 @@ Palytic$set("public", "getTime_Power",
                       "relationship took: ",
                       capture.output(Sys.time() - start), ".\n",
                       "\nThe best polynomial order for time from 1 to ", polyMax,
-                      " for each participant was ", self$time_power)
+                      " for each participant was ",
+                      paste(self$time_powers[,2], collpase = ", ", sep=""))
             },
             overwrite = TRUE)
 
-# GroupTime_Power ####
+# GroupTO ####
 # TODO:hard coded lme at this point, option for gamlss later
-Palytic$set("public", "GroupTime_Power",
-            function(subgroup=NULL, polyMax=3, whichIC="BIC")
+Palytic$set("public", "GroupTO",
+            function(subgroup=NULL, package="nlme")
             {
+              # extract polyMax and whichIC, which should give an error if
+              # absent in $autoDetect
+              polyMax <- self$autoDetect$TO$polyMax
+              whichIC <- self$whichIC[1]
 
-              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              # if family is !NO override package
+              if( self$family$family[2] != as.gamlss.family(NO)$family[2] )
+              {
+                package <- "gamlss"
+                message("\nFamily is set as `", self$family$family[2], "` which",
+                        "\nis not supported by package='nlme'.",
+                        "\nSwitching to package='gamlss'.")
+              }
+
+              # prevent recursive calls to autodetect
+              temp <- self$autoDetect
+              temp$Done <- TRUE
+              self$autoDetect <- temp; rm(temp)
 
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "time/outcome relationship starting...")
@@ -2322,8 +2390,9 @@ Palytic$set("public", "GroupTime_Power",
                 clone$method     <- "ML"
                 clone$time_power <- i
 
-                mods[[i]] <- clone$lme(subgroup)
-                if(! "lme" %in% class(mods[[i]]))
+                if(package %in% c("nlme", "arma")) mods[[i]] <- clone$lme(subgroup)
+                if(package=="gamlss") mods[[i]] <- clone$gamlss(subgroup)
+                if(! any( class(mods[[i]]) %in% c("lme", "gamlss") ) )
                 {
                   mods[[i]] <- NULL
                 }

@@ -140,8 +140,8 @@ test_that("groupAR_Order",
   #dim(m1$data)
 
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-                    time='Time', phase='Phase', autoDetect = list())
-  t1$GroupAR_order()
+                    time='Time', phase='Phase', autoDetect = list(AR=list(P=3,Q=3)))
+  t1$GroupAR()
   m1t <- t1$lme()
   #m1t$call
   #dim(m1t$data)

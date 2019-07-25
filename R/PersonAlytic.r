@@ -207,7 +207,7 @@
 #' testing (see \code{detectAR}). If \code{individual_mods=FALSE}, this done
 #' comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
 #' this is done using the \code{\link{auto.arima}} function on the residuals for
-#' each individual. For more detail, see the \code{\link{$GroupAR_order()}}
+#' each individual. For more detail, see the \code{\link{$GroupAR()}}
 #' method in \code{\link{Palytic}}.
 #'
 #' If \code{TO} is in the list, models with polynomial powers of time from 1 to
@@ -218,7 +218,7 @@
 #' fitting model is selected using likelihood ratio tests with mixed effects
 #' models fit using maximum likelihood estimators in \code{\link{lme}}.
 #' This is done separately for each individual in \code{ids} if
-#' \code{individual_mods=TRUE}. For more detail, see the \code{$getTime_Power()}
+#' \code{individual_mods=TRUE}. For more detail, see the \code{$getTO()}
 #' method in \code{\link{Palytic}}.
 #'
 #' If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
@@ -646,14 +646,19 @@ pa1 <- function(e=parent.frame())
   }
 
   # autodetection
-  if(e$package=="nlme")
+  if(e$package=="nlme" | e$package=="arma")
   {
     temp <- t1$autoDetect
     temp$DIST <- NULL
     t1$autoDetect <- temp; rm(temp)
   }
+  dims <- list(ID="All Cases")
+  if(var(t1$datac[[t1$ids]][e$subgroup], na.rm=TRUE)==0)
+  {
+    dims <-list(ID=sort(unique(e$data[[e$ids]])))
+  }
   t1$detect(model=NULL, parallel="snow", plot=FALSE, userFormula=e$userFormula,
-            dims=list(ID="All Cases"))
+            dims=dims)
 
   # t1$correlation
   # t1$formula

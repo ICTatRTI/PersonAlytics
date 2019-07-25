@@ -101,7 +101,7 @@ are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
 testing (see \code{detectAR}). If \code{individual_mods=FALSE}, this done
 comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
 this is done using the \code{\link{auto.arima}} function on the residuals for
-each individual. For more detail, see the \code{\link{$GroupAR_order()}}
+each individual. For more detail, see the \code{\link{$GroupAR()}}
 method.
 
 If \code{TO} is in the list, models with polynomial powers of time from 1 to
@@ -112,7 +112,7 @@ compared include \code{time}, \code{time + I(time^2)}, and
 fitting model is selected using likelihood ratio tests with mixed effects
 models fit using maximum likelihood estimators in \code{\link{lme}}.
 This is done separately for each individual in \code{ids} if
-\code{individual_mods=TRUE}. For more detail, see the \code{$getTime_Power()}
+\code{individual_mods=TRUE}. For more detail, see the \code{$getTO()}
 method.
 
 If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
@@ -235,18 +235,18 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
    (LRT). This is used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
   The other parameters are as in \code{\link{auto.arima}}.}
 
-  \item{\code{GroupAR_order(dv, P=3, Q=3, whichIC="BIC", alpha=.05)}}{The
-  same as \code{getAR_order} when the ARMA order is desired for the full sample.}
-  \item{\code{getTime_Power(subset, polyMax)}}{This method automates the task of
+  \item{\code{GroupAR(dv, P=3, Q=3, whichIC="BIC", alpha=.05)}}{The
+  same as \code{getAR} when the ARMA order is desired for the full sample.}
+  \item{\code{getTO(subset, polyMax)}}{This method automates the task of
   determining  \code{time_power} for each case in \code{ids}
   (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}). For example,
-  if \code{getTime_Power} returns \code{time_power=3},
+  if \code{getTO} returns \code{time_power=3},
   then \code{time + time^2 + time^3}
   will be added to the fixed effects of the model.
-  Calling \code{getTime_Power} populates the
+  Calling \code{getTO} populates the
   \code{GroupTime_power} field of a \code{Palytic} object. For usage, see the examples.}
 
-  \item{\code{groupTime_Power(subset, polyMax)}}{The same as \code{getTime_power} when
+  \item{\code{groupTO(subset, polyMax)}}{The same as \code{getTime_power} when
   the polynomial of time is desired for the full sample.}
 }
 }
@@ -257,16 +257,12 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
 
 # construct a new Payltic object and examine the default formulae#'
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-                  time='Time', phase='Phase')
+                  time='Time', phase='Phase', autoDetect=list())
 
 # summary, descriptive, and plot methods
 t1$summary()
 t1$describe()
 t1$plot()
-
-# check the distribution, noting that calling $dist() updates $family
-t1$dist()
-t1$family
 
 # check the formulae creation
 t1$fixed
@@ -278,18 +274,20 @@ t1$correlation
 # are fit. Note that the estimates are the same (within rounding) but that
 # the gamlss SE are much smaller. This is due to gamlss modeling the variance
 # which reduces the redisudual variance
-(t1.gamlss <- summary(t1$gamlss()))
-(t1.lme    <- summary(t1$lme()))
+t1.gamlss <- t1$gamlss()
+t1.lme    <- t1$lme()
+t1.gamlss$tTable
+t1.lme$tTable
 
 # now change the correlation structure and compare gamlss and lme output,
 # noting that the intercepts are very different now
 t1$correlation <- "corARMA(p=1, q=0)"
-summary(t1$gamlss())
-summary(t1$lme())
+t1$gamlss()$tTable
+t1$lme()$tTable
 
 # fit the model only to the first mare with ML instead of REML
 t1$method <- 'ML'
-summary(t1$gamlss(OvaryICT$Mare==1))
+t1$gamlss(OvaryICT$Mare==1)$tTable
 
 # change the formula
 t2 <- t1$clone()
@@ -309,17 +307,35 @@ t2$random <- formula(~0+Time|Mare)
 t2$random
 t2$formula
 
-# automatically select the polynomial order of time with getTime_Power
+# note that prior examples set
+# `autoDetect=list()`, here we use the default, which is to autodetect
+# the correlation structure (AR), the polynomial order of time (TO) and
+# the distribution
 t1 <- Palytic$new(data = OvaryICT, ids='Mare',
-                  dv='follicles', time='Time', phase='Phase')
-t1$getTime_Power()
+                  dv='follicles', time='Time', phase='Phase',
+                  autoDetect=list(AR=list(P=3, Q=3)     ,
+                               TO=list(polyMax=3)    ,
+                               DIST=list(count    = FALSE ,
+                                         to01     = FALSE ,
+                                         multinom = FALSE ))  )
+
+# automatically select the polynomial order of time with getTO
+t1$getTO()
 t1$time_powers
 
-# automatically select the ARMA model for residual correlation getAR_order
-# this runs slow because a model is selected for each individual
-t1$GroupAR_order()
+# automatically select the ARMA model for residual correlation getAR
+t1$GroupAR()
 t1$corStructs
 
+# automatically select the distribution, noting that calling $dist() updates $family
+t1$dist()
+t1$family
+
+# automatically select all three which follows the order
+# 1. DIST (which will switch package to gamlss for TO and AR)
+# 2. TO (which can subsequently impact AR)
+# 3. AR
+t1$detect()
 
 # construct a new Payltic object with no phase variable
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
@@ -330,7 +346,7 @@ t1$plot()
 OvaryICT$TimeP <- round(30*OvaryICT$Time)
 t1 <- Palytic$new(data = OvaryICT, ids = 'Mare',
                   dv = 'follicles', time = 'TimeP', phase = 'Phase',
-                  alignPhase = 'piecewise')
+                  alignPhase = 'piecewise', autoDetect=list())
 t1$time
 t1$lme()
 

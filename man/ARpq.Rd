@@ -2,12 +2,12 @@
 % Please edit documentation in R/Palytic.r
 \name{ARpq}
 \alias{ARpq}
-\title{ARpq - helper function for $GroupAR_order}
+\title{ARpq - helper function for $GroupAR}
 \usage{
-ARpq(clone, p, q, subgroup)
+ARpq(clone, p, q, subgroup, package = "nlme")
 }
 \description{
-ARpq - helper function for $GroupAR_order
+ARpq - helper function for $GroupAR
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}

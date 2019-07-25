@@ -185,7 +185,7 @@ are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
 testing (see \code{detectAR}). If \code{individual_mods=FALSE}, this done
 comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
 this is done using the \code{\link{auto.arima}} function on the residuals for
-each individual. For more detail, see the \code{\link{$GroupAR_order()}}
+each individual. For more detail, see the \code{\link{$GroupAR()}}
 method in \code{\link{Palytic}}.
 
 If \code{TO} is in the list, models with polynomial powers of time from 1 to
@@ -196,7 +196,7 @@ compared include \code{time}, \code{time + I(time^2)}, and
 fitting model is selected using likelihood ratio tests with mixed effects
 models fit using maximum likelihood estimators in \code{\link{lme}}.
 This is done separately for each individual in \code{ids} if
-\code{individual_mods=TRUE}. For more detail, see the \code{$getTime_Power()}
+\code{individual_mods=TRUE}. For more detail, see the \code{$getTO()}
 method in \code{\link{Palytic}}.
 
 If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
