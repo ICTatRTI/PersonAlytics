@@ -46,7 +46,30 @@ eds <- function(x)
 
 #' dstats - print mena, median, sd, skewness, and kurtosis - 3
 #' @export
-dstats <- function(dv, more=FALSE)
+dstats <- function(dv, phase=NULL, more=FALSE)
+{
+  overAll <- .dstats(dv, more=more)
+
+  if(! is.null(phase) )
+  {
+    dvl <- split(dv, phase)
+    byPhase <- lapply(dvl, .dstats, more=more)
+  }
+
+  byPhase$OverAll <- overAll
+
+  descriptives <- round(do.call(rbind, byPhase),2)
+
+  # descriptive statistics
+  if( is.null(phase)) cat("\nDescriptive statistics:\n")
+  if(!is.null(phase)) cat("\nDescriptive statistics by phase:\n")
+  print( descriptives )
+  cat("\n\n")
+}
+
+#' .dstats - print mena, median, sd, skewness, and kurtosis - 3
+#' @keywords internal
+.dstats <- function(dv, more=FALSE)
 {
 
   skewness = moments::skewness(dv, na.rm=TRUE)
@@ -72,10 +95,6 @@ dstats <- function(dv, more=FALSE)
                     kurtosisMinus3  = kurtosis-3                          ,
                     qurtRootKurt    = sign(kurtosis)*(abs(kurtosis))^(1/4)
   )}
-  # descriptive statistics
-  cat("\nDescriptive statistics:\n")
-  print( descriptives )
-  cat("\n\n")
 
   invisible( descriptives )
 }

@@ -1339,6 +1339,10 @@ Palytic$set("public", "summary",
               if(!is.null(wm)) augmentFormula <- list(formula = self$formula,
                                                       whichPalyticMod = wm)
 
+              # print descriptive statistics to the console
+              if(!is.null(self$phase)) phase <- self$datac[[self$phase]]
+              else phase <- self$phase
+
               # return the summary
               list(      ids          = self$ids                         ,
                          dv           = self$dv                          ,
@@ -1361,7 +1365,9 @@ Palytic$set("public", "summary",
                          debugforeach = self$debugforeach                ,
                          try_silent   = self$try_silent                  ,
                          datac        = summary(self$datac[,variables])  ,
-                         data         = summary(self$data[,varsInData])  )
+                         data         = summary(self$data[,varsInData])  ,
+                         skew_kurt    = dstats(self$datac[,self$dv],
+                                               phase)                    )
             },
             overwrite = TRUE
 )
@@ -1572,7 +1578,9 @@ Palytic$set("public", "dist",
               self$family <- as.gamlss.family(family)
 
               # print descriptive statistics to the console
-              dstats(dv)
+              if(!is.null(self$phase)) phase <- self$datac[[self$phase]]
+              else phase <- self$phase
+              dstats(dv, phase)
 
             },
             overwrite = TRUE
@@ -2024,7 +2032,11 @@ Palytic$set("public", "gamlss",
               if(!is.null(family)) currentFamily <- family
 
               wm <- "Full Model"
-              ctrl <- gamlss::gamlss.control() # used later if not overwritten
+
+              # turn the trace of to prevent printing it to the console,
+              # increase c.crit from .001 to .005 to speed things up a little
+              ctrl <- gamlss::gamlss.control(trace=FALSE, c.crit=.005)
+
               m1 <- try(gamlss::gamlss(formula = self$formula,
                                        sigma.formula = sigma.formula,
                                        data = tempData,
@@ -2035,7 +2047,7 @@ Palytic$set("public", "gamlss",
               if( "try-error" %in% class(m1) )
               {
                 wm <- "Full Model, n.cyc=100"
-                #ctrl <- gamlss::gamlss.control(n.cyc=100)
+                #ctrl <- gamlss::gamlss.control(n.cyc=100, trace=FALSE)
                 m1 <- try(refit(gamlss::gamlss(formula = self$formula,
                                                sigma.formula = sigma.formula,
                                                data = tempData,
@@ -2320,7 +2332,7 @@ Palytic$set("public", "getTO",
 
               for(id in uid)
               {
-                aics <- list()
+                aics <- mods <- list()
                 for(i in 1:polyMax)
                 {
                   clone <- self$clone(deep=TRUE)
@@ -2328,12 +2340,12 @@ Palytic$set("public", "getTO",
                   clone$method     <- "ML"
                   clone$time_power <- i
 
-                  if(package=="nlme")   mod0 <- clone$lme(self$datac[[self$ids]]==id)
-                  if(package=="gamlss") mod0 <- clone$gamlss(self$datac[[self$ids]]==id)
+                  if(package=="nlme")   mods[[i]] <- clone$lme(self$datac[[self$ids]]==id)
+                  if(package=="gamlss") mods[[i]] <- clone$gamlss(self$datac[[self$ids]]==id)
 
-                  if( class(mod0) %in% c("lme", "gamlss") )
+                  if( class(mods[[i]]) %in% c("lme", "gamlss") )
                   {
-                    aics[[i]] <- AIC( mod0 )
+                    aics[[i]] <- AIC( mods[[i]] )
                   }
                   else aics[[i]] <- NA
 
