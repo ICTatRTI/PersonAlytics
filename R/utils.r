@@ -48,17 +48,19 @@ eds <- function(x)
 #' @export
 dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
 {
-  overAll <- .dstats(dv, more=more)
+  out <- .dstats(dv, more=more)
 
   if(! is.null(phase) )
   {
-    dvl <- split(dv, phase)
-    byPhase <- lapply(dvl, .dstats, more=more)
+    dvl  <- split(dv, phase)
+    pout <- lapply(dvl, .dstats, more=more)
+    pout$OverAll <- out
+    out  <- pout; rm(pout)
   }
 
-  byPhase$OverAll <- overAll
+  if(!is.list(out)) out <- list(out)
 
-  descriptives <- round(do.call(rbind, byPhase),2)
+  descriptives <- round(do.call(rbind, out),2)
 
   if( print )
   {
