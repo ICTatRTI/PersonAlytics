@@ -3,7 +3,7 @@ library(PersonAlytics)
 
 test_that("PalyticBasics",
 {
-  OvaryICT <<- PersonAlytics::OvaryICT
+  #OvaryICT <<- PersonAlytics::OvaryICT
 
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase', autoDetect = list())
@@ -131,7 +131,7 @@ test_that("PalyticICC",
 test_that("groupAR_Order",
 {
   # 'manual' model
-  OvaryICT <<- PersonAlytics::OvaryICT
+  #OvaryICT <<- PersonAlytics::OvaryICT
 
   ctrl <- nlme::lmeControl(opt="optim")
   m1 <- lme(follicles ~ Time * Phase, data = OvaryICT, random = ~ Time | Mare,
