@@ -10,10 +10,9 @@ htp(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
   standardize = list(dvs = FALSE, ivs = FALSE, byids = FALSE),
   fpc = FALSE, popsize2 = 0, package = "gamlss",
   autoDetect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST
-  = list(count = FALSE, to01 = FALSE, multinom = FALSE)),
-  whichIC = "BIC", sigma.formula = ~1, debugforeach = FALSE,
-  userFormula = list(fixed = NULL, random = NULL, formula = NULL),
-  cores = parallel::detectCores() - 1)
+  = list()), whichIC = "BIC", sigma.formula = ~1,
+  debugforeach = FALSE, userFormula = list(fixed = NULL, random = NULL,
+  formula = NULL), cores = parallel::detectCores() - 1)
 }
 \description{
 high throughput

@@ -841,9 +841,7 @@
 #' \code{
 #' list(AR=list(P=3, Q=3)     ,
 #'   TO=list(polyMax=3)       ,
-#'   DIST=list(count  = FALSE ,
-#'           to01     = FALSE ,
-#'           multinom = FALSE )) }.
+#'   DIST=list()) }.
 #'
 #' If no automated model selection for the residual covariance structure (\code{AR}),
 #' the polynomial order for the relationship between time and the dependent variable
@@ -881,11 +879,8 @@
 #' the gamlss package, and the best fitting distribution will be used for each
 #' depedent variable. For more detail, see the \code{$dist()} method in
 #' \code{\link{Palytic}}. To narrow the distributions that will be tested,
-#' the user must specify whether the dependent is a \code{count}, whether to
-#' rescale the dependent variable to the (0,1) range with \code{to01}, and
-#' whether the variable is multinomial with \code{multinom} in which case
-#' model comparisons are not conducted and a multinomial regression model is
-#' fit (note that only up to five categories are supported).
+#' the user must specify whether to
+#' rescale the dependent variable to the (0,1) range with \code{to01}.
 #'
 #' @field whichIC Character. The default is \code{whichIC="BIC"}.
 #'
@@ -935,19 +930,17 @@
 #' @section Methods:
 #' \describe{
 #'
-#'   \item{\code{dist(count=FALSE, to01=FALSE, multinom=FALSE, model=NULL,
+#'   \item{\code{dist(to01=FALSE, model=NULL,
 #'   parallel="snow", plot=TRUE)}}
 #'   {This method plots the density of your dependent variable if \code{plot=TRUE} and
 #'   lets the user implement \code{gamlss} automated
 #'   distribution comparisons. If \code{model=NULL}, the \code{\link{fitDist}}
 #'   function is used to compare unconditional models for all applicable distributions.
 #'   If \code{model} is a \code{gamlss} model, the condition models are fit for
-#'   all applicable distributions using \code{\link{chooseDist}}. Whether your
-#'   dependent variable is a count variable cannot be automatically detected, set
-#'   \code{count=TRUE}. If you want to rescale your dependent variable to the (0,1)
-#'   range, set \code{to01=TRUE}. If your depedent variable is multinomial, automated
-#'   distribution comparisons are not implemented, but you should manually change
-#'   your family to one of the \code{\link{MULTIN}} families.
+#'   all applicable distributions using \code{\link{chooseDist}}.
+#'   If you want to rescale your dependent variable to the (0,1)
+#'   range, set \code{to01=TRUE}. If your depedent variable is multinomial,
+#'   automated distribution comparisons are not implemented.
 #'   }
 #'
 #'   \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
@@ -1074,9 +1067,7 @@
 #'                   dv='follicles', time='Time', phase='Phase',
 #'                   autoDetect=list(AR=list(P=3, Q=3)     ,
 #'                                TO=list(polyMax=3)    ,
-#'                                DIST=list(count    = FALSE ,
-#'                                          to01     = FALSE ,
-#'                                          multinom = FALSE ))  )
+#'                                DIST=list())  )
 #'
 #' # automatically select the polynomial order of time with getTO
 #' t1$getTO()
@@ -1170,9 +1161,7 @@ Palytic <- R6::R6Class("Palytic",
                            standardize  = list(dv=FALSE, iv=FALSE, byids=FALSE) ,
                            autoDetect   = list(AR=list(P=3, Q=3)     ,
                                                TO=list(polyMax=3)    ,
-                                               DIST=list(count    = FALSE ,
-                                                         to01     = FALSE ,
-                                                         multinom = FALSE ))    ,
+                                               DIST=list())                     ,
                            whichIC      = c("BIC", "AIC")                       ,
                            corStructs   = NULL                                  ,
                            time_powers  = NULL                                  ,
@@ -1367,7 +1356,7 @@ Palytic$set("public", "summary",
                          datac        = summary(self$datac[,variables])  ,
                          data         = summary(self$data[,varsInData])  ,
                          skew_kurt    = dstats(self$datac[,self$dv],
-                                               phase)                    )
+                                               phase, print=FALSE)       )
             },
             overwrite = TRUE
 )
@@ -1411,9 +1400,7 @@ Palytic$set("public", "detect",
               # are generalized for gamlss()
               if(detectDist)
               {
-                self$dist(self$autoDetect$DIST$count,
-                          self$autoDetect$DIST$to01 ,
-                          self$autoDetect$DIST$multinom,
+                self$dist(self$autoDetect$DIST$to01,
                           model=model, parallel=parallel,
                           plot=plot)
               }
@@ -1459,11 +1446,14 @@ Palytic$set("public", "detect",
 
 # $dist() ####
 Palytic$set("public", "dist",
-            function(count=FALSE, to01=FALSE, multinom=FALSE, model=NULL,
-                     parallel="snow", plot=TRUE)
+            function(to01=FALSE, model=NULL,
+                     parallel="snow", plot=TRUE, type=NULL, extra=NULL)
             {
               # extract the dv for convenience
-              dv <- self$datac[[self$dv]]
+              dv <- na.omit( self$datac[[self$dv]] )
+
+              #
+              if(is.null(to01)) to01 <- FALSE
 
               # plot
               if(plot)
@@ -1482,77 +1472,61 @@ Palytic$set("public", "dist",
               if(to01) dv <- to01(dv)
 
               # get the bounds on the dv
-              isInt <- identical(dv, round(dv,0))
-              isBin <- length(table(dv))==2
-              is01  <- min(dv, na.rm=TRUE) >= 0 & max(dv, na.rm=TRUE) <= 1
-              min0  <- min(dv, na.rm=TRUE) >= 0
-
-              # check count
-              if(count & !isInt)
-              {
-                stop("\nYou specified that ", self$dv, " was a count variable, but",
-                     "\nnon-integer values are present in the data.")
-              }
-
-              # check multinomial
-              if(multinom & to01)
-              {
-                multinom <- FALSE
-              }
-              if(multinom & !isInt)
-              {
-                stop("\nYou specified that ", self$dv, " was a multinomial variable,",
-                     "\nbut non-integer values are present in the data.")
-              }
+              ncats   <- length(table(dv))
+              isInt   <- identical(dv, round(dv,0))
+              isBin   <- ncats==2
+              is01    <- min(dv, na.rm=TRUE) >= 0 & max(dv, na.rm=TRUE) <= 1
+              min0    <- min(dv, na.rm=TRUE) >= 0
+              isMult  <- isInt & !isBin & ncats <= 5
+              isCount <- isInt & min0
+              isCont  <- !isCount & !isInt & !isBin & !isMult
 
               # set the type parameter
               type <- as.character(NA)
-              if(!count & !min0) type <- "realline"
-              if(!count &  min0) type <- "realplus"
-              if( count & isInt) type <- "counts"
-              if(isBin)          type <- "binom"
-              if(multinom)       type <- "multinom"
-              if(is01)           type <- "real0to1"
+              if(!isCount & !min0) type <- "realline"
+              if(!isCount &  min0) type <- "realplus"
+              if( isCount        ) type <- "counts"; extra <- c("realplus", extra)
+              if(isBin)            type <- "binom"
+              if(isMult)           type <- paste("MULTIN(type = '", ncat,"')", sep='')
+              if(is01)             type <- "real0to1"
+
               if(is.na(type))
               {
                 stop("\nDistribution comparison cannot be implemented for ", self$dv)
               }
+              if(!is.na(type))
+              {
+
+                cat("\nThe variable", self$dv, "has the following characteristics:",
+                    "\nInteger     : ", isInt  ,
+                    "\nBinary      : ", isBin  ,
+                    "\nProportion  : ", is01   ,
+                    "\nPositive    : ", min0   ,
+                    "\nMultinomial : ", isMult , " (integer with >2 & <= 5 categories)",
+                    "\nCount       : ", isCount, " (positive integer)"                 ,
+                    "\nContinuous  : ", isCont , " (non-integer)"                      ,
+                    "\n\n")
+              }
 
               # set the family dependent on type
-              if(type == "multinom" | type == "binom")
-              {
-                ncat <- length(table(na.omit(dv)))
-                if(ncat > 5)
-                {
-                  hist(dv)
-                  stop("\nYou specified a multinomial dependent variable with",
-                       "\n", ncat, " categories. Only 5 categories are supported.",
-                       "\nConsider a count distribution if the distribution is",
-                       "\nunimodal and monotonically decreasing (see the histogram).",
-                       "\n\nIf there are floor and/or ceiling effects, consider",
-                       "\nrescaling to the (0,1) rand by setting",
-                       "\n`to01=TRUE`.")
-                }
-                if(ncat <= 5)
-                {
-                  family <- paste("MULTIN(type = '", ncat,"')", sep='')
-                }
-              }
               if(!is.null(model) & ! "gamlss" %in% class(model))
               {
                 stop("\nThe model you provided is not a `gamlss` object.\n",
-                     self$dv, " will be used univariately instead of the model.")
+                     self$dv, " will be tested unconditionally instead of using a model.")
                 model <- NULL
               }
 
-              if(is.null(model))
+              if(is.null(model) & !isMult)
               {
                 # waring suppresion works, but error suppresion not working, I've tried
                 # suppressWarnings, suppressMessages, sink, capture.output,
                 # R.utils::captureOutput, try, tryCatch, invisible,
 
-                options(warn = -1, error = utils::recover)
-                family <- fitDist(dv, type = type, try.gamlss = TRUE)
+                options(warn = -1)#, error = function(){cat('')})
+                capture.output(
+                family <- fitDist(dv, type = type, try.gamlss = TRUE,
+                                  extra = distTypes(extra)),
+                file = 'NUL')
                 options(warn =  0, error = NULL)
 
                 print(family)
@@ -1569,18 +1543,19 @@ Palytic$set("public", "dist",
 
               if(!is.null(model) & "gamlss" %in% class(model))
               {
-                family <- chooseDist(model, type = type, parallel = parallel,
+                family <- chooseDist(model, type = "extra",
+                                     extra = c(distTypes(type), distTypes(extra)),
+                                     parallel = parallel,
                                      ncpus = parallel::detectCores() - 1)
                 family <- names(getOrder(family))[which.min(family)]
               }
 
-              print(family); print(class(family))
               self$family <- as.gamlss.family(family)
 
               # print descriptive statistics to the console
               if(!is.null(self$phase)) phase <- self$datac[[self$phase]]
               else phase <- self$phase
-              dstats(dv, phase)
+              dstats(dv, phase, print=TRUE)
 
             },
             overwrite = TRUE
@@ -2016,6 +1991,8 @@ Palytic$set("public", "gamlss",
             function(subgroup=NULL, sigma.formula = ~1, family=NULL,
                      dropVars=NULL, autoDetect=TRUE, ...)
             {
+              options(warn = -1)
+
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit( subset(self$datac, subgroup,
                                           all.vars(self$formula)) )
@@ -2040,7 +2017,8 @@ Palytic$set("public", "gamlss",
               m1 <- try(gamlss::gamlss(formula = self$formula,
                                        sigma.formula = sigma.formula,
                                        data = tempData,
-                                       family = currentFamily),
+                                       family = currentFamily,
+                                       control = ctrl),
                         silent = self$try_silent)
 
               # default model with increased n.cyc
@@ -2168,6 +2146,8 @@ Palytic$set("public", "gamlss",
               {
                 return("Model did not converge")
               }
+
+              options(warn = 0)
 
             },
             overwrite = TRUE

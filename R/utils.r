@@ -46,7 +46,7 @@ eds <- function(x)
 
 #' dstats - print mena, median, sd, skewness, and kurtosis - 3
 #' @export
-dstats <- function(dv, phase=NULL, more=FALSE)
+dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
 {
   overAll <- .dstats(dv, more=more)
 
@@ -60,14 +60,19 @@ dstats <- function(dv, phase=NULL, more=FALSE)
 
   descriptives <- round(do.call(rbind, byPhase),2)
 
-  # descriptive statistics
-  if( is.null(phase)) cat("\nDescriptive statistics:\n")
-  if(!is.null(phase)) cat("\nDescriptive statistics by phase:\n")
-  print( descriptives )
-  cat("\n\n")
+  if( print )
+  {
+    # descriptive statistics
+    if( is.null(phase)) cat("\nDescriptive statistics:\n")
+    if(!is.null(phase)) cat("\nDescriptive statistics by phase:\n")
+    print( descriptives )
+    cat("\n\n")
+  }
+
+  invisible( descriptives )
 }
 
-#' .dstats - print mena, median, sd, skewness, and kurtosis - 3
+#' .dstats
 #' @keywords internal
 .dstats <- function(dv, more=FALSE)
 {
@@ -769,6 +774,50 @@ mmode <- function(x)
   u[which.max(table(match(x, u)))]
 }
 
+#' distTypes
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @keywords internal
+distTypes <- function(type)
+{
+  if(is.null(type)) type <- "NULL"
+
+  realline <- c("NO", "GU", "RG" ,"LO", "NET", "TF", "TF2", "PE","PE2", "SN1",
+                "SN2", "exGAUS", "SHASH", "SHASHo","SHASHo2", "EGB2", "JSU",
+                "JSUo", "SEP1", "SEP2", "SEP3", "SEP4", "ST1", "ST2", "ST3",
+                "ST4", "ST5", "SST", "GT")
+  realplus <- c( "EXP", "GA","IG","LOGNO", "LOGNO2","WEI", "WEI2", "WEI3",
+                 "IGAMMA","PARETO2", "PARETO2o", "GP", "BCCG", "BCCGo",
+                 "exGAUS", "GG", "GIG", "LNO","BCTo", "BCT", "BCPEo",
+                 "BCPE", "GB2")
+  realAll <- c(realline, realplus)
+  rea0to1 <- c("BE", "BEo", "BEINF0", "BEINF1", "BEOI", "BEZI", "BEINF", "GB1")
+  counts <- c("PO", "GEOM", "GEOMo","LG", "YULE", "ZIPF", "WARING", "GPO", "DPO",
+              "BNB", "NBF","NBI", "NBII", "PIG", "ZIP","ZIP2", "ZAP", "ZALG",
+              "DEL", "ZAZIPF", "SI", "SICHEL","ZANBI", "ZAPIG", "ZINBI", "ZIPIG",
+              "ZINBF", "ZABNB", "ZASICHEL", "ZINBF", "ZIBNB", "ZISICHEL")
+  binom <- c("BI", "BB", "DB", "ZIBI", "ZIBB", "ZABI", "ZABB")
+  multin <- "MULTIN"
+  realpluscounts <- c(realplus, counts)
+
+  pacctgui.all   <- c("NO", "LO", "PO", "MULTIN",
+                      "ZIP", "NB", "NBI", "ZINBI", "LOGNO", "EXP")
+  pacctgui.count <- c("PO", "ZIP", "NB", "NBI", "ZINBI")
+  pacctgui.skew  <- c("LOGNO", "EXP")
+
+  switch(type                            ,
+         realline       = realline       ,
+         realplus       = realplus       ,
+         realAll        = realAll        ,
+         rea0to1        = rea0to1        ,
+         counts         = counts         ,
+         binom          = binom          ,
+         multin         = multin         ,
+         realpluscounts = realpluscounts ,
+         pacctgui.all   = pacctgui.all   ,
+         pacctgui.count = pacctgui.count ,
+         pacctgui.skew  = pacctgui.skew  ,
+         NULL           = NULL)
+}
 
 
 #' pwtime - function to make piecewise time variables for a multiphase study
@@ -802,7 +851,6 @@ mmode <- function(x)
 #'
 #' summary(p1$lme())
 #' summary(p2$lme())
-
 
 pwtime <- function(time, phase)
 {

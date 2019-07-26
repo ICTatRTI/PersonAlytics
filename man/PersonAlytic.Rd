@@ -11,11 +11,10 @@ PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
   subgroup = NULL, standardize = list(dv = FALSE, iv = FALSE, byids =
   FALSE), method = "REML", package = "nlme", individual_mods = FALSE,
   PalyticObj = NULL, autoDetect = list(AR = list(P = 3, Q = 3), TO =
-  list(polyMax = 3), DIST = list(count = FALSE, to01 = FALSE, multinom =
-  FALSE)), whichIC = c("BIC", "AIC"), charSub = NULL,
-  sigma.formula = ~1, p.method = "BY", alpha = 0.05, nbest = NULL,
-  alignPhase = "none", fpc = 0, debugforeach = FALSE,
-  cores = parallel::detectCores() - 1, ...)
+  list(polyMax = 3), DIST = list()), whichIC = c("BIC", "AIC"),
+  charSub = NULL, sigma.formula = ~1, p.method = "BY",
+  alpha = 0.05, nbest = NULL, alignPhase = "none", fpc = 0,
+  debugforeach = FALSE, cores = parallel::detectCores() - 1, ...)
 }
 \arguments{
 \item{output}{Character. The default is \code{NULL}.
@@ -164,9 +163,7 @@ search), and user specified models via \code{formula}.}
 \code{
 list(AR=list(P=3, Q=3)     ,
   TO=list(polyMax=3)       ,
-  DIST=list(count  = FALSE ,
-          to01     = FALSE ,
-          multinom = FALSE )) }.
+  DIST=list(to01     = FALSE)) }.
 
 If no automated model selection for the residual covariance structure (\code{AR}),
 the polynomial order for the relationship between time and the dependent variable
@@ -204,11 +201,9 @@ variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
 the gamlss package, and the best fitting distribution will be used for each
 depedent variable. For more detail, see the \code{$dist()} method in
 \code{\link{Palytic}}. To narrow the distributions that will be tested,
-the user must specify whether the dependent is a \code{count}, whether to
-rescale the dependent variable to the (0,1) range with \code{to01}, and
-whether the variable is multinomial with \code{multinom} in which case
-model comparisons are not conducted and a multinomial regression model is
-fit (note that only up to five categories are supported). Currently settings
+the user must specify whether to
+rescale the dependent variable to the (0,1) range with \code{to01}.
+Currently settings
 for \code{DIST} apply to all depedent variables in \code{dvs}. This will be
 generalized to dependent variable specifics settings in a future release. If
 your dependent variables require different \code{DIST} settings, use separate

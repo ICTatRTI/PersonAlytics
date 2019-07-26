@@ -2,11 +2,11 @@
 % Please edit documentation in R/utils.r
 \name{.dstats}
 \alias{.dstats}
-\title{.dstats - print mena, median, sd, skewness, and kurtosis - 3}
+\title{.dstats}
 \usage{
 .dstats(dv, more = FALSE)
 }
 \description{
-.dstats - print mena, median, sd, skewness, and kurtosis - 3
+.dstats
 }
 \keyword{internal}

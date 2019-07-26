@@ -80,9 +80,7 @@ variables are changed (e.g., \code{ivs}), the data are subset, or the options in
 \code{
 list(AR=list(P=3, Q=3)     ,
   TO=list(polyMax=3)       ,
-  DIST=list(count  = FALSE ,
-          to01     = FALSE ,
-          multinom = FALSE )) }.
+  DIST=list()) }.
 
 If no automated model selection for the residual covariance structure (\code{AR}),
 the polynomial order for the relationship between time and the dependent variable
@@ -120,11 +118,8 @@ variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
 the gamlss package, and the best fitting distribution will be used for each
 depedent variable. For more detail, see the \code{$dist()} method in
 \code{\link{Palytic}}. To narrow the distributions that will be tested,
-the user must specify whether the dependent is a \code{count}, whether to
-rescale the dependent variable to the (0,1) range with \code{to01}, and
-whether the variable is multinomial with \code{multinom} in which case
-model comparisons are not conducted and a multinomial regression model is
-fit (note that only up to five categories are supported).}
+the user must specify whether to
+rescale the dependent variable to the (0,1) range with \code{to01}.}
 
 \item{\code{whichIC}}{Character. The default is \code{whichIC="BIC"}.
 
@@ -175,19 +170,17 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
 
 \describe{
 
-  \item{\code{dist(count=FALSE, to01=FALSE, multinom=FALSE, model=NULL,
+  \item{\code{dist(to01=FALSE, model=NULL,
   parallel="snow", plot=TRUE)}}
   {This method plots the density of your dependent variable if \code{plot=TRUE} and
   lets the user implement \code{gamlss} automated
   distribution comparisons. If \code{model=NULL}, the \code{\link{fitDist}}
   function is used to compare unconditional models for all applicable distributions.
   If \code{model} is a \code{gamlss} model, the condition models are fit for
-  all applicable distributions using \code{\link{chooseDist}}. Whether your
-  dependent variable is a count variable cannot be automatically detected, set
-  \code{count=TRUE}. If you want to rescale your dependent variable to the (0,1)
-  range, set \code{to01=TRUE}. If your depedent variable is multinomial, automated
-  distribution comparisons are not implemented, but you should manually change
-  your family to one of the \code{\link{MULTIN}} families.
+  all applicable distributions using \code{\link{chooseDist}}.
+  If you want to rescale your dependent variable to the (0,1)
+  range, set \code{to01=TRUE}. If your depedent variable is multinomial,
+  automated distribution comparisons are not implemented.
   }
 
   \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
@@ -315,9 +308,7 @@ t1 <- Palytic$new(data = OvaryICT, ids='Mare',
                   dv='follicles', time='Time', phase='Phase',
                   autoDetect=list(AR=list(P=3, Q=3)     ,
                                TO=list(polyMax=3)    ,
-                               DIST=list(count    = FALSE ,
-                                         to01     = FALSE ,
-                                         multinom = FALSE ))  )
+                               DIST=list())  )
 
 # automatically select the polynomial order of time with getTO
 t1$getTO()

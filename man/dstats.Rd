@@ -4,7 +4,7 @@
 \alias{dstats}
 \title{dstats - print mena, median, sd, skewness, and kurtosis - 3}
 \usage{
-dstats(dv, phase = NULL, more = FALSE)
+dstats(dv, phase = NULL, more = FALSE, print = FALSE)
 }
 \description{
 dstats - print mena, median, sd, skewness, and kurtosis - 3
