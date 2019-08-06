@@ -65,7 +65,7 @@ htp <- function(data                                                   ,
   if(alignPhase == "piecewise" & !is.null(autoDetect$TO))
   {
     autoDetect$TO <- NULL
-    message("\n`alignPhase=='piecewise'` and `autoDetect$TO` has been set to NULL",
+    message("\n`alignPhase=='piecewise'`, hence `autoDetect$TO` has been set to NULL",
             "\nbecause automatic decection of the time order is not implemented",
             "within phases.")
   }
@@ -104,7 +104,7 @@ htp <- function(data                                                   ,
       # pre-clean loop
       if(exists("t0")) rm(t0)
       # set up the  palytic object
-      t0 <- Palytic$new(data=data                 ,
+      t0 <- PersonAlytics::Palytic$new(data=data                 ,
                         ids=ids                   ,
                         dv=dvs[[dv]]              ,
                         time=time$raw             ,

@@ -48,6 +48,12 @@ clean <- function(data		 	                                            ,
                   alignPhase 	  =	"none"                                ,
                   debugforeach  = debugforeach                          )
 {
+  # check that the family is a gamlss.family object
+  if(! "gamlss.family" %in% class(family))
+  {
+    stop("\n`family` is not a 'gamlss.family' family.")
+  }
+
   # check that variables are in the data set
   vars <- unique( c(ids, dv, time$raw, phase, unlist(ivs), unlist(dvs),
                     unlist(target_ivs), all.vars(fixed), all.vars(random),
