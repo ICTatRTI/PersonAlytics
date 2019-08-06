@@ -2448,7 +2448,7 @@ Palytic$set("public", "plot",
               suppressMessages(
               suppressWarnings(
               gridExtra::marrangeGrob(plotICTs, nrow=length(dens),
-                                      ncol=2, widths = c(2,6),
+                                      ncol=2, widths = c(3,6),
                                       top='Density and Average Trajectory with SD bars')
               ))
             },

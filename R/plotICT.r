@@ -108,38 +108,62 @@ plotICT <- function(self, data, legendName=NULL,
   # turn off line legend
   if(group==1) s <- s + scale_color_continuous(guide = FALSE)
 
-  # density with no phase
-  if( is.null(self$phase))
+  # bins for categorical data
+  .l <- length( table(data[[self$dv]]) )
+
+  if(.l > 5)
   {
-    densdat <- self$datac
-    d <- ggplot(data=densdat,
-                aes_string(x=self$dv)) +
-      theme(legend.position="none") +
-      xlim(ylim) + plotTheme
-    d <- d + coord_flip() + scale_y_reverse()
-    if(type=='density')   d <- d + geom_density(alpha=.5, col='darkblue', fill='lightblue')
-    if(type=='histogram') d <- d + geom_histogram(alpha=.5, col='darkblue', fill='lightblue')
-    if(type=='freqpoly')  d <- d + geom_freqpoly(alpha=.5, col='darkblue', fill='lightblue')
+    # density with no phase
+    if( is.null(self$phase))
+    {
+      densdat <- self$datac
+      d <- ggplot(data=densdat,
+                  aes_string(x=self$dv)) +
+        theme(legend.position="none") +
+        xlim(ylim) + plotTheme
+      d <- d + coord_flip() + scale_y_reverse()
+      if(type=='density')   d <- d + geom_density(alpha=.5, col='darkblue', fill='lightblue')
+      if(type=='histogram') d <- d + geom_histogram(alpha=.5, col='darkblue', fill='lightblue')
+      if(type=='freqpoly')  d <- d + geom_freqpoly(alpha=.5, col='darkblue', fill='lightblue')
+    }
+
+    # denisty by phase
+    if(!is.null(self$phase))
+    {
+      densdat <- self$datac
+      densdat[[self$phase]] <- factor(densdat[[self$phase]])
+      d <- ggplot(data=densdat,
+                  aes_string(x=self$dv,
+                             colour=self$phase,
+                             fill=self$phase)) +
+        scale_fill_manual(values = rect$cols) +
+        scale_color_manual(values = rect$cols) +
+        theme(legend.position="none") +
+        xlim(ylim) + plotTheme
+      d <- d + coord_flip() + scale_y_reverse()
+      if(type=='density')   d <- d + geom_density(alpha=.5)
+      if(type=='histogram') d <- d + geom_histogram(alpha=.5)
+      if(type=='freqpoly')  d <- d + geom_freqpoly(alpha=.5)
+    }
   }
 
-  # denisty by phase
-  if(!is.null(self$phase))
+  if(.l <= 5)
   {
-    densdat <- self$datac
-    densdat[[self$phase]] <- factor(densdat[[self$phase]])
-    d <- ggplot(data=densdat,
-                aes_string(x=self$dv,
-                           colour=self$phase,
-                           fill=self$phase)) +
-      scale_fill_manual(values = rect$cols) +
-      scale_color_manual(values = rect$cols) +
-      theme(legend.position="none") +
-      geom_density(alpha=.5) +
-      xlim(ylim) + plotTheme
-    d <- d + coord_flip() + scale_y_reverse()
-    if(type=='density')   d <- d + geom_density(alpha=.5)
-    if(type=='histogram') d <- d + geom_histogram(alpha=.5)
-    if(type=='freqpoly')  d <- d + geom_freqpoly(alpha=.5)
+    if(is.null(self$phase))
+    {
+      data[[self$dv]] <- factor(data[[self$dv]])
+      d <- ggplot(data, aes_string(x=self$dv)) +
+        geom_histogram(stat="count")
+    }
+    if(!is.null(self$phase))
+    {
+      data[[self$dv]] <- factor(data[[self$dv]])
+      d <- ggplot(data, aes_string(x=self$dv, fill=self$phase)) +
+        geom_histogram(stat="count", position="dodge" , alpha=.5)
+    }
+    d <- d + coord_flip() + scale_y_reverse() + plotTheme +
+      scale_fill_manual(values = rect$cols)
+
   }
 
   return( list(d=d, s=s) )
