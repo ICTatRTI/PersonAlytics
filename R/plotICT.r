@@ -25,7 +25,7 @@
 # function that gets multiple calls
 plotICT <- function(self, data, legendName=NULL,
                     type=c('density', 'histogram', 'freqpoly'),
-                    ylim=NULL)
+                    ylim=NULL, printStats=TRUE)
 {
   # check whetehr the time variable is continuous, if yes it
   # needs to be aggregated so that we don't have time points with only
@@ -108,6 +108,28 @@ plotICT <- function(self, data, legendName=NULL,
   # turn off line legend
   if(group==1) s <- s + scale_color_continuous(guide = FALSE)
 
+  # descriptives
+  if(!is.null(self$phase))
+  {
+    descriptives <- dstats(data[[self$dv]], data[[self$phase]])
+    rnms <- names(table(data[[self$phase]]))
+    rnms <- paste(format(rnms, width=max(nchar(rnms))), ": ", sep="")
+    rows <- 1:length(rnms)
+  }
+  if( is.null(self$phase))
+  {
+    descriptives <- dstats(data[[self$dv]])
+    rnms <- ""
+    rows <- 1
+  }
+  rnms <- paste( paste(rnms, "skew=",
+                       format(round(descriptives[rows,4],2), nsmall=2),
+                       ", kurt=",
+                       format(round(descriptives[rows,5],2), nsmall=2),
+                       sep=""),
+                 collapse = "\n")
+
+
   # bins for categorical data
   .l <- length( table(data[[self$dv]]) )
 
@@ -164,6 +186,15 @@ plotICT <- function(self, data, legendName=NULL,
     d <- d + coord_flip() + scale_y_reverse() + plotTheme +
       scale_fill_manual(values = rect$cols)
 
+  }
+
+  # annotate with descriptives
+  if(printStats)
+  {
+    ylims <- ggplot_build(d)$layout$panel_scales_y[[1]]$range$range
+    xlims <- ggplot_build(d)$layout$panel_scales_x[[1]]$range$range
+    d <- d + annotate("text", x=xlims[2]*.95, y=abs(ylims[1]), label = rnms,
+                      vjust=1, hjust=0)
   }
 
   return( list(d=d, s=s) )

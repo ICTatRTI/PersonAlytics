@@ -5,7 +5,7 @@
 \title{plotICT - function to plot ICT data.}
 \usage{
 plotICT(self, data, legendName = NULL, type = c("density", "histogram",
-  "freqpoly"), ylim = NULL)
+  "freqpoly"), ylim = NULL, printStats = TRUE)
 }
 \arguments{
 \item{out}{An \code{lme} object}

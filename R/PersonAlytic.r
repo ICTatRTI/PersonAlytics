@@ -664,7 +664,7 @@ pa1 <- function(e=parent.frame())
   if(e$package=="arma")   Grp.out <- t1$arma(e$subgroup )
 
   sink(file=e$output)
-  print( Grp.out )
+  print( Grp.out$tTable )
   sink()
 
   return(Grp.out)
