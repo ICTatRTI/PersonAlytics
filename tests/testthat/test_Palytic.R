@@ -12,25 +12,25 @@ test_that("PalyticBasics",
   t1.lme    <- summary(t1$lme())
   form1 <- t1$formula
 
-  expect_equal( t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01 )
+  testthat::expect_equal( t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01 )
 
   t1$correlation <- "corARMA(p=1, q=0)"
   t1.gamlss.ar1 <- t1$gamlss(); t1.gamlss.ar1s <- summary( t1.gamlss.ar1 )
   t1.lme.ar1    <- t1$lme()
 
-  expect_equal(
+  testthat::expect_equal(
   t1.gamlss.ar1$PalyticSummary$formula,
   t1.lme.ar1$PalyticSummary$formula$formula)
 
   # this test will fail, I don't know why we get hugely different results
   # when adding a residual correlation structure
-  #expect_equal( t1.gamlss.ar1s[1:4,1],
+  #testthat::expect_equal( t1.gamlss.ar1s[1:4,1],
   #              t1.lme.ar1$tTable[,1], tolerance = 0.01 )
 
   # repeat 'by hand' to check that gamlss is using AR1
   formar <- t1.gamlss.ar1$PalyticSummary$formula
   t1.gamlss.ar1s2 <- summary( gamlss(form1, data = OvaryICT) )
-  expect_false(identical(t1.gamlss.ar1s2, t1.gamlss.ar1s))
+  testthat::expect_false(identical(t1.gamlss.ar1s2, t1.gamlss.ar1s))
 
   # WIP - the lme varFuncs are not working
   if(1==2)
@@ -146,9 +146,9 @@ test_that("groupAR_Order",
   #m1t$call
   #dim(m1t$data)
 
-  expect_equal(summary(m1)$tTable, m1t$tTable, tolerance = .01)
+  testthat::expect_equal(summary(m1)$tTable, m1t$tTable, tolerance = .01)
 
-  expect_equal(m1$modelStruct, m1t$modelStruct, tolerance = .01)
+  testthat::expect_equal(m1$modelStruct, m1t$modelStruct, tolerance = .01)
 
 }
 )

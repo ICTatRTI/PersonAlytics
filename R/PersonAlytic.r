@@ -109,19 +109,18 @@
 #' Power of the time variable (e.g., \code{time^time_power}).
 #' A quadratic or cubic growth model would be specified using
 #' \code{time_power=2} or \code{time_power=3}, respectively.
-#' If \code{detectTO=TRUE}, this is the largest value tested for \code{detectTO}.
-#' The default value is \code{3}, testing up to a cubic growth model if
-#' \code{detectTo=TRUE}. If a linear growth model is desired, set
-#' \code{detectTO=FALSE} and \code{time_power=1}.
+#' If \code{autoDetect$TO$polyMax} is specified, \code{polyMax} is the largest
+#' value tested for. The default value is \code{3}, testing up to a cubic growth
+#' model. If a linear growth model is desired, set
+#' \code{autoDetect$TO=NULL} and \code{time_power=1}.
 #'
 #' @param correlation Character. The default value is \code{NULL}.
 #'
 #' See \code{\link{corStruct}} in \code{\link{nlme}}.
 #' Must be passed as a character, e.g. \code{"corARMA(p=1)"}.
-#' If \code{detectAR=TRUE}, \code{correlation} will be ignored, see \code{PQ}
-#' and \code{detectAR}. The default value is \code{NULL}, assuming no residual
-#' autocorrelation. If \code{detectAR=TRUE}, \code{correlation}
-#' will be ignored.
+#' The default value is \code{NULL}, assuming no residual
+#' autocorrelation. If \code{auoDetect$AR} is specified, \code{correlation} will
+#' be ignored.
 #'
 #' @param family See \code{\link{gamlss.family}}. The default is normal,
 #' \code{family=NO()}. This option is not yet implemented.
@@ -201,8 +200,8 @@
 #' structure is searches among
 #' \code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
 #' from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
-#' are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
-#' testing (see \code{detectAR}). If \code{individual_mods=FALSE}, this done
+#' are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}).
+#' If \code{individual_mods=FALSE}, this done
 #' comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
 #' this is done using the \code{\link{auto.arima}} function on the residuals for
 #' each individual. For more detail, see the \code{\link{$GroupAR()}}
@@ -266,7 +265,7 @@
 #'
 #' A formula for the variance under \code{\link{gamlss}}.
 #' Currently static: it will not change dynamically over iterations nor will it be
-#' updated by \code{time_power} or \code{detectTO}. If model fitting using this
+#' updated by \code{time_power} or \code{autoDetect}. If model fitting using this
 #' option fails, another attempt will be made after reseting it to its defaul,
 #' i.e., \code{~1}.
 #'
@@ -383,8 +382,7 @@
 #'                    package         = "lme"                      ,
 #'                    individual_mods = FALSE                      ,
 #'                    target_ivs      = NULL                       ,
-#'                    detectAR        = FALSE                      ,
-#'                    detectTO        = FALSE                      )
+#'                    autoDetect      = list()                     )
 #'
 #'
 #' # repeat t4 with finite population correction
@@ -397,8 +395,7 @@
 #'                    package         = "lme"                      ,
 #'                    individual_mods = FALSE                      ,
 #'                    target_ivs      = NULL                       ,
-#'                    detectAR        = FALSE                      ,
-#'                    detectTO        = FALSE                      ,
+#'                    autoDetect      = list()                     ,
 #'                    fpc             = 200                        )
 #'
 #' # repeat t5 with piecewise model
@@ -412,8 +409,7 @@
 #'                    package         = "lme"                      ,
 #'                    individual_mods = FALSE                      ,
 #'                    target_ivs      = NULL                       ,
-#'                    detectAR        = FALSE                      ,
-#'                    detectTO        = FALSE                      ,
+#'                    autoDetect      = list()                     ,
 #'                    fpc             = 200                        ,
 #'                    alignPhase      = "piecewise"                )
 #'
@@ -777,10 +773,9 @@ paHTP <- function(e=parent.frame())
     print(e$fpc          ); cat('\n')
     print(e$popsize2     ); cat('\n')
     print(e$package      ); cat('\n')
-    print(e$detectAR     ); cat('\n')
+    print(e$autoDetect   ); cat('\n')
     print(e$PQ           ); cat('\n')
     print(e$whichIC      ); cat('\n')
-    print(e$detectTO     ); cat('\n')
     print(e$polyMax     ); cat('\n')
     print(e$sigma.formula); cat('\n')
     print(e$debugforeach ); cat('\n')

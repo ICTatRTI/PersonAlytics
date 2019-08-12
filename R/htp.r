@@ -60,7 +60,7 @@ htp <- function(data                                                   ,
   }
 
   ##############################################################################
-  # detectTO not implemented for alignPhase == "piecewise"
+  # autoDetect$TO not implemented for alignPhase == "piecewise"
   ##############################################################################
   if(alignPhase == "piecewise" & !is.null(autoDetect$TO))
   {
@@ -104,7 +104,7 @@ htp <- function(data                                                   ,
       # pre-clean loop
       if(exists("t0")) rm(t0)
       # set up the  palytic object
-      t0 <- PersonAlytics::Palytic$new(data=data                 ,
+      t0 <- PersonAlytics::Palytic$new(data=data  ,
                         ids=ids                   ,
                         dv=dvs[[dv]]              ,
                         time=time$raw             ,
@@ -639,6 +639,12 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['package']      <- package
   err_id['Personalytics']<- paste('Version', packageVersion("PersonAlytics"))
   err_id['Date_Time']    <- format(Sys.time(), format='%Y%m%d_%H.%M%p')
+
+  # id and time series lengths
+  nid <- length(unique(temp[[t1$ids]]))
+  err_id['N_participants'] <- nid
+  ntp <- length(unique(temp[[t1$time$raw]]))
+  err_id['N_time_points'] <- ntp
 
   # check for adequate data
   nrt            <- length(unique(temp[[t1$time$analysis[1]]]))

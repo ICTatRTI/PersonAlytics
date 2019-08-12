@@ -16,7 +16,7 @@ test_that("ManyV1",
                      package = "nlme"      ,
                      autoDetect = list(TO=list(polyMax=3))   )
 
-  expect_equal(t0$tTable[,1],
+  testthat::expect_equal(t0$tTable[,1],
                c( `(Intercept)`     =   10.487701 ,
                   Time              =  -13.174889 ,
                   Phase             =  -91.115823 ,
@@ -31,7 +31,7 @@ test_that("ManyV1",
   mod.lme <- lme(t0$PalyticSummary$fixed, data = OvaryICT,
              random = t0$PalyticSummary$random)
 
-  expect_equal(summary(mod.lme)$tTable, t0$tTable)
+  testthat::expect_equal(summary(mod.lme)$tTable, t0$tTable)
 
   # individual models
   t1 <- PersonAlytic(output          = NULL        ,
@@ -55,8 +55,8 @@ test_that("ManyV1",
                         subgroup = OvaryICT$Mare==1
   )
 
-  expect_equal( c(t(mare1$tTable[2:5,])),
-             unname(unlist(t1[t1$Mare==1,44:59])) )
+  testthat::expect_equal( c(t(mare1$tTable[2:5,])),
+             unname(unlist(t1[t1$Mare==1,46:61])) )
 
   # verify against a 'manual' auto.arima run
   m1   <- OvaryICT$Mare==1
@@ -67,10 +67,10 @@ test_that("ManyV1",
   forecast::auto.arima(y = OvaryICT$follicles[m1],
                        xreg = data.matrix(xreg))
 
-  expect_equal(m1ar$coef, mare1$arima$coef)
+  testthat::expect_equal(m1ar$coef, mare1$arima$coef)
 
   # verify against saved values
-  expect_equal(m1ar$coef,   c(ma1          =  0.4407915 ,
+  testthat::expect_equal(m1ar$coef,   c(ma1          =  0.4407915 ,
                               intercept    =  6.2146980 ,
                               Time         = -5.9190285 ,
                               Phase        = -2.0250462 ,

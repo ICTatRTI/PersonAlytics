@@ -18,7 +18,7 @@ test_that("Ovary",
               fpc.se.lme[[i]] <- sqrt(diag(vcovFPC(mod.lme, popsize2 = popsize2[[i]])))
             }
 
-            expect_equal(
+            testthat::expect_equal(
               do.call(rbind, fpc.se.merMod),
               do.call(rbind, fpc.se.lme),
               tolerance = 9e-05
@@ -26,11 +26,11 @@ test_that("Ovary",
 
             # use getLambdat to create Lambdat and show equivalence to lme4 (within rounding)
             Lambdat <- getLambdat(mod.lme)
-            expect_equal(Lambdat, getME(mod.merMod, "Lambdat"), tolerance = 9e-05)
+            testthat::expect_equal(Lambdat, getME(mod.merMod, "Lambdat"), tolerance = 9e-05)
 
             # use getZt to create Zt and show equivalence to lme4
             Zt <- getZt(mod.lme)
-            expect_equal(unname(Zt), unname(getME(mod.merMod, "Zt")))
+            testthat::expect_equal(unname(Zt), unname(getME(mod.merMod, "Zt")))
           }
 
 )
@@ -52,7 +52,7 @@ test_that("BodyWeight",
               fpc.se.merMod[[i]] <- sqrt(diag(vcovFPC(mod.merMod, popsize2 = popsize2[i])))
               fpc.se.lme[[i]] <- sqrt(diag(vcovFPC(mod.lme, popsize2 = popsize2[[i]])))
             }
-            expect_equal(
+            testthat::expect_equal(
               do.call(rbind, fpc.se.merMod),
               do.call(rbind, fpc.se.lme),
               tolerance = 9e-06
@@ -60,10 +60,10 @@ test_that("BodyWeight",
 
             # use getLambdat to create Lambdat and show equivalence to lme4 (within rounding)
             Lambdat <- getLambdat(mod.lme)
-            expect_equal(Lambdat, getME(mod.merMod, "Lambdat"), tolerance = 9e-06)
+            testthat::expect_equal(Lambdat, getME(mod.merMod, "Lambdat"), tolerance = 9e-06)
             # use getZt to create Zt and show equivalence to lme4
             Zt <- getZt(mod.lme)
-            expect_equal(unname(Zt), unname(getME(mod.merMod, "Zt")))
+            testthat::expect_equal(unname(Zt), unname(getME(mod.merMod, "Zt")))
           }
 )
 

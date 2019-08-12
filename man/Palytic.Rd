@@ -89,14 +89,14 @@ should be passed (e.g., \code{autoDetect=list()}).
 
 If \code{AR} is in the list,
 the residual correlation structure will be automatically selected from
-among \code{ARMA(p,q)} models? See \code{correlation}. Since these models are
+among \code{ARMA(p,q)} models. See \code{correlation}. Since these models are
 not generally nested, model selection is done using information information
 criterion (see \code{whichIC}). Model selection for the residual covariance
 structure is searches among
 \code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
 from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
-are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}) for
-testing (see \code{detectAR}). If \code{individual_mods=FALSE}, this done
+are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}).
+If \code{individual_mods=FALSE}, this done
 comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
 this is done using the \code{\link{auto.arima}} function on the residuals for
 each individual. For more detail, see the \code{\link{$GroupAR()}}

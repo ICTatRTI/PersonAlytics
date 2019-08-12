@@ -132,8 +132,7 @@ NULL
 #'                    phase="Phase",
 #'                    time="Time",
 #'                    package="nlme",
-#'                    detectAR = FALSE,
-#'                    detectTO = FALSE,
+#'                    autoDetect=list(),
 #'                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
 #'                    alignPhase = 'none')
 #' summary(t1)
@@ -165,8 +164,7 @@ NULL
 #'                    phase="Phase2",
 #'                    time="Time",
 #'                    package="nlme",
-#'                    detectAR = FALSE,
-#'                    detectTO = FALSE,
+#'                    autoDetect=list(),
 #'                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
 #'                    alignPhase = 'align')
 #' summary(t3)
