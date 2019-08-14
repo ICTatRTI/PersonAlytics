@@ -398,7 +398,7 @@
 #'                    autoDetect      = list()                     ,
 #'                    fpc             = 200                        )
 #'
-#' # repeat t5 with piecewise model
+#' # repeat t5 with piecewise model, first making time an integer (required for piecewise)
 #' OvaryICT$TimeP <- round(30*OvaryICT$Time)
 #' t6 <- PersonAlytic(output          = 'PiecewiseExample'         ,
 #'                    data            = OvaryICT                   ,

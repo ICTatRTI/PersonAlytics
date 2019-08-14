@@ -1075,6 +1075,7 @@
 #'
 #' # automatically select the ARMA model for residual correlation getAR
 #' t1$GroupAR()
+#' t1$correlation
 #' t1$corStructs
 #'
 #' # automatically select the distribution, noting that calling $dist() updates $family
@@ -1737,7 +1738,7 @@ Palytic$set("public", "arma",
 # or some other method of matching arguments, see ?match.arg
 Palytic$set("public", "lme",
             function(subgroup=NULL, dropVars=NULL,
-                     fpc=FALSE, popsize2, autoDetect=TRUE, ...)
+                     fpc=FALSE, popsize2, ...)
             {
 			        if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
@@ -1832,7 +1833,8 @@ Palytic$set("public", "lme",
               # if n=1, detect the correlation structure here using getARnEQ1()
               # as it may affect the lrt (we should probably do the same for
               # group ar...);
-              if( length(table(tempData[[self$ids]]))==1 )
+              if( length(table(tempData[[self$ids]]))==1 &
+                  !is.null(self$autoDetect$AR) )
               {
                 PQ <- c(self$autoDetect$AR$P, self$autoDetect$AR$Q)
                 self$correlation  <- getARnEQ1(m1, PQ, self$dv)
@@ -1958,6 +1960,10 @@ cleanCall <- function(modelResult, PalyticObj, newformula=NULL)
 #' @keywords internal
 getARnEQ1 <- function(m, PQ, dv, debug=FALSE)
 {
+  if(is.null(PQ))
+  {
+    stop("\nIn `getARnEQ1` `PQ` is NULL.\n\n")
+  }
   correlation <- "NULL"
   if( "gamlss" %in% class(m) ) resid <- m$residuals
   if( "lme"    %in% class(m) ) resid <- m$residuals[,2]
@@ -1989,7 +1995,7 @@ getARnEQ1 <- function(m, PQ, dv, debug=FALSE)
 ### TODO(Stephen) add residual correlation search for n=1
 Palytic$set("public", "gamlss",
             function(subgroup=NULL, sigma.formula = ~1, family=NULL,
-                     dropVars=NULL, autoDetect=TRUE, ...)
+                     dropVars=NULL, ...)
             {
               options(warn = -1)
 
@@ -2086,7 +2092,8 @@ Palytic$set("public", "gamlss",
               # if n=1, detect the correlation structure here using getARnEQ1()
               # as it may affect the lrt (we should probably do the same for
               # group ar...);
-              if( length(table(tempData[[self$ids]]))==1 )
+              if( length(table(tempData[[self$ids]]))==1 &
+                  !is.null(self$autoDetect$AR) )
               {
                 PQ <- c(self$autoDetect$AR$P, self$autoDetect$AR$Q)
                 self$correlation <- getARnEQ1(m1, PQ, self$dv)
