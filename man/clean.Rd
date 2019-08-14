@@ -5,7 +5,7 @@
 \title{clean, a function to check data and inputs.}
 \usage{
 clean(data, ids, dv, time, phase = NULL, ivs = NULL, fixed = NULL,
-  random = NULL, formula = NULL, correlation = NULL, family = NULL,
+  random = NULL, formula = NULL, correlation = NULL, family = NO(),
   dvs = NULL, target_ivs = NULL, standardize = list(dv = FALSE, iv =
   FALSE, byids = FALSE), sortData = TRUE, alignPhase = "none",
   debugforeach = debugforeach)

@@ -40,7 +40,7 @@ clean <- function(data		 	                                            ,
                   random      	=	NULL	                                ,
                   formula	      =	NULL	                                ,
                   correlation 	=	NULL	                                ,
-                  family        = NULL                                  ,
+                  family        = NO()                                  ,
                   dvs	          =	NULL	                                ,
                   target_ivs    =	NULL	                                ,
                   standardize 	=	list(dv=FALSE, iv=FALSE, byids=FALSE)	,
@@ -51,7 +51,7 @@ clean <- function(data		 	                                            ,
   # check that the family is a gamlss.family object
   if(! "gamlss.family" %in% class(family))
   {
-    stop("\n`family` is not a 'gamlss.family' family.")
+    stop("\n`family`=", family, " is not a 'gamlss.family' family.")
   }
 
   # check that variables are in the data set
