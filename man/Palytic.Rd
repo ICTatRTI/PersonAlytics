@@ -316,6 +316,7 @@ t1$time_powers
 
 # automatically select the ARMA model for residual correlation getAR
 t1$GroupAR()
+t1$correlation
 t1$corStructs
 
 # automatically select the distribution, noting that calling $dist() updates $family
