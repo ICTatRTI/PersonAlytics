@@ -285,6 +285,8 @@ htp <- function(data                                                   ,
 
   row.names(outmat) <- NULL
 
+  outmat <- outmat[,-1] # drop the 1st column, named 'id', redundants with 'ids'
+
   return( outmat )
 }
 
