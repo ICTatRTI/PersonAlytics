@@ -38,9 +38,9 @@ htp <- function(data                                                   ,
 
   PQ <- c(autoDetect$AR$P, autoDetect$AR$Q)
 
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   # log files - create a log directory and overwrite all logs
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   if(debugforeach)
   {
     if(!file.exists('PAlogs')) dir.create('PAlogs')
@@ -49,19 +49,19 @@ htp <- function(data                                                   ,
     cat( 'Start formula.log\n\n', file = "./PAlogs/formula.log", append=FALSE)
   }
 
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   # determine which loop type to use, if dvLoop==TRUE, a non-parallelized
   # loop for the DVs is used
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   dvLoop  <- TRUE
   if( length(dvs) > 1 & length(target_ivs) <= 1 & dims$ID[1]=="All Cases" )
   {
     dvLoop <- FALSE
   }
 
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   # autoDetect$TO not implemented for alignPhase == "piecewise"
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   if(alignPhase == "piecewise" & !is.null(autoDetect$TO))
   {
     autoDetect$TO <- NULL
@@ -70,17 +70,17 @@ htp <- function(data                                                   ,
             "within phases.")
   }
 
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   # functions to export
-  ##############################################################################
+  #----------------------------------------------------------------------------#
   exports <- c("forms")
 
   # parralelization options could be implemented as methods for a generic,
   # would that be faster? probably not, and since the user con't touch them,
   # the generic doesn't help anyone
-  ##############################################################################
-  # parralelization option 1: iterate over dvs only
-  ##############################################################################
+  #----------------------------------------------------------------------------#
+  # parralelization option 1: iterate over dvs only ####
+  #----------------------------------------------------------------------------#
   if(!dvLoop )
   {
     DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
@@ -170,10 +170,10 @@ htp <- function(data                                                   ,
     rm(IDoutSumm, IDmsg, IDdesc )
   }
 
-  ##############################################################################
-  # parralelization option 2: outer loop is DV so that correlation and time
-  # order searches only need to happen 1x/DV
-  ##############################################################################
+  #----------------------------------------------------------------------------#
+  # parralelization option 2: outer loop is DV ####
+  # so that correlation and time order searches only need to happen 1x/DV
+  #----------------------------------------------------------------------------#
   if( dvLoop )
   {
     DIM <- expand.grid(ID=dims$ID, IV=dims$IV)
@@ -285,7 +285,7 @@ htp <- function(data                                                   ,
 
   row.names(outmat) <- NULL
 
-  outmat <- outmat[,-1] # drop the 1st column, named 'id', redundants with 'ids'
+  #outmat <- outmat[,-1] # drop the 1st column, named 'id', redundants with 'ids'
 
   return( outmat )
 }
@@ -347,18 +347,20 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   {
     useObs <- t1$data[[t1$ids]]==id
     wid    <- which(dims$ID==id)
+    errid  <- wid
   }
   if(dims$ID[1]=="All Cases")
   {
     useObs <- rep(TRUE, nrow(t1$data))
     wid    <- 1:nrow(t1$data)
+    errid  <- dims$ID[1]
   }
 
   #-------------------------------------------------------------------------
   # accumulate inputs and errors for the output, results are used in
   # row selection `useObs`
   #-------------------------------------------------------------------------
-  htpErr <- htpErrors(t1=t1, id=id, dv=dvs[[dv]], dims=dims,
+  htpErr <- htpErrors(t1=t1, id=wid, dv=dvs[[dv]], dims=dims,
                       package=package, useObs=useObs,
                       target_iv=target_ivs[[iv]])
   tivv   <- htpErr$tivv
@@ -585,17 +587,21 @@ getParameters <- function(Model, package, target_iv, data, fpc)
 htpForms <- function(err_id, t1, dims, id, package, modid)
 {
 
-  err_id["fixed"]       <- toString( NA )
-  err_id["random"]      <- toString( NA )
-  err_id["formula"]     <- toString( NA )
-  err_id["correlation"] <- toString( NA )
+  err_id["fixed"]        <- toString( NA )
+  err_id["random"]       <- toString( NA )
+  err_id["formula"]      <- toString( NA )
+  err_id["correlation0"] <- toString( NA )
+
+  correlation0 <- t1$correlation0
+  if(is.null(correlation0)) correlation0 <- "NULL"
 
   if(!any(is.na(modid)) & !any(modid == "Model did not converge"))
   {
     err_id["fixed"]       <- rmSpecChar(modid$PalyticSummary$fixed)
     err_id["random"]      <- rmSpecChar(modid$PalyticSummary$random)
-    err_id["correlation"] <- ifelse(all(dims$ID=="All Cases"),
-                                   rmSpecChar(modid$PalyticSummary$correlation),
+    err_id["correlation0"] <- ifelse(all(dims$ID=="All Cases"),
+                                   #rmSpecChar(modid$PalyticSummary$correlation),
+                                   correlation0,
                                    ifelse(package=="arma",
                                           #TODO() this doesn't get the ride order
                                           #gerARIMAorder(modid$arima),
@@ -620,7 +626,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   temp   <- na.omit( t1$datac[useObs, c(all.vars(t1$formula), target_iv)] )
 
   # identify rows
-  err_id[t1$ids] <- id
+  err_id[[t1$ids]] <- id
 
   # identify inputs
   err_id['ids']          <- t1$ids
@@ -631,7 +637,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['target_iv']    <- toString( target_iv )
   err_id['interactions'] <- toString( t1$interactions )
   err_id['time_power']   <- t1$time_power # updated later
-  err_id['alignPhase']   <- t1$alignPhase
+  err_id['alignPhase']   <- toString( t1$alignPhase )
   if(package=="arma") err_id['correlation']  <- "See 'call' column'"
   if(package!="arma") err_id['correlation']  <- t1$correlation
   err_id['family']       <- t1$family[[1]][2]

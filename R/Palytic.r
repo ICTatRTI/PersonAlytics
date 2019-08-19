@@ -423,6 +423,15 @@
       }
     },
 
+    correlation0 = function(value)
+    {
+      if( missing(value) ) private$.correlation0
+      else
+      {
+        stop("\n`correlation0`, the input value of `correlattion`, cannot be edited.")
+      }
+    },
+
     family = function(value)
     {
       if( missing(value) ) private$.family
@@ -1121,6 +1130,7 @@ Palytic <- R6::R6Class("Palytic",
                          .interactions = NULL,
                          .time_power   = NULL,
                          .correlation  = NULL,
+                         .correlation0 = NULL,
                          .family       = NULL,
                          .fixed        = NULL,
                          .random       = NULL,
@@ -1285,6 +1295,7 @@ Palytic <- R6::R6Class("Palytic",
                            private$.interactions <- interactions
                            private$.time_power   <- time_power
                            private$.correlation  <- correlation
+                           private$.correlation0 <- correlation
                            private$.family       <- family
                            private$.fixed        <- frms$fixed
                            private$.random       <- frms$random
