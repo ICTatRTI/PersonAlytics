@@ -360,7 +360,7 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   # accumulate inputs and errors for the output, results are used in
   # row selection `useObs`
   #-------------------------------------------------------------------------
-  htpErr <- htpErrors(t1=t1, id=wid, dv=dvs[[dv]], dims=dims,
+  htpErr <- htpErrors(t1=t1, id=errid, dv=dvs[[dv]], dims=dims,
                       package=package, useObs=useObs,
                       target_iv=target_ivs[[iv]])
   tivv   <- htpErr$tivv
