@@ -2424,7 +2424,8 @@ Palytic$set("public", "GroupTO",
 # This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
 # of the data for ICTviz is theoretical, this function is for real data
 Palytic$set("public", "plot",
-            function(subgroup=NULL, groupvar=NULL, type='histogram', ylim=NULL)
+            function(subgroup=NULL, groupvar=NULL, type='histogram', ylim=NULL,
+                     title=NULL)
             {
               # qc input
               if(!is.null(groupvar))
@@ -2463,11 +2464,15 @@ Palytic$set("public", "plot",
               }
               plotICTs <- c(dens, traj)
 
+              top <- paste(title[[1]],
+                           'Density and Average Trajectory with SD bars',
+                           sep=": ")
+
               suppressMessages(
               suppressWarnings(
               gridExtra::marrangeGrob(plotICTs, nrow=length(dens),
                                       ncol=2, widths = c(3,6),
-                                      top='Density and Average Trajectory with SD bars')
+                                      top=top)
               ))
             },
             overwrite = TRUE
