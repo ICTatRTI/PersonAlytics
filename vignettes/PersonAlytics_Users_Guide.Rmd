@@ -13,10 +13,25 @@ vignette: >
   %\VignetteEncoding{UTF-8}
 ---
 
+
+
+<style>
+p.comment {
+background-color: #DBDBDB;
+padding: 10px;
+border: 1px solid black;
+margin-left: 25px;
+border-radius: 5px;
+font-style: italic;
+}
+</style>
+
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(PersonAlytics)
+
+doEval <- TRUE
 
 depends <- function()
 {
@@ -35,60 +50,60 @@ pkgss <-  matrix( unlist( strsplit(pkgs, "\\(") ), ncol=2, byrow=TRUE)[,1]
 
 # Introduction
 
-The pupropose of this vignette is to illustrate how to use `PersonAlytics` to analyze 
+The purpose of this user's guide is to illustrate how to use `PersonAlytics` to analyze 
 
-1. Single case time series data, also known as single subject or N-of-1 studies.
+1. Single case time series data, also known as single subject or N-of-1 studies. Interrupted time series design designs can be used to introduce one (or more) interventions which results in two (or more) phases (e.g., pre-intervention and post-intervention). 
 
 2. Small sample intensive longitudinal design data.
 
-3. Ideographic clinical trial data (ICT), which a single-case or small sample longitudinal data set multiple treatment conditions (at a minimum, a baseline and follow-up condition) where all partipants exerience all treatment conditions. 
+3. Ideographic clinical trial data (ICT), which a single-case or small sample longitudinal data set where all participants experience two or more treatment phases (e.g., baseline and follow-up). 
 
-4. Automated high throughput analyses of these models in situations where the combination of predictors, outcomes, and/or individual level models yields an unweildly number of analyses to implement manually. 
+These three types of data are analyzed using longitudinal mixed effects models, also known as hierarchical linear models, multilevel models, latent growth curve models, or mixed method trajectory analysis. There are already several R packages such as `nlme` and `gamlss` that can be used to implement these models. 
 
-These three types of data are analyzed using longitudinal mixed effects models, also known as hierarchical linear models, multilevel models, latent growth curve models, or mixed method trajectory analysis. There are already several R packages such as `nlme` and `gamlss` that can be used to implement these models. The purpose of the Personalytics package is to automate the following: 
+The purpose of the PersonAlytics package is to automate the following aspect of analyzing these type of data: 
 
-1. Model selection for detecting the shape of the trajectory over time. Using a good fitting trajectory shape yields parameters that correspond to the shape and improve interpretability. Current options include polynomial growth and piecewise growth. 
+1. Model selection for detecting the shape of the trajectory over time. Using a good fitting trajectory shape yields parameters that correspond to the shape and improve interpretability. Current options include polynomial growth (e.g., linear, quadratic, cubic, etc.) and piecewise growth (e.g., linear growth within each phase). 
 
-2. Model selection for detecting an appropriate time series model for the residuals. Getting a good fitting residual covariance model improves standard error estimation.
+2. Model selection for detecting an appropriate time series model for the residuals. Getting a good fitting residual correlation model improves standard error estimation.
 
-3. Automate studies which may have thousands or millions of combinations of
-  
-  * outcomes
-  
-  * predictors
-  
-  * individual level models
+3. Automated, paralellized, high throughput analyses of mixed effects models in situations where the combination of predictors, outcomes, and/or individuals (i.e., in the case individual level models are desired as may be the case in personalized medicine) yields a number of analyses to unweildly implement manually. This is especially true if the model selection process for the trajectory shape and the residual correlation model is conducted for each combination of predictors, outcomes, and/or individuals. Included in PersonAlytics are options for the user to specify Type I error rate or False Discovery Rate (FDR) corrections. 
 
-The `PersonAlytic` framework -- Ty -- 
+<p class="comment">
+**Parallelization**. High throughput analyses are achieved through parallelization. Jobs are split among two or more processors on a computer and are run in parallel to each other. Results are recombined at the end of the process. 
+</p>
+
+<p class="comment">
+**High Throughput Example 1: Migraine Triggers**. 346 migraine patients were followed for 90 days. They recorded information on 71 potential migraine and non-migraine headache triggers such as alcohol, weather, and exercise. Individual models were required to determine the five person-specific triggers with the largest effect size. Ever though 90 time points is large, it was deemed to small to estimate all 71 trigger effects simultaneously, so trigger effects were estimated one at a time. The analysis required 346 patients X 2 outcomes X 71 triggers = 49,132 PersonAlytic runs.
+</p>
+
+<p class="comment"> 
+**High Throughput Example 2: THC Metabolomics**. 17 patients participated in a two-phase design. The baseline phase had 2 hours of observation. The intervention was 25mg of THC and the intervention phase had 6 hours of observation. A total of 20 time points generated blood metabolomic data and outcomes including sleepiness, reaction time, memory, and behavior. The analysis required 18,023 chemical compounds (the metabolites) X 8 outcomes = 144,184 PersonAlytic runs.  
+</p>
+
+
+# The `PersonAlytic` framework 
+
+Ty to write content here
 
 # Installing `PersonAlytics`
 
-First you must install `R`, available at `https://cran.r-project.org/`. It is also suggested that you use a modern code editor such as Rstudio (`https://www.rstudio.com/`). 
+First the user must install `R`, available at `https://cran.r-project.org/`. It is also suggested that the user use a modern code editor such as Rstudio (`https://www.rstudio.com/`). It is assumed that the reader is familiar with basic `R` use. If needed, an internet search will provide tutorials to help the user become familiar with R. 
 
-`PersonAlytics` requries several packages which can be installed (or updated if you already have them) by pasting the following function[^1] into your `R` console:
-
-[^1]: See https://gist.github.com/stevenworthington/3178163 for original function.
-
+Installing `PersonAlytics` is done by using the `install_github` function of the `devtools` package. First install `devtools` using
 
 ```{r eval=FALSE}
-install.deps <- function(pkg)
-{
-  new.pkg <- pkg[!(pkg %in% installed.packages()[, "Package"])]
-  old.pkg <- pkg[ (pkg %in% installed.packages()[, "Package"])]
-  if (length(new.pkg)) install.packages(new.pkg, dependencies = TRUE,
-                                        repos = "https://cran.rstudio.com/")
-  if (length(old.pkg)) update.packages(old.pkg, dependencies = TRUE)
-}
+install.packages('devtools')
 ```
 
-The following packages should then be installed using the `install.deps` function as follows:
+Then use
 
-```{r, echo=FALSE, comment=NA}
-cat(paste("install.deps(c(", paste("'", pkgss[-1], "'", collapse=', ', sep=""), "))", 
-          sep=""), "\n")
+```{r eval=FALSE}
+devtools::install_github("https://github.com/ICTatRTI/PersonAlytics")
 ```
 
-Now you're ready to install `PersonAlytics` `install.packages(".../path/on/your/computer/PersonAlytics_0.0.1.tar.gz", repos = NULL, type = "source")`. To obtain this file, contact the authors at [https://personalytics.rti.org/](https://personalytics.rti.org/). 
+The `install_github` function may give the user the option update other R packages needed by `PersonAlytics` that the user already have. Unless the user are experienced with R package versions and updates, it is recommended that the user ignore this step and press enter without selecting an option to update packages. If the user do decide to update packages and run into an error, the user may need to restart `R`, manually update the package in the error message, and then rerun the `install_github` command. 
+
+Once `install_github` starts running, it will install all of the other `R` packages required by `PersonAlytics` if the user do not already have them. 
 
 # Starting `PersonAlytics`
 
@@ -98,168 +113,593 @@ Now we can load `PersonAlytics`:
 library(PersonAlytics)
 ```
 
-We will illustrate the basic options of the `PersonAlytic()` function using the Ovary data from the `nlme` package which have been modified to represent an ICT. The `PersonAlytic()` function is the primary user interface for the `PersonAlytics` package. You can access the documentation for `PersonAlytic()` by typing
+# Basic `PersonAlytics` Use
+
+We will illustrate the basic options of the `PersonAlytic()` function using the Ovary data from the `nlme` package which have been modified to represent an ICT. The `PersonAlytic()` function is the primary user interface for the `PersonAlytics` package. the user can access the documentation for `PersonAlytic()` by typing
 
 ```{r, eval=FALSE}
 ?PersonAlytic
 ```
 
-The first six rows of the OvaryICT data are shown in Table x where it can be seen that the original Ovary data set has been augmented with Phase variables (which are an essentialy component of an ICT) and six randomly generated predictors named Target1 to Target6 (these will be used later). 
+## The OvaryICT Data
+
+The first six rows of the OvaryICT data are shown in Table x where it can be seen that the original Ovary data set has been augmented with Phase variables which are an essential component of an ICT but which are not required by the PersonAlytics package. Note that the data are in 'long format'. In the example below, Mare 1's first six time points are represented in separate rows. The time points are days prior to ovulation (for negative values), at ovulation (for values of 0 or 1) or between ovulations (for positive values other than 0 and 1). There are also six randomly generated predictors named Target1 to Target6 which will be used to illustrate other `PersonAlytics` features. 
 
 ```{r, echo=FALSE}
-kable(head(PersonAlytics::OvaryICT))
+kable(head(PersonAlytics::OvaryICT), digits = 2)
 ```
 
-The first five parameters that can be provided to `PersonAlytic()` are
+## Required `PersonAlytics` Parameters
 
-1. `data`: the name of your data set. This data needs to have been read into R prior to using `PersonAlytic()`. A web search can be used to learn how to read in multiple types of data into R, including (but not limited to) csv, xlsx, sas, stata, spss, and most database formats. Since we assume that the data has alread y been read into R, it has an R variable name and no quotes are needed.
+The four required parameters for `PersonAlytic()` are
 
-2. `ids`: the name of the identification variable. This must be a quoted variable name matching your ID variable in the data set that you provided to the parameter `data`. 
+1. `data`: the name of the user's data set. This data needs to have been read into R prior to using `PersonAlytic()`. A web search can be used to learn how to read in multiple types of data into R, including (but not limited to) csv, xlsx, sas, stata, spss, and most database formats. The data must be structured in 'long format' where time points are repeated within individual as was illustrated above for the `OvaryICT` data. In the example below, we use the `OvaryICT` data set.
 
-3. `dvs`: the name of the dependent variable. This must be a quoted variable name matching your dependent variable in the data set that you provided to the parameter `data`. For multiple dependent variables, see Section xx. 
+2. `ids`: the name of the identification variable for individuals. This must be a quoted variable name matching the user's ID variable in the data set that the user provided to the parameter `data`. 
 
-4. `phase`: the name of the phase variable. This is required for an ICT but is not required by `PersonAlytic()`. This must be a quoted variable name matching your dependent variable in the data set that you provided to the parameter `data`.
+3. `dvs`: the name of the dependent variable. This must be a quoted variable name matching the user's dependent variable in the data set that the user provided to the parameter `data`. If the user have multiple dependent variables, `PersonAlytics` will iterate over them one at a time. Multiple dependence variables are specified as a character list, e.g., `dvs=list('dv1', 'dv2', etc.)`. This is a high throughput option.
 
-5. `time`: the name of the time variable. This must be a quoted variable name matching your dependent varibale in the data set that you provided to the parameter `data`.
+4. `time`: the name of the time variable. This must be a quoted variable name matching the user's dependent variable in the data set that the user provided to the parameter `data`.
 
-```{r}
-t1 <- PersonAlytic(data=PersonAlytics::OvaryICT,
+Here is an illustration using the four basic parameters. This example also includes setting `autoDetect=NULL`, which turns off automated model comparisons for selecting the trajectory shape and residual correlation structure until this is discussed in its own section. 
+
+```{r, eval=doEval, message=FALSE}
+eg_required <- PersonAlytic(data=OvaryICT,
                 ids="Mare",
                 dvs="follicles",
-                phase="Phase",
-                time="Time")
+                time="Time",
+                autoDetect=NULL)
 ```
 
-In the console output shows two automations implemented in PersonAlytics. The first is 'Automatic detection of the time/outcome relationship' and the second is 'Automatic detection of the residual correlation structure'. These will be described in detail in Section x and Section x, respectively. 
-
-The object 't1' is has class `lme` 
-
-```{r}
-class(t1)
-```
-
-If you are familiar with the `lme` package, this is an implementation of the linear (normal) mixed effects model. 
-
-# `PersonAlytic()` Features
-
-## Naming your output
-
-The argument `output` is character string that will be used to name a file for saving output. If left `NULL`, the default is 'PersonAlytic_Output'. Do not give a file extension, these will be added automatically. For example, if output='MyResults', the output file will be called 'MyResults.csv' if high throughput options are used, or 'MyResults.txt' if only one model is fit. A full path with '/' instead of '\' can also be used. For example, output='C:/MyResults' will produce the files 'C:/MyResults.csv' or 'C:/MyResults.txt'. If a full path is not given, the results will be saved in the working directory (see `?getwd`).
-
-## Automatic detection of the time/outcome relationship
-
-1. `detectTO` turns automatic detection of the time/outcome relationship on or off. Options are `TRUE` and `FALSE`. Automatic detection is implemented using likelihood ratio test of the model with $Y=Time + Time^2 + \dots + Time^{O}$ vs. $Y=Time + Time^2 + \dots + Time^{O - 1}$ where $O$ is the polynomial order of the time variable. 
-
-2. `maxOrder` is the largest value of $O$ to test. Only used if `detectTO=TRUE` and `alignPhase='none'` or `alignPhase='align'` .
-
-3. `alignPhase` gives options for aligning the time variable with the phase variable. 
-
-    + `alignPhase='none'` is the default and the time variable is left as-is.
-    
-    + `alignPhase='align'` aligns the time variable at the transition from the first and second phase within each participant. This alignment makes it so the effect at time=0 is the start of the second phase. For example, if the second phase starts at time 6 for participant A, and at time 8 for participant B, and there are 15 timepoints for each starting at 1:
-    
-        * Participant A's resulting time variable will be -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.
-        * Participant B's resulting time variable will be -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7.
-        
-    + `alignPhase='piecewise'` create a piecewise straight-line growth model within each phase. This option can be use to simplify complex trajectories when the within-phase trajectory is approximately linear within each phase. Although this may make results easier to interprent than a curvelinear model (e.g., when O=3), the piecewise model may have many more random effects and therefore be less parsimonious than a model with polynomial time. If `alignPhase='piecewise'`, `detectTO` and `maxOrder` are ignored.
-
-4. `time_power` is used when `detecTO=FALSE` and you want to specify a value for $O$. 
-
-## Automatic detection of the residual correlation structure
-
-
-1. `detectAR` turns automatic detection of the residual correlation structure on or off. Options are `TRUE` and `FALSE`. 
-
-    + If n=1, automatic detection is implemented using the `auto.arima` function of the `forecast` package. See `?auto.arima`. 
-    
-    + If n>1, automatic detection is implemented by comparing the random intercept model with time as specified in the prior section, adding all combinations of `ARMA(p,q)` models for the residuals where $p=0,\dots,P$ and $q=0,\dots,Q$. The values of $P$ and $Q$ are specified in the argument `PQ`. Model comparisons are done using either Akaike's Information Criterion (AIC) or the Bayesian Information Criterion (BIC) as specified by the argument `whichIC`. Likelihood ratio tests are not an option here as not all `ARMA(p,q)` models are nested.
-    
-2. `PQ` is a pair of numbers specifying the maximum order of $P$ and $Q$ in ARMA models to be compared for detecting an adequate residual correlation structure. The default is `PQ=c(3,3)`. See also `max.p` and `max.q` in `?auto.arima` (not to be confused with `max.P` and `max.Q` which are parameters for a seasonal model and are not currently implemented). 
-
-3. `whichIC` specifies the information criterion for selectiong the best fitting ARMA(p,q) model. Options are `whichIC='BIC'` and `whichIC='AIC'`. BIC is the default.
-
-4. `correlation` is used to specify a correlation structure when `detectAR=FALSE`. All correlation structures in the `nlme` package are options. Load `nlme` using `library(nlme`) and type `?corStruct` into the R console for options. The value given must be quoted, e.g., `correlation='corAR1()'`.
-
-## High throughput analyses
-
-High throughput analyses are automatically implemented when any of the following are present. If all are present, all possible combinations are fit.
-
-1. `dvs` has more than one dependent variable.
-
-2. `target_ivs` has more than one target independent variable that should be added to the model one at a time (as opposed to `ivs` which are all included in every model across all combinations of `dvs`, `target_ivs`, and indivdiuals).
-
-3. `individual_mods=TRUE`, which fits the model separately for each individual specified in `ids`. 
-
-When high throughput analyses are invoked, the following arguments control the model fitting and output: 
-
-* `cores`: Parallelization is the process of splitting all the models across the processing cores on your computer to speed model estimation. By default, `ICTpower` uses one fewer cores than are available on your machine. You can override this using the `cores` argument. It is not recommended that you specify more cores than are available on your machine as it may cause R or your computer to crash. Use an internet search (including your operating system in the search terms) to find instructions on determining the number of cores your computer has.
-
-### False discovery rate (FDR) and Type-I error adjustments
-
-`p.method`: When `target_ivs` has more than one target independent variable, p-value adjustments can be made across `target_ivs` within each depedent variable in `dvs` and/or each individual in `ids` if `individual_mods=TRUE`. The options are those availble in the `p.adjust` function whose documentation can be viewed by typing `?p.adjust` into the R console. The default is `p.method='BY'`. `alpha` is the Type I error rate used for adjusting p-values.
-
-### Selecting predictors with the largest effect sizes
-
-* `nbest`: When `target_ivs` has more than one target independent variable, an additional report can extract the `nbest` target independent variables as defined by those target indepedent variable with the largest coefficients among those with $p<=\alpha$. If the target independent variables are on different scales, you should standardize them first using the `standardize` argument (descriped in detail later in its own section).
-
-## Generalized linear mixed effects models
+It is important to assign the results of a call to `PersonAlytic` to an R object. In the example above, the object is named `eg_required`. If the user neglect to assign the results to an R object, minimal output will be printed to the screen and the remaining results will be lost. If high throughput is initialized by including more than one dependent variable (discussed above), more than one target independent variables (see parameter `target_ivs` below), or if individual models are requested (see parameter `individual_mods` below), the resulting object is a `data.frame` concatenating results across of the options submitted to the high throughput run. Reading the output is detailed in the next section.
 
 # Reading the Output
 
-Output is named by the `output` argument of the `PersonAlytic` function. 
+The argument `output` is character string that will be used to name a file for saving output. If left `NULL`, the default is 'PersonAlytic_Output'. Do not give a file extension, these will be added automatically depending on whether a single analysis was run versus when high throughput options are invoked.
 
-## Single analysis output
+## Single Analysis Output
 
+Here we fit the same model using `nlme` and `gamlss` and illustrate options for viewing and manipulating the output. If the user are familiar with the `lme` package, this is an implementation of the linear (normal) mixed effects model. Using the `package` parameter, the `gamlss` package can alternatively be used in conjunction with the `family` parameter for outcomes with non-normal distributions. The `family` parameter is described in more detail later, the default distribution assumed when using `package="gamlss"` is the normal distribution.  
 
+First, we run the model using `package="nlme"`. Since this is the default, we need to explicitly specify the `package` parameter. The output will be saved the the R object `eg_nlme` for further use inside the R console. In addition, `output="nlme_example"` will create a file in the working directory named 'nlme_example.txt'. If the user are unsure what the user's current working directory is, type `getwd()` into the R console. A full path with '/' instead of '\' can also be used. For example, `output='C:/MyResults'`. For convenience, we will also turn off the `autoDetect` parameter by setting it to an empty list. The `autoDetect` parameter is discussed in detail below. 
+
+```{r, eval=doEval}
+eg_nlme <- PersonAlytic(output="nlme_example",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                autoDetect=NULL)
+```
+
+Then we run the same model using `package="gamlss"`. The output will be saved the the R object `eg_gamlss` for further use inside the R console. In addition, `output="gamlss_example"` will create a file in the working directory named 'gamlss_example.txt'.
+
+```{r, eval=doEval}
+eg_gamlss <- PersonAlytic(output="gamlss_example",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                package="gamlss",
+                autoDetect=NULL)
+```
+
+In these examples, the R object `eg_nlme` is a class `lme` object, and the R object `eg_gamlss` is a class `gamlss` object.
+
+```{r, eval=doEval}
+class(eg_nlme)
+class(eg_gamlss)
+```
+
+Both `lme` and `gamlss` objects have a `summary()` method which prints detailed results to the R console. For the `nlme` example we get the following.
+
+```{r, eval=doEval, comment=NA}
+summary(eg_nlme)
+```
+
+The fixed effects results in the section titled 'Fixed Effects' is what gets saved to the file 'nlme_example.txt'. For the `gamlss` example we get the following: 
+
+```{r, eval=doEval, comment=NA}
+summary(eg_gamlss)
+```
+
+The fixed effects results in the section titled 'Mu Coefficients' and the variance coefficients in the section titled 'Sigma Coefficients' is what gets saved to the file 'gamlss_example.txt'. 
+
+It is beyond the scope of this document to detail the differences between the `nlme` and `gamlss` approaches, but we will highlight one important difference. Notice that the parameter estimates in the 'Value' column of the 'Fixed Effects' section of the `eg_nlme` output and the 'Estimate' column of the 'Mu Coefficients' section of the `eg_gamlss` output are very similar. However, the standard errors are of the `gamlss` model are lower. This is because the `gamlss` approach models not only the mean, but also the variance. If there is any heteroscedasticity of variance, the `gamlss` results will consequently have lower standard errors than the `nlme` results. In the `gamlss` output, the variance parameter(s) are in the 'Sigma Coefficients' section.   
 
 ## High throughput output
 
-The high throughput output is a *.csv file that can be opened in any spreadsheet program. The rows are all possible combinations of `dvs`, `target_ivs`, and `ids` (if `individual_mods=TRUE`). The column variables are in five sets:
+Here we illustrate a high throughput example by first creating two additional outcomes and fit a basic growth model to each outcome. Note that creating variables that are the square and the root of the outcome is not advised unless the user has substantive reasons to do so, this is simply for illustration purposes. 
 
-1. Variables identify the combination of user inputs that lead to a given row's analysis. 
+```{r, eval=doEval}
+OvaryICT$follicles2 <- OvaryICT$follicles^2
+OvaryICT$folliclesr <- sqrt(OvaryICT$follicles2)
+eg_htp <- PersonAlytic(output="htp_example",
+                data=OvaryICT,
+                ids="Mare",
+                dvs=list("follicles", "follicles2", "folliclesr"),
+                phase="Phase",
+                time="Time",
+                autoDetect=NULL)
+```
 
-2. Variables describing whether the analysis converged and variables to help diagnose a failed run (e.g., zero variance in an outcome or indepedent variable.).
+The output will be saved the the R object `eg_htp` for further use inside the R console and `output="htp_example"` will create a file in the working directory named 'htp_example.csv' that is the same thing as the R object `eg_htp`. This csv file can be opened in any spreadsheet program. The rows are all possible combinations of `dvs`, `target_ivs`, and `ids` (if `individual_mods=TRUE`). The column variables are list below and come in five sets:
 
-3. Descriptive statistics.
+1. Variables identify the combination of user inputs that lead to a given row's analysis. Most column names correspond to their respective parameter name in `PersonAlytic`. Other variables include information on the version of 'PersonAlytics', date, time, and the directory in which the models were run.
 
-4. Model results with a parameter estimate, standard error, t-value, degrees of freedom, and p-value. 
-5. If `fpc>0`. model relusts repeated with a finite population correction for the standard error (and consequently, the p-value).
-
-
-# Additional Considerations
-
-## Interaction terms
-
-The argument `interactions` can be use to specify interactions between independent variables. By default, the `time` by `phase` interaction is always included. Additional interactions are specified as a list of paired variables. For example, if you want all interactions between `x`, `y`, and `z`, you would use `interactions = list(c('x', 'y'), c('x', 'z'), c('y', 'z'))`. 
-
-## Standardizing data
-
-Comparisons across multiple depedent variables, or across multiple indepedent variables are made possible by standardizing these variables. This can be done by the user prior to analysis, or via the `standardize` argument. The `standardize` argument is a list with three slots named 'dv', 'iv', and 'byids'. If `dv=TRUE` the dependent variables are standardized. If `iv=TRUE` all of indepedent variables in `ivs` and `target_ivs` are standardized. If `byids=TRUE` standardization is done within each individual rather than across invidivuals. 
-
-## Phase alignment
-
-`alignPhase` gives options for aligning the time variable with the phase variable. 
-
-+ `alignPhase='none'` is the default and the time variable is left as-is.
+    * 'Mare': This is is the name of the id variable passed to the `ids` parameter. In the current example, the value is 'All Cases'. If indivdiual models are requested by setting `individual_mods=TRUE`, this column will give the id for each case in the data set.
     
-+ `alignPhase='align'` aligns the time variable at the transition from the first and second phase within each participant. This alignment makes it so the effect at time=0 is the start of the second phase. For example, if the second phase starts at time 6 for participant A, and at time 8 for participant B, and there are 15 timepoints for each starting at 1:
+    * 'ids': This is the name of the `ids` variable which is the column name of column 1. 
+    
+    * 'dv': The name of the dependent variable.
+    
+    * 'time': The name of the time variable.
+    
+    * 'ivs': The names of the indepedent variables (describe below).
+    
+    * 'target_iv': The name of a target independent variable (described below).
+    
+    * 'interactions': The names of the interaction terms (described below). 
+    
+    * 'time_power': The shape of the trajectories over time (described below).
+    
+    * 'alignPhase': How time was realigned by phase, if any (described below). 
+    
+    * 'correlation': The residual correlation structure (described below). If the value is `NULL`, this  corresponds to no within-group correlations (see `?lme`). 
+    
+    * 'family': The distribution for the dependent variable (described below).
+    
+    * 'standardize': Which variables were standardized (described below).
+    
+    * 'method': The estimation method.
+    
+    * 'package': Which R package was used to fit the models.
+    
+    * 'PersonAylitics': The version of the `PersonAylitics` used for the analysis.
+    
+    * 'Date_Time': The date and time the model was run. 
+    
+    * 'estimator': What model estimator was used (described below).
+    
+    * 'analyzed_N': The number of observations analyzed. This is the sum of time points (per case if multiple cases were analyzed). 
+    
+    * 'call': The model formula created from the user inputs.
+    
+    * 'wasLRTrun': If 'target_ivs' were provided, a likelihood ratio test (LRT) for models with and without the target independent variable will be attempted, and if succesfull, 'wasLRTrun' will be 'TRUE'. 
+    
+    * 'targ_ivs_lrt_pvalue': If the LRT was run, the p-value is recorded here. 
+    
+    * 'fixed': The fixed effects portion of the 'call'.
+    
+    * 'random': The random effects portion of the 'call'.
+    
+    * 'formula': This is similar to the 'call' variable which gives the intended formula. If the model will not converge using the intended formula, simplifications of the formula are attempted in the following order: 
+    
+        + No correlation structure
+        
+        + No correlation structure and no random slopes
+        
+        + If the model is piecewise, drop the phase by time interaction
+        
+    * 'correlation0': The correlation portion of the 'call'.
+    
+    * 'directory': The directory where model output is saved.
+    
+    * 'date': The date the output was saved (which may be different from the 'Date_Time'  model was run for long runs).
+
+2. Variables describing whether the analysis converged and variables to help diagnose a failed run (e.g., zero variance in an outcome or independent variable). 
+
+    * 'N_participants': The number of unique cases in the `ids` variable.
+    
+    * 'N_time_points': The number of unique time points. 
+    
+    * 'Nobs': The number of individuals across all unique time points. If the time points are all unique, this number will be the same as 'N_time_points'. If cases share time points, 'Nobs' will be smaller than 'N_time_points'. 
+    
+    * 'dvVar': The variance of the dependent variable. If this is zero, the model will not converge.
+    
+    * 'timeVar': A check whether the time variable is monotonically increasing. If it is not, the `PersonAlytic` function will stop with an error.
+    
+    * 'ivVar': The variance of the independent variables (if any are included in the model).
+    
+    * 'target_ivVar': The variance of the target independent variable (if one is included in the model).
+    
+    * 'converge': Model convergence status.
+
+3. Descriptive statistics in pairs with the first column describing the statistic with the prefix `statName` and the second column in each pair with the prefix `statValue` giving the statistic's value. 
+4. Model results with a parameter estimates, standard error, t-value, degrees of freedom, and p-value. 
+
+5. If the finite population correction (FPC) is specified (see below for details), the model results repeated with FPCs for the standard errors (and consequently, the p-values). The example below doesn't include the FPC, but if it did the parameter estimates, standard errors, t-values, degrees of freedom, and p-values would be repeated with the suffix `fpc`. 
+
+```{r, eval=doEval, echo=FALSE, comment=NA}
+names(eg_htp)
+```
+
+# Autodetection of the Residual Autocorrelation Structure, Time Order, and Distribution
+
+The autodetection options automate the tedious process of conducting ML model comparisons to determine any of three options described in this section. The value `NULL` (`autoDetect=NULL`), or an empty list (`autoDetect=NULL`) turns all options off. Leaving any option out of the list will turn that option off (e.g., `autoDetect=list(TO=list(polyMax=3))` will only implement autodetection of the time order).
+
+## Residual Correlation Structure `AR`
+
+The autoregressive moving-average (ARMA) order of the residual correlation structure. Determining a good fitting correlation structure will provide more accurate standard errors. The default, `AR=list(P=3, Q=3)` will search all combinations of `p=c(0,1,2,3)` and `q=c(0,1,2,3)`, as well as the default with no within-group correlations (`correlation=NULL`), for the best fitting ARMA correlation structure. This is done with a fit index instead of ML likelihood ratio tests (LRT) because not all ARMA models are nested (a requirement of the LRT). The fit index that will be used is set using the `whichIC` parameter with options `BIC` or `AIC`. If $n=1$ or `individual_mods=TRUE`, correlation model selection is implemented using the `auto.arima` function of the `forecast` package. See `?auto.arima`.
+
+Here is an example of using the `AR` option of the `autoDetect` parameter without the `TO` or `DIST` options:
+
+```{r, eval=doEval}
+eg_autoDetect_AR <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                method="ML",
+                package="gamlss",
+                autoDetect = list(AR=list(P=3, Q=2)))
+```
+
+## The Trajectory Shape `TO`
+
+This parameter sets the shape of the trajectory using the polynomial order of the time/outcome relationship. Determining a good shape for the trajectory over time helps with model interpretation. Automatic detection is implemented using likelihood ratio test of the model with $Y=Time + Time^2 + \dots + Time^{O}$ vs. $Y=Time + Time^2 + \dots + Time^{O \mbox{-} 1}$ where $O$ is the polynomial order of the time variable. The default is `TO=list(polyMax=3)`, where `polyMax` is the largest values of $O$ to test. An alternative to using a polynomial order for time is to approximate the trajectory shape using a separate linear model within each of the phases. This can be set using the `piecewise` option of the `alignPhase` parameter as described below. As noted above, `time_power` is used when the user wants to specify a value for $O$, and doing so requires setting `TO=list()` or leaving it out of the `autoDetect` parameter. 
+
+Here is an example of using the `TO` option of the `autoDetect` parameter without the `AR` or `DIST` options:
+
+```{r, eval=doEval}
+eg_autoDetect_TO <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                method="ML",
+                package="gamlss",
+                autoDetect = list(TO=list(polyMax=4)))
+```
+
+## Dependent Variable Distributional Assumption `DIST` 
+
+Autodetection of the best fitting distribution of the dependent variable using the `fitDist` function of the `gamlss` package. The default is `DIST=list()`, which initializes this option. To turn off autodetection of the best fitting distribution, remove `DIST` from the `autoDetect` list. 
+
+Here is an example of using the `DIST` option of the `autoDetect` parameter without the `TO` or `AR` options:
+
+```{r, eval=doEval}
+eg_autoDetect_DIST <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                package="gamlss",
+                autoDetect = list(DIST=list()))
+```
+
+When running this code, the following is printed to the screen
+
+```
+The variable follicles has the following characteristics: 
+Integer     :  TRUE 
+Binary      :  FALSE 
+Proportion  :  FALSE 
+Positive    :  TRUE 
+Multinomial :  FALSE  (integer with >2 & <= 5 categories) 
+Count       :  TRUE  (positive integer) 
+Continuous  :  FALSE  (non-integer)
+```
+
+The best fitting distribution is the "Weibull type 2" distribution. The resulting object `eg_autoDetect_DIST` is a `gamlss` object fit using the Weibull type 2 distribution. 
+
+# High Throughput Options
+
+## Multiple Dependent Variables
+
+## Independent Variables and Target Independent Variables
+
+Independent, or predictor, variables can be added using the `ivs` parameter. This might be a grouping variables (e.g., treatment/control) or demographic variable (e.g., age or sex). If there are more than one dependent (or outcome) variables in `dvs`, the variables in `ivs` will be included as predictors for each dependent variable. 
+
+```{r, eval=doEval}
+eg_ivs <- PersonAlytic(output="MyResults",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                ivs=list("Target1", "Target2", "Target3"),
+                autoDetect=NULL)
+```
+
+If the user wishes to iterate over multiple independent variables one at a time' use `target_ivs`. This is a high throughput option. 
+
+```{r, eval=doEval}
+eg_target_ivs <- PersonAlytic(output="MyResults",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                target_ivs=list("Target4", "Target5", "Target6"),
+                autoDetect=NULL)
+```
+
+If the user has some independent variables that should be in every model and some that should be added one at a time, both `ivs` and `target_ivs` can be used. Here, Target1-3 will be included in every model, but Target4-6 will be added one at a time.
+
+```{r, eval=doEval}
+eg_target_ivs2 <- PersonAlytic(output="MyResults",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                ivs=list("Target1", "Target2", "Target3"),
+                target_ivs=list("Target4", "Target5", "Target6"),
+                autoDetect=NULL)
+```
+
+If the user wants variables to be dummy coded, the user should first specify this in the data set. For example, this code specifies that the `Target1` variable should be treated as a categorical variable and dummy coded in any future analyses:
+
+```{r, eval=FALSE}
+OvaryICT$Target1 <- factor(OvaryICT$Target1)
+```
+
+The `interactions` parameter can be used to specify pairs of independent variables to be included in interaction terms. Main effects for all variables in the interaction terms will be estimated even if they are not listed in the `ivs` or `target_ivs` parameter as shown in this example.
+
+```{r, eval=doEval}
+eg_interactions <- PersonAlytic(output="MyResults",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                interactions=list(c("Target1", "Target2"), c("Target1", "Target3"), 
+                         c("Target2", "Target3")),
+                autoDetect=NULL)
+```
+
+## Individual Level Models
+
+`PersonAlytics` can automate the task of fitting individual models to each case in the data set. This is useful for applications such as individualized medicine. This is enabled by simply setting `individual_mods=TRUE`. The resulting output will be the `data.frame` and `csv` file with each row corresponding to a participant. 
+
+## Combinations of `dvs`, `target_ivs` and `individuals_mods`
+
+Any combination `dvs`, `target_ivs` and `individuals_mods` can be specified. The migraine triggers example used all three, and the THC metabolomics example used both target independent variables (the metabolites) and dependent variables (the 8 outcomes). `PersonAlytic` sets up the parallelization to minimize redundant operations depending on which combination of high throughput options the user requests.
+
+# Optional `PersonAlytic()` Parameters
+
+## The `phase` variable
+
+`phase`: the name of the phase variable. A phase variable is required for an ICT, though `PersonAlytic()` does not require a phase variable for other analyses such as time series analyses and small sample intensive longitudinal data. The phase variable must be a quoted variable name matching the dependent variable in the data set that the user provided to the parameter `data`.
+
+```{r, eval=doEval}
+eg_phase <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                autoDetect=NULL)
+```
+
+By default, the phase by time interaction will be included in the model. If the model type is `alignPhase=piecewise`, a piecewise growth model (see below), the time by phase interaction will be dropped if it model fails to converge with this interaction.
+
+## The Shape of the Trajectory
+
+By default, a linear growth model is fit to the data. If the user desires a quadratic growth model, use
+`time_power=2`. Any integer may be supplied to `time_power` to specify the corresponding trajectory shape (e.g., linear, quadratic, cubic, etc.). Alternatively, `PersonAlytics` can automatically detect the order for time using the `TO` option of the `autoDetect` parameter as described below. This example specifies a quadratic growth trajectory.
+
+```{r, eval=doEval}
+eg_time_power <- PersonAlytic(output="MyResults",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                time_power=2,
+                autoDetect=NULL)
+```
+
+## Residual Correlation Structure
+
+The residual autocorrelation structure can be specified by the user using the `correlation`. Any option listed in the  `?corStruct` documentation of the `nlme` package can be specified (see also the correlation parameter in `?lme`).  Defaults to NULL, corresponding to no within-group correlations. This example specifies an ARMA(3,4) residual correlation structure. Note that the parameters `p` and `q` must be specified explicitly and the entire correlation structure must be in quotes. 
+
+```{r, eval=doEval}
+eg_correlation <- PersonAlytic(output="MyResults",
+                data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                correlation="corARMA(p=3,q=4)",
+                autoDetect=NULL)
+```
+
+Alternatively, `PersonAlytics` can automatically detect the values for `p` and `q` for an `ARMA(p,q)` model using the `AR` option of the `autoDetect` parameter as described below. 
+
+## Distributional Assumptions
+
+By default, a linear mixed effects model is fit assuming a normal distribution for the outcome (or, more precisely, for the residuals). If the `package` parameter described below is set to `'gamlss'`, the `family` parameter can be used to specify any of the distributions available in the `?gamlss.family` package. Once a model is fit, the plot option can be used to examine the residuals. This only works if a single model is fit (i.e., `dvs` has only one variable, `target_ivs` is not used, and `individual_mods` is FALSE). Here is an example of a normal model fit using `gamlss`.
+
+```{r, eval=doEval}
+eg_normal <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                family=NO(),
+                package="gamlss",
+                autoDetect=NULL)
+```
+
+```{r, eval=doEval, fig.width=7, fig.height=5, fig.fullwidth=TRUE}
+plot(eg_normal)
+```
+
+
+
+The above example is repeated, this time using a Weibull Type 2 distribution.
+
+```{r, eval=doEval}
+eg_weibull2 <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                family=WEI2(),
+                package="gamlss",
+                autoDetect=NULL)
+```
+
+```{r, eval=doEval, fig.width=7, fig.height=5, fig.fullwidth=TRUE}
+plot(eg_weibull2)
+```
+
+
+
+Model comparisons can be implemented to automatically select the best fitting distribution using the approach implemented in the `fitDist` function of the `gamlss` package. See the section on the `autoDetect` parameter.
+
+## Subgroup Analysis
+
+If the user wants the model to be fit to a subset of the data, use the `subgroup` parameter. A logical (true/false) or binary (0/1) vector can be used to specify which cases to use. For example, we can restrict the analysis to the first 5 mares using the following: 
+
+```{r, eval=doEval}
+eg_subgroup <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                subgroup=OvaryICT$Mare<6,
+                autoDetect=NULL)
+```
+
+where the code `OvaryICT$Mare<6` creates a logical vector which is true if the mare id is less than 6. 
+
+## Variable Standardization
+
+Variable standardization (mean zero and unit variance) is facilitated using the `standardize` parameter which is a list with three options that can be set to `TRUE` or `FALSE` (the default for all three is `FALSE`):
+
+* `dv`: if set to `TRUE`, the dependent variable is standardized. If there are multiple dependent variables in `dvs`, each dependent variable will be standardized. 
+
+* `ivs`: if set to `TRUE`, the the independent variables in `ivs` and `target_ivs` are standardized. 
+
+* `byids`: if set to `TRUE`, standardization is done within each individual. This option should be set to `TRUE` if `individual_mods=TRUE` (this parameter is discussed below). 
+
+Here is an example where the target independent variables are standardized. This is useful for determining which target independent variable has the largest effect size since standardization put their respective effect sizes on the same scale. On continuous variables should be standardized. 
+
+```{r, eval=doEval}
+eg_standardize <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                target_ivs=list("Target1", "Target2", "Target3"),
+                standardize=list(dv=FALSE, ivs=TRUE, byids=FALSE),
+                autoDetect=NULL)
+```
+
+## Estimation Methods
+
+A challenge of single subject and small sample mixed effect modeling is a lack of statistical power. One result of research in this area recommends that model comparisons be made using maximum likelihood (ML) estimation, while final model results should be estimated using restricted maximum likelihood (REML). The autodetection options detailed below use ML model comparisons by default, and final results reported in the output are estimated using REML by default. This cannot be changed, but for a single model without autodetection, the `method` parameter can be used select ML instead of REML:
+
+```{r, eval=doEval}
+eg_method <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                method="ML",
+                autoDetect=NULL)
+```
+
+
+## Dealing with Invalid Variable Names
+
+If the names of the target predictors in `target_ivs` had to be edited to make valid variable names (see `?make.names`), this parameter allows the user to put the illegal characters back in for the row variable names in high throughput output. For example, if the original variable name was "17.00_832.2375m/z", a letter would need to prefix the variable name and the "/" would need to be replaced with another character, e.g., "X17.00_832.2375m.z". To get the row names of the output back to original variable name, use `charSub=list(c("X", ""), c("m.z", "m/z"))`. 
+
+Note that inputs to `charSub` must be in double quotes and are case sensitive. All duplicates will be substituted. For example, if the variable name was "X1X23.x" and charSub=list(c("X", "")), the resulting row label for this variable would be "123.x".
+
+
+<!--
+## sigma.formula
+
+```{r, eval=doEval}
+#eg_sigma.formula <- PersonAlytic(data=OvaryICT,
+#                ids="Mare",
+#                dvs="follicles",
+#                phase="Phase",
+#                time="Time",
+#                ivs=list("Target1", "Target2", "Target3"),
+#                method="ML",
+#                package="gamlss",,
+#                autoDetect=NULL
+#                sigma.formula = formula(.~Target1)
+#                )
+```
+--> 
+
+## Type I Error or False Discovery Rate Adjustment
+
+For high throughput analyses, we recommend selecting either a Type I error rate adjustment (such as Bonferonni) or a False Discovery Rate (FDR) adjustments (such as the method of Benjamini, Hochberg, and Yekutieli). This is implemented using the `p.method` parameter which takes on any value available in the `?p.adjust` function. In conjunction with the `p.method` is the Type I error rate `alpha`, which has a default of .05. Here is an example using the method of Benjamini, Hochberg, and Yekutieli (`p.method=BY`) and a Type I error rate of .1, adjusting for the FDR across the three predictors in `target_ivs`. If there are multiple dependent variables in `dvs`, adjustments are made across target independent variables within each dependent variable. If `individual_mods=TRUE`, adjustments are made across target independent variables within each dependent variable. 
+
+```{r, eval=doEval}
+eg_p.method <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                target_ivs=list("Target1", "Target2", "Target3"),
+                p.method='BY',
+                alpha=.1,
+                autoDetect=NULL
+                )
+```
+
+## Phase Alignment
+
+The `alignPhase` parameter provides options for aligning the time variable with the phase variable. 
+
+1. `alignPhase='none'` is the default and the time variable is left as-is.
+    
+2. `alignPhase='align'` aligns the time variable at the transition from the first and second phase within each participant. This alignment makes it so the effect at time=0 is the start of the second phase. For example, if the second phase starts at time 6 for participant A, and at time 8 for participant B, and there are 15 time points for each starting at 1:
     
     * Participant A's resulting time variable will be -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.
     * Participant B's resulting time variable will be -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7.
         
-+ `alignPhase='piecewise'` create a piecewise straight-line growth model within each phase. This option can be use to simplify complex trajectories when the within-phase trajectory is approximately linear within each phase. Although this may make results easier to interprent than a curvelinear model (e.g., when O=3), the piecewise model may have many more random effects and therefore be less parsimonious than a model with polynomial time. If `alignPhase='piecewise'`, `detectTO` and `maxOrder` are ignored.
+3. `alignPhase='piecewise'` create a piecewise straight-line growth model within each phase. This option can be use to simplify complex trajectories when the within-phase trajectory is approximately linear within each phase. Although this may make results easier to interpret than a curvelinear model (e.g., when O=3), the piecewise model may have many more random effects and therefore be less parsimonious than a model with polynomial time. If `alignPhase='piecewise'`, the `TO` option of the `autodDetect` parameter and the `time_power` parameter are ignored.
 
-## Character substitution in variable names
+## Finite Population Correction
 
-`charSub` is a character list. The default in charSub=NULL.
+A finite population correction (FPC) can be made if the size of the population from which the user's sample originated is known. As an example, population sizes may be known for rare diseases. The parameter `fpc` has a default of 0, which turns off the FPC. If the user's population size is known, set `fpc` to the population size. In this example, the population size is set to 6,000.  
 
-A list of paired character strings for character substitution in the output. If the names of the target predictors in `target_ivs` had to be edited to make valid variable names (see `?make.names`), this parameter allows users put the illegal characters back in. For example, if the original variable name was "17.00_832.2375m/z", a letter would need to prefix the variable name and the "/" would need to be replaced with another character, e.g., "X17.00_832.2375m.z". To get the row names of the output back to original variable name, use charSub=list(c("X", ""), c("m.z", "m/z")). Note that inputs to charSub must be in double quotes and are case sensitive. All duplicates will be substituted. For example, if the variable name was "X1X23.x" and charSub=list(c("X", "")), the resulting row label for this variable would be "123.x".
+A finite population correction (FPC) can be used when the sample more than 5% of the population without replacement. In this situation the central limit theorem doesn't hold and the standard errors of the user's parameter estimates will be to large. Before illustrating how to implement a finite population correction, we first discuss the conditions under which a finite population correction may make a difference in a power analysis. This will only occur in situation where a large number of the `B` replications have p-values just larger than alpha and the FPC results in these p-values being less than alpha. In our experience, we rarely run into conditions where this is the case. The p-value distributions are usually smoothly positively skewed or near uniform. Neither of this distributions puts enough p-values near alpha for the FPC to have a large effect on power. This isn't to say users shouldn't apply the FPC for real data analyses using the `PersonAlytics` package, only that they should not expect the FPC to yield large improvement in power.
 
-## Modeling the variance in linear models
+The argument `fpc` can be set to the user's finite population size and an FPC will be included in the analyses and output.
 
-## Finite population correction
 
-A finite population correction (FPC) can be used when you sample more than 5% of the population without replacement. In this situation the central limit theorem doesn't hold and the standard errors of your parameter estimates will be to large. Before illustrating how to implement a finite population correction, we first discuss the conditions under which a finite population correction may make a difference in a power analysis. This will only occur in situation where a large number of the `B` replications have p-values just larger than alpha and the FPC results in these p-values being less than alpha. In our experience, we rarely run into conditions where this is the case. The p-value distributions are usually smoothly positively skewed or near uniform. Neither of this distributions puts enough p-values near alpha for the FPC to have a large effect on power. This isn't to say users shouldn't apply the FPC for real data analyses using the `PersonAlytics` package, only that they should not expect the FPC to yield large improvement in power.
+```{r, eval=doEval}
+eg_fpc <- PersonAlytic(data=OvaryICT,
+                ids="Mare",
+                dvs="follicles",
+                phase="Phase",
+                time="Time",
+                ivs=list("Target1", "Target2", "Target3"),
+                fpc=6000,
+                autoDetect=NULL
+                )
+```
 
-The argument `fpc` can be set to your finite population size and an FPC will be included in the analyses and output.
+Preliminary simulation studies have found that on average, the FPC generally reduces standard errors, but only by a small amount. 
+
+## Processors for Paralellization
+
+The `cores` option allows the user to specify how many processors (or cores) on their computer can be devoted to a high throughput `PersonAlytic` run. By default, `PersonAlytic` detects the number of cores and uses one fewer than are on the machine. This allows the user to still do other work. If the user has a machine dedicated to analyses that won't be needed until analyses are completed, setting the the number of cores to the maximum available will reduce computation time. Do not set this value to a number greater than the number of processors on the user's machine or it may cause R or the user's computer to crash. To determine the number of cores the user has, type the following into the R console:
+
+```{r, comment=NA, eval=FALSE}
+parallel::detectCores()
+```
+
+
+```{r, echo=FALSE}
+# delete output files
+del <- c(dir(getwd(), glob2rx('*.csv')),
+         dir(getwd(), glob2rx('*.txt')))
+file.remove(del)
+```
+
+
+
+
 

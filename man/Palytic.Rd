@@ -117,9 +117,7 @@ If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
 variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
 the gamlss package, and the best fitting distribution will be used for each
 depedent variable. For more detail, see the \code{$dist()} method in
-\code{\link{Palytic}}. To narrow the distributions that will be tested,
-the user must specify whether to
-rescale the dependent variable to the (0,1) range with \code{to01}.}
+\code{\link{Palytic}}.}
 
 \item{\code{whichIC}}{Character. The default is \code{whichIC="BIC"}.
 

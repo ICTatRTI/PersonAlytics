@@ -185,7 +185,7 @@
 #' \code{
 #' list(AR=list(P=3, Q=3)     ,
 #'   TO=list(polyMax=3)       ,
-#'   DIST=list(to01     = FALSE)) }.
+#'   DIST=list()) }.
 #'
 #' If no automated model selection for the residual covariance structure (\code{AR}),
 #' the polynomial order for the relationship between time and the dependent variable
@@ -654,7 +654,7 @@ pa1 <- function(e=parent.frame())
   # t1$formula
 
   # fit the models
-  if(e$package=="gamlss") Grp.out <- t1$gamlss(e$subgroup)
+  if(e$package=="gamlss") Grp.out <- t1$gamlss(e$subgroup, sigma.formula=e$sigma.formula)
   if(e$package=="nlme")   Grp.out <- t1$lme(e$subgroup, fpc=e$fpc,
                                             popsize2=e$popsize2)
   if(e$package=="arma")   Grp.out <- t1$arma(e$subgroup )

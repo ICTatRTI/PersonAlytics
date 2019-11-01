@@ -471,7 +471,7 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
              file='REMLlme.txt', append=TRUE), silent = TRUE )
     t1$method <- "REML"
     t1$family <- family #TODO(Stephen): prior line drops family, why??
-    if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs )
+    if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs, sigma.formula=sigma.formula )
     if("lme"    %in% class(modid)) Model <- t1$lme( useObs,
                                       fpc=fpc, popsize2 = popsize2)
     if( any(c("gamlss", "lme") %in% class(Model)) )
@@ -906,7 +906,7 @@ fitWithTargetIVlme <- function(t1, useObs, dims, dropVars, PQ, fpc, popsize2)
   {
     err_id['converge']   <- 'Convergence is `TRUE`'
     err_id['estimator']  <- toString( modid$PalyticSummary$method )
-    err_id['analyzed_N'] <- paste(modid$dims$N, 'cases were analyzed.')
+    err_id['analyzed_N'] <- paste(modid$dims$N, 'observations were analyzed.')
     err_id['call'] <- paste(
       paste( Reduce( paste, deparse(modid$PalyticSummary$fixed) ),
              Reduce( paste, deparse(modid$PalyticSummary$random) ),
@@ -962,7 +962,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
 fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
 {
   err_id <- list()
-  modid  <- t1$gamlss( useObs, dropVars=dropVars )
+  modid  <- t1$gamlss( useObs, sigma.formula=sigma.formula, dropVars=dropVars )
 
   if(! "gamlss"  %in%  class(modid) )
   {
@@ -989,7 +989,7 @@ fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
     if(!any(has_method)) err_id['re_estimator'] <- "Cannot be determined"
 
     err_id['gamlss_estimator']    <- toString( modid$PalyticSummary$method )
-    err_id['analyzed_N']          <- paste(modid$N, 'cases were analyzed.')
+    err_id['analyzed_N']          <- paste(modid$N, 'observations were analyzed.')
     err_id['call']                <- rmSpecChar(modid$PalyticSummary$formula)
     err_id['wasLRTrun']           <- modid$lrt$wasLRTrun
     err_id['targ_ivs_lrt_pvalue'] <- modid$lrt$lrtp

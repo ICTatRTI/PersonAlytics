@@ -162,7 +162,7 @@ search), and user specified models via \code{formula}.}
 \code{
 list(AR=list(P=3, Q=3)     ,
   TO=list(polyMax=3)       ,
-  DIST=list(to01     = FALSE)) }.
+  DIST=list()) }.
 
 If no automated model selection for the residual covariance structure (\code{AR}),
 the polynomial order for the relationship between time and the dependent variable

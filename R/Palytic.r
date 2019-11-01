@@ -887,9 +887,7 @@
 #' variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
 #' the gamlss package, and the best fitting distribution will be used for each
 #' depedent variable. For more detail, see the \code{$dist()} method in
-#' \code{\link{Palytic}}. To narrow the distributions that will be tested,
-#' the user must specify whether to
-#' rescale the dependent variable to the (0,1) range with \code{to01}.
+#' \code{\link{Palytic}}.
 #'
 #' @field whichIC Character. The default is \code{whichIC="BIC"}.
 #'
@@ -2012,7 +2010,8 @@ Palytic$set("public", "gamlss",
 
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit( subset(self$datac, subgroup,
-                                          all.vars(self$formula)) )
+                                          c(all.vars(self$formula),
+                                            all.vars(sigma.formula))) )
 
               # detect
               if(any(names(self$autoDetect) %in% c("AR", "TO", "DIST"))  &
@@ -2062,6 +2061,7 @@ Palytic$set("public", "gamlss",
                 self$fixed   <- newformula$fixed
                 # this works but fails saving
                 m1 <- try(refit(gamlss::gamlss(formula = newformula$formula,
+                                               sigma.formula = sigma.formula,
                                                data = tempData,
                                                family = currentFamily,
                                                control = ctrl)),
@@ -2078,6 +2078,7 @@ Palytic$set("public", "gamlss",
                 self$fixed   <- newformula$fixed
                 # this works but fails saving
                 m1 <- try(refit(gamlss::gamlss(formula = newformula$formula,
+                                               sigma.formula = sigma.formula,
                                                data = tempData,
                                                family = currentFamily,
                                                control = ctrl)),
@@ -2094,6 +2095,7 @@ Palytic$set("public", "gamlss",
                 self$fixed   <- newformula$fixed
                 # this works but fails saving
                 m1 <- try(refit(gamlss::gamlss(formula = newformula$formula,
+                                               sigma.formula = sigma.formula,
                                                data = tempData,
                                                family = currentFamily,
                                                control = ctrl)),
@@ -2116,6 +2118,7 @@ Palytic$set("public", "gamlss",
                                     correlation = cor ,
                                     family = currentFamily)
                 m1 <- try(refit(gamlss::gamlss(formula = newformula$formula,
+                                               sigma.formula = sigma.formula,
                                                data = tempData,
                                                family = currentFamily,
                                                control = ctrl)),
