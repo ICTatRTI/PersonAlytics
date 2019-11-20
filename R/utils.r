@@ -688,9 +688,15 @@ alf <- function(x)
 #' @param na.rm Logical, should missing data be excluded when calculating min/max
 #' @references Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54.
 #' @export
-to01 <- function(x, na.rm=TRUE)
+to01 <- function(x, na.rm=TRUE, squeeze=FALSE, prior=.5)
 {
-  (x - min(x, na.rm=na.rm))/(max(x, na.rm=na.rm)-min(x, na.rm=na.rm))
+  xp <- (x - min(x, na.rm=na.rm))/(max(x, na.rm=na.rm)-min(x, na.rm=na.rm))
+  if(squeeze)
+  {
+    n  <- length(x)
+    xp <- (xp*(n-1)+prior)/n
+  }
+  return(xp)
 }
 
 #' subdat - function to take a subset of data with column select
