@@ -9,8 +9,8 @@ output:
 urlcolor: blue
 vignette: >
   %\VignetteIndexEntry{PersonAlytics User's Guide}
-  %\VignetteEngine{knitr::rmarkdown}
-  %\VignetteEncoding{UTF-8}
+  %\VignetteEngine{knitr::knitr}
+  %\usepackage[UTF-8]{inputenc}
 ---
 
 
@@ -31,7 +31,9 @@ knitr::opts_chunk$set(echo = TRUE)
 library(knitr)
 library(PersonAlytics)
 
-doEval <- TRUE
+OvaryICT <- PersonAlytics::OvaryICT
+
+doEval <<- TRUE
 
 depends <- function()
 {

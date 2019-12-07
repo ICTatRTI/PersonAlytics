@@ -184,7 +184,7 @@ checkID <- function(x, ids)
       # length unique x
       lux  <- length(unique(x))
       # length unique numeric x
-      luxn <- length(unique(as.numeric(x)))
+      lunx <- length(unique(as.numeric(x)))
       if(lux==lunx)
       {
         warning('`', ids, '` is character but will be forced to numeric')

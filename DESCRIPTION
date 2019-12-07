@@ -2,7 +2,11 @@ Package: PersonAlytics
 Type: Package
 Title: PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
 Version: 0.2.7.8
-Authors@R: person("Stephen", "Tueller", email = "stueller@rti.org", role = c("aut", "cre"))
+Date: 2019-11-21
+Authors@R: c(person("Stephen", "Tueller", email = "stueller@rti.org", role = c("aut", "cre")),
+             person("Ty", "Rinedour", email = "tridenour@rti.org", role = c("aut")),
+             person("Derek", "Ramirez", email = "dramirez@rti.org", role = c("aut"))
+             )
 Maintainer: Stephen Tueller <stueller@rti.org>
 Description: Tools and illustrations for fitting idiographic trial data using gamlss and nlme, or ARMA models for n=1 studies.
 License: GPL-2 | GPL-3
@@ -30,3 +34,5 @@ Suggests: testthat,
     knitr,
     rmarkdown
 VignetteBuilder: knitr
+BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
+URL: https://personalytics.rti.org/ 

@@ -4,7 +4,7 @@
 \alias{to01}
 \title{to01 - function to convent any variable to the [0,1] range}
 \usage{
-to01(x, na.rm = TRUE)
+to01(x, na.rm = TRUE, squeeze = FALSE, prior = 0.5)
 }
 \arguments{
 \item{x}{A numeric vector.}

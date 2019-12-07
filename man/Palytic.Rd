@@ -99,7 +99,7 @@ are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}).
 If \code{individual_mods=FALSE}, this done
 comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
 this is done using the \code{\link{auto.arima}} function on the residuals for
-each individual. For more detail, see the \code{\link{$GroupAR()}}
+each individual. For more detail, see the \code{$GroupAR()}
 method.
 
 If \code{TO} is in the list, models with polynomial powers of time from 1 to
@@ -210,7 +210,7 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
   used to specify generalized linear mixed effects models,
   see \code{\link{gamlss.family}}).
   The parameter \code{subgroup} operates as in \code{\link{lme}}. The parameter
-  \code{sigma.formula} and \code{family} are desribed in \code{\link{gammlss}}.
+  \code{sigma.formula} and \code{family} are desribed in \code{\link{gamlss}}.
    The \code{dropVars} parameter indicates which fixed
    effects should be dropped for a likelihood ration test (LRT). This is
    used by \code{\link{PersonAlytic}} to test \code{target_ivs}.}

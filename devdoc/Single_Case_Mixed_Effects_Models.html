@@ -1,0 +1,479 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+<meta name="viewport" content="width=device-width, initial-scale=1">
+
+<meta name="author" content="Stephen Tueller" />
+
+<meta name="date" content="2019-07-11" />
+
+<title>Single Case Mixed Effects Models</title>
+
+
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css" data-origin="pandoc">
+div.sourceCode { overflow-x: auto; }
+table.sourceCode, tr.sourceCode, td.lineNumbers, td.sourceCode {
+  margin: 0; padding: 0; vertical-align: baseline; border: none; }
+table.sourceCode { width: 100%; line-height: 100%; }
+td.lineNumbers { text-align: right; padding-right: 4px; padding-left: 4px; color: #aaaaaa; border-right: 1px solid #aaaaaa; }
+td.sourceCode { padding-left: 5px; }
+code > span.kw { color: #007020; font-weight: bold; } /* Keyword */
+code > span.dt { color: #902000; } /* DataType */
+code > span.dv { color: #40a070; } /* DecVal */
+code > span.bn { color: #40a070; } /* BaseN */
+code > span.fl { color: #40a070; } /* Float */
+code > span.ch { color: #4070a0; } /* Char */
+code > span.st { color: #4070a0; } /* String */
+code > span.co { color: #60a0b0; font-style: italic; } /* Comment */
+code > span.ot { color: #007020; } /* Other */
+code > span.al { color: #ff0000; font-weight: bold; } /* Alert */
+code > span.fu { color: #06287e; } /* Function */
+code > span.er { color: #ff0000; font-weight: bold; } /* Error */
+code > span.wa { color: #60a0b0; font-weight: bold; font-style: italic; } /* Warning */
+code > span.cn { color: #880000; } /* Constant */
+code > span.sc { color: #4070a0; } /* SpecialChar */
+code > span.vs { color: #4070a0; } /* VerbatimString */
+code > span.ss { color: #bb6688; } /* SpecialString */
+code > span.im { } /* Import */
+code > span.va { color: #19177c; } /* Variable */
+code > span.cf { color: #007020; font-weight: bold; } /* ControlFlow */
+code > span.op { color: #666666; } /* Operator */
+code > span.bu { } /* BuiltIn */
+code > span.ex { } /* Extension */
+code > span.pp { color: #bc7a00; } /* Preprocessor */
+code > span.at { color: #7d9029; } /* Attribute */
+code > span.do { color: #ba2121; font-style: italic; } /* Documentation */
+code > span.an { color: #60a0b0; font-weight: bold; font-style: italic; } /* Annotation */
+code > span.cv { color: #60a0b0; font-weight: bold; font-style: italic; } /* CommentVar */
+code > span.in { color: #60a0b0; font-weight: bold; font-style: italic; } /* Information */
+
+</style>
+<script>
+// apply pandoc div.sourceCode style to pre.sourceCode instead
+(function() {
+  var sheets = document.styleSheets;
+  for (var i = 0; i < sheets.length; i++) {
+    if (sheets[i].ownerNode.dataset["origin"] !== "pandoc") continue;
+    try { var rules = sheets[i].cssRules; } catch (e) { continue; }
+    for (var j = 0; j < rules.length; j++) {
+      var rule = rules[j];
+      // check if there is a div.sourceCode rule
+      if (rule.type !== rule.STYLE_RULE || rule.selectorText !== "div.sourceCode") continue;
+      var style = rule.style.cssText;
+      // check if color or background-color is set
+      if (rule.style.color === '' || rule.style.backgroundColor === '') continue;
+      // replace div.sourceCode by a pre.sourceCode rule
+      sheets[i].deleteRule(j);
+      sheets[i].insertRule('pre.sourceCode{' + style + '}', j);
+    }
+  }
+})();
+</script>
+
+
+
+<link href="data:text/css;charset=utf-8,body%20%7B%0Abackground%2Dcolor%3A%20%23fff%3B%0Amargin%3A%201em%20auto%3B%0Amax%2Dwidth%3A%20700px%3B%0Aoverflow%3A%20visible%3B%0Apadding%2Dleft%3A%202em%3B%0Apadding%2Dright%3A%202em%3B%0Afont%2Dfamily%3A%20%22Open%20Sans%22%2C%20%22Helvetica%20Neue%22%2C%20Helvetica%2C%20Arial%2C%20sans%2Dserif%3B%0Afont%2Dsize%3A%2014px%3B%0Aline%2Dheight%3A%201%2E35%3B%0A%7D%0A%23header%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0A%23TOC%20%7B%0Aclear%3A%20both%3B%0Amargin%3A%200%200%2010px%2010px%3B%0Apadding%3A%204px%3B%0Awidth%3A%20400px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Aborder%2Dradius%3A%205px%3B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Afont%2Dsize%3A%2013px%3B%0Aline%2Dheight%3A%201%2E3%3B%0A%7D%0A%23TOC%20%2Etoctitle%20%7B%0Afont%2Dweight%3A%20bold%3B%0Afont%2Dsize%3A%2015px%3B%0Amargin%2Dleft%3A%205px%3B%0A%7D%0A%23TOC%20ul%20%7B%0Apadding%2Dleft%3A%2040px%3B%0Amargin%2Dleft%3A%20%2D1%2E5em%3B%0Amargin%2Dtop%3A%205px%3B%0Amargin%2Dbottom%3A%205px%3B%0A%7D%0A%23TOC%20ul%20ul%20%7B%0Amargin%2Dleft%3A%20%2D2em%3B%0A%7D%0A%23TOC%20li%20%7B%0Aline%2Dheight%3A%2016px%3B%0A%7D%0Atable%20%7B%0Amargin%3A%201em%20auto%3B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dcolor%3A%20%23DDDDDD%3B%0Aborder%2Dstyle%3A%20outset%3B%0Aborder%2Dcollapse%3A%20collapse%3B%0A%7D%0Atable%20th%20%7B%0Aborder%2Dwidth%3A%202px%3B%0Apadding%3A%205px%3B%0Aborder%2Dstyle%3A%20inset%3B%0A%7D%0Atable%20td%20%7B%0Aborder%2Dwidth%3A%201px%3B%0Aborder%2Dstyle%3A%20inset%3B%0Aline%2Dheight%3A%2018px%3B%0Apadding%3A%205px%205px%3B%0A%7D%0Atable%2C%20table%20th%2C%20table%20td%20%7B%0Aborder%2Dleft%2Dstyle%3A%20none%3B%0Aborder%2Dright%2Dstyle%3A%20none%3B%0A%7D%0Atable%20thead%2C%20table%20tr%2Eeven%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Ap%20%7B%0Amargin%3A%200%2E5em%200%3B%0A%7D%0Ablockquote%20%7B%0Abackground%2Dcolor%3A%20%23f6f6f6%3B%0Apadding%3A%200%2E25em%200%2E75em%3B%0A%7D%0Ahr%20%7B%0Aborder%2Dstyle%3A%20solid%3B%0Aborder%3A%20none%3B%0Aborder%2Dtop%3A%201px%20solid%20%23777%3B%0Amargin%3A%2028px%200%3B%0A%7D%0Adl%20%7B%0Amargin%2Dleft%3A%200%3B%0A%7D%0Adl%20dd%20%7B%0Amargin%2Dbottom%3A%2013px%3B%0Amargin%2Dleft%3A%2013px%3B%0A%7D%0Adl%20dt%20%7B%0Afont%2Dweight%3A%20bold%3B%0A%7D%0Aul%20%7B%0Amargin%2Dtop%3A%200%3B%0A%7D%0Aul%20li%20%7B%0Alist%2Dstyle%3A%20circle%20outside%3B%0A%7D%0Aul%20ul%20%7B%0Amargin%2Dbottom%3A%200%3B%0A%7D%0Apre%2C%20code%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0Aborder%2Dradius%3A%203px%3B%0Acolor%3A%20%23333%3B%0Awhite%2Dspace%3A%20pre%2Dwrap%3B%20%0A%7D%0Apre%20%7B%0Aborder%2Dradius%3A%203px%3B%0Amargin%3A%205px%200px%2010px%200px%3B%0Apadding%3A%2010px%3B%0A%7D%0Apre%3Anot%28%5Bclass%5D%29%20%7B%0Abackground%2Dcolor%3A%20%23f7f7f7%3B%0A%7D%0Acode%20%7B%0Afont%2Dfamily%3A%20Consolas%2C%20Monaco%2C%20%27Courier%20New%27%2C%20monospace%3B%0Afont%2Dsize%3A%2085%25%3B%0A%7D%0Ap%20%3E%20code%2C%20li%20%3E%20code%20%7B%0Apadding%3A%202px%200px%3B%0A%7D%0Adiv%2Efigure%20%7B%0Atext%2Dalign%3A%20center%3B%0A%7D%0Aimg%20%7B%0Abackground%2Dcolor%3A%20%23FFFFFF%3B%0Apadding%3A%202px%3B%0Aborder%3A%201px%20solid%20%23DDDDDD%3B%0Aborder%2Dradius%3A%203px%3B%0Aborder%3A%201px%20solid%20%23CCCCCC%3B%0Amargin%3A%200%205px%3B%0A%7D%0Ah1%20%7B%0Amargin%2Dtop%3A%200%3B%0Afont%2Dsize%3A%2035px%3B%0Aline%2Dheight%3A%2040px%3B%0A%7D%0Ah2%20%7B%0Aborder%2Dbottom%3A%204px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Apadding%2Dbottom%3A%202px%3B%0Afont%2Dsize%3A%20145%25%3B%0A%7D%0Ah3%20%7B%0Aborder%2Dbottom%3A%202px%20solid%20%23f7f7f7%3B%0Apadding%2Dtop%3A%2010px%3B%0Afont%2Dsize%3A%20120%25%3B%0A%7D%0Ah4%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23f7f7f7%3B%0Amargin%2Dleft%3A%208px%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Ah5%2C%20h6%20%7B%0Aborder%2Dbottom%3A%201px%20solid%20%23ccc%3B%0Afont%2Dsize%3A%20105%25%3B%0A%7D%0Aa%20%7B%0Acolor%3A%20%230033dd%3B%0Atext%2Ddecoration%3A%20none%3B%0A%7D%0Aa%3Ahover%20%7B%0Acolor%3A%20%236666ff%3B%20%7D%0Aa%3Avisited%20%7B%0Acolor%3A%20%23800080%3B%20%7D%0Aa%3Avisited%3Ahover%20%7B%0Acolor%3A%20%23BB00BB%3B%20%7D%0Aa%5Bhref%5E%3D%22http%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0Aa%5Bhref%5E%3D%22https%3A%22%5D%20%7B%0Atext%2Ddecoration%3A%20underline%3B%20%7D%0A%0Acode%20%3E%20span%2Ekw%20%7B%20color%3A%20%23555%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Edt%20%7B%20color%3A%20%23902000%3B%20%7D%20%0Acode%20%3E%20span%2Edv%20%7B%20color%3A%20%2340a070%3B%20%7D%20%0Acode%20%3E%20span%2Ebn%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Efl%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Ech%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Est%20%7B%20color%3A%20%23d14%3B%20%7D%20%0Acode%20%3E%20span%2Eco%20%7B%20color%3A%20%23888888%3B%20font%2Dstyle%3A%20italic%3B%20%7D%20%0Acode%20%3E%20span%2Eot%20%7B%20color%3A%20%23007020%3B%20%7D%20%0Acode%20%3E%20span%2Eal%20%7B%20color%3A%20%23ff0000%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%0Acode%20%3E%20span%2Efu%20%7B%20color%3A%20%23900%3B%20font%2Dweight%3A%20bold%3B%20%7D%20%20code%20%3E%20span%2Eer%20%7B%20color%3A%20%23a61717%3B%20background%2Dcolor%3A%20%23e3d2d2%3B%20%7D%20%0A" rel="stylesheet" type="text/css" />
+
+</head>
+
+<body>
+
+
+
+
+<h1 class="title toc-ignore">Single Case Mixed Effects Models</h1>
+<h4 class="author"><em>Stephen Tueller</em></h4>
+<h4 class="date"><em>2019-07-11</em></h4>
+
+
+
+<div id="models" class="section level2">
+<h2>Models</h2>
+<p>There are several ways to estimate the mean (and its standard error) of a time series. Naive estimates can come from descriptive statistics (see <code>Descr.</code> in Table 1), or equivalently, a linear model (see <code>LM</code> in Table 1). These will be biased and the standard error will be underestimated because correlation of observations clustered within an individual are ignored. This special case of clustering in serial data called autocorrelation in the time series literature.</p>
+<p>A time series model will provide an estimate that is theoretically unbiased (see <code>AR1</code> in Table 1). But a limitation of basic time series models is the inability to regress the series on predictors. Time series also cannot accomodate transformations of the time variable which are implemented as random slopes in the mixed effects model (e.g., quadratic time, cubic time, etc.).</p>
+<p>The mixed effects model uses random intercepts (and potentially random slopes) to deal with nested data. When N=1, the variance of the random effects will effectually be 0, but the estimates and standard errors for the fixed effects will be less biased. When fitting a random intercept only model, the estimate and standard error of the ‘mean of the intercepts’ will be closer to the mean estimated with a time series model, even though the mean of one random intercept is ill-defined, and the variance of one random intercept is not defined.</p>
+<p>This is illustrated in Table 1 where the mean and standard error of the follicle count for one mare from models with combinations of fixed effects, random intercepts and slopes, and an AR(1) model for residuals are reported. Note that relative to the AR(1) model, the first two rows have underestimated standard errors, as is expected when ignoring clustering. The intercept only random effects model <code>RE.i</code> is an alternative to the AR(1) model for correcting the standard error, and the results are similar for the two models. Just because the variance of the random effect is not defined when N=1 doesn’t invalidate the correction to the standard error (i.e., N=1 is just a special case of N&gt;1 where the random effect variances depricate to 0).</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="kw">library</span>(nlme)
+
+<span class="co"># select the 1st mare</span>
+wm   &lt;-<span class="st"> </span>Ovary<span class="op">$</span>Mare<span class="op">==</span><span class="dv">1</span>
+
+<span class="co"># mean and standard error of the mean, ignoring autocorrelation</span>
+f.mn &lt;-<span class="st"> </span><span class="kw">mean</span>(Ovary<span class="op">$</span>follicles[wm])
+f.se.mn &lt;-<span class="st"> </span><span class="kw">sd</span>(Ovary<span class="op">$</span>follicles[wm])<span class="op">/</span><span class="kw">sqrt</span>(<span class="kw">length</span>(Ovary<span class="op">$</span>follicles[wm]))
+
+<span class="co"># naive linear model</span>
+f.lm &lt;-<span class="st"> </span><span class="kw">lm</span>(follicles <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">data=</span>Ovary[wm,])
+
+<span class="co"># Autoregressive model</span>
+f.ts &lt;-<span class="st"> </span><span class="kw">ar</span>(<span class="kw">ts</span>(Ovary<span class="op">$</span>follicles[wm]))
+f.ts.mn &lt;-<span class="st"> </span>f.ts<span class="op">$</span>x.mean
+f.ts.se.mn &lt;-<span class="st"> </span>f.ts<span class="op">$</span>var.pred<span class="op">/</span><span class="kw">sqrt</span>(<span class="kw">length</span>(Ovary<span class="op">$</span>follicles[wm]))
+
+<span class="co"># the best AR order is 1</span>
+f.ts<span class="op">$</span>order</code></pre></div>
+<pre><code>## [1] 1</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># but do we need ARIMA? No, AR(1) is still adequate</span>
+(f.arima &lt;-<span class="st"> </span>forecast<span class="op">::</span><span class="kw">auto.arima</span>(Ovary<span class="op">$</span>follicles[wm]))</code></pre></div>
+<pre><code>## Series: Ovary$follicles[wm] 
+## ARIMA(1,0,0) with non-zero mean 
+## 
+## Coefficients:
+##          ar1     mean
+##       0.4297  15.4760
+## s.e.  0.1710   0.8782
+## 
+## sigma^2 estimated as 8.14:  log likelihood=-70.62
+## AIC=147.24   AICc=148.2   BIC=151.34</code></pre>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r"><span class="co"># random intercept model</span>
+f.re.i &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Mare)
+
+<span class="co"># random intercept model, AR(1)</span>
+f.re.i.ar1 &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Mare,
+                 <span class="dt">correlation =</span> <span class="kw">corAR1</span>())
+
+<span class="co"># random intercept and slope model</span>
+f.re.is &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span>Time <span class="op">|</span><span class="st"> </span>Mare)
+
+<span class="co"># random intercept and slope model, AR(1)</span>
+f.re.is.ar1 &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span><span class="dv">1</span>, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span>Time <span class="op">|</span><span class="st"> </span>Mare,
+                  <span class="dt">correlation =</span> <span class="kw">corAR1</span>())
+
+
+<span class="co"># random intercept model, fixed effect for time</span>
+f.ret.i &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span>Time, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Mare)
+
+<span class="co"># random intercept model, AR(1), fixed effect for time</span>
+f.ret.i.ar1 &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span>Time, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span><span class="dv">1</span> <span class="op">|</span><span class="st"> </span>Mare,
+                 <span class="dt">correlation =</span> <span class="kw">corAR1</span>())
+
+<span class="co"># random intercept and slope model, fixed effect for time</span>
+f.ret.is &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span>Time, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span>Time <span class="op">|</span><span class="st"> </span>Mare)
+
+<span class="co"># random intercept and slope model, AR(1), fixed effect for time</span>
+f.ret.is.ar1 &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span>Time, <span class="dt">data=</span>Ovary[wm,], <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span>Time <span class="op">|</span><span class="st"> </span>Mare,
+                  <span class="dt">correlation =</span> <span class="kw">corAR1</span>())
+
+<span class="co"># table the results</span>
+rownms &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">'Descr.'</span>, <span class="st">'LM'</span>, <span class="st">'AR1'</span>, <span class="st">'RE.i'</span>, <span class="st">'RE.i.AR1'</span>, <span class="st">'RE.is'</span>, <span class="st">'RE.is.AR'</span>,
+            <span class="st">'RE.t.i'</span>, <span class="st">'RE.t.i.AR1'</span>, <span class="st">'RE.t.is'</span>, <span class="st">'RE.t.is.AR1'</span>)
+outmat &lt;-<span class="st"> </span>
+<span class="kw">data.frame</span>(<span class="dt">Model=</span>rownms,
+           <span class="kw">matrix</span>(<span class="kw">c</span>(f.mn, f.se.mn,
+                    <span class="kw">summary</span>(f.lm)<span class="op">$</span>coef[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    f.ts.mn, f.ts.se.mn,
+                    <span class="kw">summary</span>(f.re.i)<span class="op">$</span>tTable[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    <span class="kw">summary</span>(f.re.i.ar1)<span class="op">$</span>tTable[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    <span class="kw">summary</span>(f.re.is)<span class="op">$</span>tTable[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    <span class="kw">summary</span>(f.re.is.ar1)<span class="op">$</span>tTable[<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    <span class="kw">summary</span>(f.ret.i)<span class="op">$</span>tTable[<span class="dv">1</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    <span class="kw">summary</span>(f.ret.i.ar1)<span class="op">$</span>tTable[<span class="dv">1</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    <span class="kw">summary</span>(f.ret.is)<span class="op">$</span>tTable[<span class="dv">1</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>],
+                    <span class="kw">summary</span>(f.ret.is.ar1)<span class="op">$</span>tTable[<span class="dv">1</span>,<span class="dv">1</span><span class="op">:</span><span class="dv">2</span>]), <span class="dt">ncol=</span><span class="dv">2</span>, <span class="dt">byrow=</span><span class="ot">TRUE</span>))
+<span class="kw">names</span>(outmat) &lt;-<span class="st"> </span><span class="kw">c</span>(<span class="st">'Model'</span>, <span class="st">'Mean'</span>, <span class="st">'se'</span>)</code></pre></div>
+<table>
+<caption>Table 1. Comparisons of estimates of the mean of a time series</caption>
+<thead>
+<tr class="header">
+<th align="left">Model</th>
+<th align="right">Mean</th>
+<th align="right">se</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td align="left">Descr.</td>
+<td align="right">15.34483</td>
+<td align="right">0.5750902</td>
+</tr>
+<tr class="even">
+<td align="left">LM</td>
+<td align="right">15.34483</td>
+<td align="right">0.5750902</td>
+</tr>
+<tr class="odd">
+<td align="left">AR1</td>
+<td align="right">15.34483</td>
+<td align="right">1.5399126</td>
+</tr>
+<tr class="even">
+<td align="left">RE.i</td>
+<td align="right">15.34483</td>
+<td align="right">1.6378548</td>
+</tr>
+<tr class="odd">
+<td align="left">RE.i.AR1</td>
+<td align="right">15.50601</td>
+<td align="right">1.8631382</td>
+</tr>
+<tr class="even">
+<td align="left">RE.is</td>
+<td align="right">15.89651</td>
+<td align="right">1.6936514</td>
+</tr>
+<tr class="odd">
+<td align="left">RE.is.AR</td>
+<td align="right">15.50601</td>
+<td align="right">1.8631256</td>
+</tr>
+<tr class="even">
+<td align="left">RE.t.i</td>
+<td align="right">16.41232</td>
+<td align="right">1.7704655</td>
+</tr>
+<tr class="odd">
+<td align="left">RE.t.i.AR1</td>
+<td align="right">16.67369</td>
+<td align="right">2.2665303</td>
+</tr>
+<tr class="even">
+<td align="left">RE.t.is</td>
+<td align="right">16.41232</td>
+<td align="right">1.7704655</td>
+</tr>
+<tr class="odd">
+<td align="left">RE.t.is.AR1</td>
+<td align="right">16.67369</td>
+<td align="right">2.2665337</td>
+</tr>
+</tbody>
+</table>
+<p>Note. RE=random effects, .i=random intercepts, .is=random intercepts and slopes, AR1 indicates an AR(1) model for the residuals, and .t=inclusion of a fixed effect for time.</p>
+
+</div>
+<div id="residuals" class="section level2">
+<h2>Residuals</h2>
+<p>The residuals for the models above are highly correlated and often identical (see Figure 1 and Table 2). This is to be expected, since the only way a residual can change is when there is something different to subtract out from the observed variable. Hence the linear model, random intercept model, and random intercept with AR(1) all have the same residuals. Because the random intercepts have no variance and the ‘mean of the random intercepts’ is the same as the mean in the linear model, the residuals will be the same. What changes is the estimate of the standard error. Similarly, adding a residual autocorrelation structure to the random intercept does not change the residuals, it only estimates the autocorrelation of the residuals (which in turn affects the estimate of the standard errors, theoretically making it more correct and avoiding Type II errors).</p>
+<p>Figure 1. Scatterplots of the residuals from models reported in Table 1</p>
+<p><img src="data:image/png;base64,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" /><!-- --></p>
+
+<table>
+<caption>Table 2. Correlations of residuals from the models in Table 1</caption>
+<thead>
+<tr class="header">
+<th></th>
+<th align="right">f.ts</th>
+<th align="right">f.lm</th>
+<th align="right">f.re.i</th>
+<th align="right">f.re.i.ar1</th>
+<th align="right">f.re.is</th>
+<th align="right">f.re.is.ar1</th>
+<th align="right">f.ret.i</th>
+<th align="right">f.ret.i.ar1</th>
+<th align="right">f.ret.is</th>
+<th align="right">f.ret.is.ar1</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>f.ts</td>
+<td align="right">1.00</td>
+<td align="right">0.90</td>
+<td align="right">0.90</td>
+<td align="right">0.90</td>
+<td align="right">0.91</td>
+<td align="right">0.90</td>
+<td align="right">0.90</td>
+<td align="right">0.90</td>
+<td align="right">0.90</td>
+<td align="right">0.90</td>
+</tr>
+<tr class="even">
+<td>f.lm</td>
+<td align="right">0.90</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+</tr>
+<tr class="odd">
+<td>f.re.i</td>
+<td align="right">0.90</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+</tr>
+<tr class="even">
+<td>f.re.i.ar1</td>
+<td align="right">0.90</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+</tr>
+<tr class="odd">
+<td>f.re.is</td>
+<td align="right">0.91</td>
+<td align="right">0.99</td>
+<td align="right">0.99</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="right">0.99</td>
+<td align="right">0.99</td>
+<td align="right">0.99</td>
+<td align="right">0.99</td>
+<td align="right">0.99</td>
+</tr>
+<tr class="even">
+<td>f.re.is.ar1</td>
+<td align="right">0.90</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">0.99</td>
+<td align="right">1.00</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+</tr>
+<tr class="odd">
+<td>f.ret.i</td>
+<td align="right">0.90</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.99</td>
+<td align="right">0.96</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+</tr>
+<tr class="even">
+<td>f.ret.i.ar1</td>
+<td align="right">0.90</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.99</td>
+<td align="right">0.96</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+</tr>
+<tr class="odd">
+<td>f.ret.is</td>
+<td align="right">0.90</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.99</td>
+<td align="right">0.96</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+</tr>
+<tr class="even">
+<td>f.ret.is.ar1</td>
+<td align="right">0.90</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.96</td>
+<td align="right">0.99</td>
+<td align="right">0.96</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+<td align="right">1.00</td>
+</tr>
+</tbody>
+</table>
+</div>
+<div id="random-slopes" class="section level2">
+<h2>Random Slopes</h2>
+<p>Similar to random intercepts, random slopes are a function of time and are used to specify the shape of the time series. For example, linear and quadratic slopes allow for curvature over time. In the case of N=1, the variance of these effects is 0, but the ‘mean of the random slopes’ (or fixed effects for time) for the individual estimates the rate of change (linear effect) and the rate of change in change (quadratic effect) for that person. Here we see curvature in the relationship between time and the follicle count for the first mare in the ovary data.</p>
+<p><img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAASAAAAEgCAMAAAAjXV6yAAAAe1BMVEUAAAAAADoAAGYAOjoAOpAAZrY6AAA6ADo6AGY6Ojo6OpA6kLY6kNtmAABmADpmOpBmZgBmZmZmtrZmtv+QOgCQZgCQkGaQtpCQ27aQ29uQ2/+2ZgC2kDq225C2/7a2///bkDrb25Db/7bb////tmb/25D//7b//9v///9EUPHwAAAACXBIWXMAAA7DAAAOwwHHb6hkAAALB0lEQVR4nO2diXbbOBJFabflpHsUd/fYs4kzCSeWZP3/FzYWkiZFAq+wcJPeOyeJJGzkDVAogEWyuFBeFUsfwNpFQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEZAGdvxVdPf5Y+KhWpAbQa+e3IwF9ioCAaIOAPgE1dojdp6cW0Mfb0/uSB7JWtYD6Zohq1OlB+yWPY7X6tEGnLweYu1I2ynS06m4sVQfQMzTS1cNBDcXd5S4BfbztUF47Co01v0NAAiPdZCmf3u8QkMBIt1nKnQtQsRkFA5IY6QaL8ildgKTtLq1wQO2C3jd4KjuHqb50f4BmbndpzQwofGhPeDB5m+oOMTjPY0fxhgE1RujBY6qxo5h0ion9L6yt2Iznb24jLXAUbxyQ7kSeHiRwFG8ZkF6L+f1jiaMobXe08KoB+cZWo2kdxWJOKx0zxFQXQvPYpI7i6gFdzDSetq9464BkIy1Hu+NFVw2oFKzF8rU7XnTNgJTh9fmIudsdL7paQNmurBJQrnbHS64YUG+3jYAiMk5dHQGJSs5GKGq7Y68dxbQr9NEnWCSWj2wvJKNao5+ed2ohGtNcf0cx4jTXD0hPZEe10EiLnrpxQKWCk3ZJ8IYBqbF1/vb0bndUE9u9TUBmrSG4Qi+pLvw8NwAoZ7vBtRZX/04uAhI2GJJRjbGn9zItzuyWAR0fDpU20kmEhoBkR1IMPkyscED6kkWFQqPKoth9vBXujdkbBqT9IA3I5yjq9FLv7Dv72Q0DanpQ6V6MmetiR7PvWDlyDWxJITuUDQCqbVDluaxhttVsD3P1s1sGZHfNfPvSd96DBGptkDOg8c4BiWexUEDFyKdptfSOYrdHCJpYPaDupn3MdscgBK/7bxyg61KOWmID/5buQV2HKAjQJ9rCmWX4a/TuQcaMgdXNAyh+CRcDSLuIx8KzFBMMxGyABrZrdBzFT34RgKwL7d1RdIYFDavLDWh0Ngxe0UTk763FtLyb9nDDcQyQ4GBGAfXKjQEqnF+w4tZiWv5N+yMIsLoCVPR/xMWcZEcAFZ5vIS1KM9pV2Ok5x35QMqBBQQgokFCMkTa3HCbGCF05NEJAxeDzYPoeAkLA5E3myRhaXXZAcEhtFxBs5G4BSf24wXQ08G8G7oLXKxIoEND52150Q11Au9MCGq1xQkDZREDi6iYFNF7htgD1zCpo5RoQ8hsd1U1qg3JEcF4WBhRCaOYeNHbPate1SwXU96ectYlORuibBdUpVxSggYNDQL5jKAYdyuk9+ivyZlqFDYLTzmiiGxA8t+32oBBAV3uHuQHBbhhRZ4B6ztzsgCRnkwAo73aHwPN1JA5stmOyxzV5skQAsvv1vuCFoOqGk7eo0OjX3vS1FKB2yzXpXoQbBiTatLc6PTt7WZSLAp2AYuxzeE3dLJP0oJDrYuIEkBYGSHDek9qg+rJiTA9KmJyLnICgN+6pUTCL6ZsVlgUEMk8KSKRSEbxDQMpCn19kHlBV7OcG9JlhQUB7KSDVf36ZF1BvyYK7myw9dIhVAYvVjze3IY9ZBgQBCsjrTY/wg6Q9aLQWwUPeRpLg2mpQMhyQwwudzEjHVzcGCLrG6QcwsrILarTJaKKD2ofcRSsIUIHXDslHUGQCpJ9vZ2LEPTNUkic9lla7fdMCciwJg2exXRMd5blXIyTCTJJWCFzjYE0DqCy6ckcIySPMBGn1+MoMaGB0MvWg9i4MXw8KiDATpM0B6LqHRtug8vGH7R3eMNfAowOJ9SS/DUB6kNl5LMs9q5LE+lv+hycW/c+ZAGVSOKDsQ2zgV476mesHlJ3LWNU5AYkelyyvDiZuDpD1o1PfzuJvt3B8zqwrQ5NziCUzEgOakM+1ectrg6q0q/M3DuhoFqspL9JaI6BRLBGA9FLUkpnsOYoRx5dyGANHIuY/qDOLJVyWl2yY9VqbGtDo/aFpgPK8X2wlgHCrMT0oxxvqhIBm5ZMJUJ6Xh64S0FizUZ503hA8X/IWAeU9FH/6zHwICGngD0X7QVMPsU0D0u9b2XmvagRV50mfm08eQHpb+qifYeZbZ5gnv/h62ToBjXTcOD/o9PWH+eNSuyHr3LmG7RZL8Bn5f4nzpPX1eQ+gjrONnkDla2+jgMwTBcq9P0axtU/oGWa+9hYCVAx+ERetVe48bzXSytODFuAz8t8yjR/URnim2KBbBtT6Ss5hiKub8yVinlZjZrEMFzUkgDK0Eq4MgEwAQ+yemXTDLOTIsmrQatwQ03vSaVfHljn9CEXbIBwClKfdpTVJD0qMMFuVYjxpbIPSIsxWpYlmMRxhthkFA5IJRZiFtuJKCC4QXpNQ/SGW+Ooj3Io0YX2A6p2M1Agz0Io4YXWAjo15TtxR9LciT1gboI7x9Ue5JrUSkLA2QIKdngytBCQQEEhYGyAOMadopIHmmeY3rHkcxQ1rM6vLpURAQAQEREBABAREQEAEBERAQAQEREBABAQ0KaBj90rbUXDp/zoP3nvplaiK1GePDDUlIL2H0u6j9L5ICujvcPHcK6EfQBJ5XcqtCQHZgLRyN/wiKXCpXz4d0sQONhGuCQHZvbf6ZUq9L5IC+tPTPwCgXontAfqiu369x937IilgviIb1C+xtSFmbUNtIXpfJAXM8EGArmqVzAOhWi8g8OLpkRKl6kmJr/8aarVDzHwJGmISMxeu1Rrpqg5T8ZqUXglJJw3Xmqd53IN6JSyt3Bc+V+0oYk+6V2JrNsgME33w1kGpBFNMr8BFstToldCRzLmv63GxCkRAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQKsEdP59PTc+zgrIvAsYh8jZS+yfD7j+7nxYuqrQdfX+4y1PtNmcgMxTBk/PKMqyfPz++//tzdc2QMot7z3aeSKFZgRUn6152Zsv2/OrGmI2ruO+ADWRUdWT7R/6BEo75s4v/ywe/zBBMjsLyGa1gMxzeJ//robcXg9SE1RmA11UXhP4YmJbS1VvN9PWALU95/jwn+Z1k5qZDt41byHXsWEfb6/q888xQCpbpR+dpgPuKvM+z73pQTrYsyp2Otqsn2l7gOrhoM5KH3/zfml9kgae4fDlYEx53dm6gEyHsb3GslZAdVnTEf98eld5e5k2DUh/buKD9XCwaao/2Yfo6gnMdLcuoNdL+5ctqj5YuK/nl399/VHz+sy5PUDtEDtoFqUZGsXj/54bQOoUS5NHG2kTi+kC1ETAmh/K/em3ny+HcnfZNqCOkdb25nv3rC2g88u/7Ru5FSCLxtuDLvUP1dN/Fe6/vb1uHVA9J9f25k9tRnU3ObZD7OPtV83u4aAA1aNoHFB3tKq/vv6xv1S/fDlsHVDPUSy1Hbadx3jNrzaDYadmsZ/2qY4OQPbV1OXDwfxg3mtlbi3bOqDuUuPYuDMPB3WiNSDLwzyHpo4NdwBqXqRnO2UbH715QEin36z/I16s3pYnjVWFRoHfF6DTc/DjnW5sNb9JERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQEREBABAREQEAEBERAQAQH9BRX0DGFBtzMYAAAAAElFTkSuQmCC" /><!-- --></p>
+
+<p>To model this, we consider a cubic effect of time, which further alters our estimate of the mean number of follicles and its standard error.</p>
+<div class="sourceCode"><pre class="sourceCode r"><code class="sourceCode r">f.ret3.is3.ar1 &lt;-<span class="kw">lme</span>(follicles <span class="op">~</span><span class="st"> </span>Time <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Time<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Time<span class="op">^</span><span class="dv">3</span>), 
+                    <span class="dt">data=</span>Ovary[wm,], 
+                    <span class="dt">random =</span> <span class="op">~</span><span class="st"> </span>Time <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Time<span class="op">^</span><span class="dv">2</span>) <span class="op">+</span><span class="st"> </span><span class="kw">I</span>(Time<span class="op">^</span><span class="dv">3</span>) <span class="op">|</span><span class="st"> </span>Mare,
+                  <span class="dt">correlation =</span> <span class="kw">corAR1</span>())
+<span class="kw">summary</span>(f.ret3.is3.ar1)<span class="op">$</span>tTable</code></pre></div>
+<pre><code>##                  Value Std.Error DF    t-value      p-value
+## (Intercept)  16.597967  3.005429 25  5.5226622 9.702098e-06
+## Time         -8.880123 14.495675 25 -0.6126050 5.456702e-01
+## I(Time^2)    19.264276 36.825575 25  0.5231222 6.054953e-01
+## I(Time^3)   -12.187344 23.991134 25 -0.5079937 6.159109e-01</code></pre>
+<p>Notice that the standard error of the mean number of follicles gets larger as the model gets more complex. This is expected for two reasons. First, the better we deal with the autocorrelation, the more precise the standard error is, reducing the changes of Type I errors. But we need to do model comparisons to determine whether the additional complexity is deteriorating model fit. This is related to the second issue, power. The greater the complexity of the model, the more power is reduced, increasing the chances of Type II errors.</p>
+<div id="lme4" class="section level3">
+<h3><code>lme4</code></h3>
+<p>The R package lme4 is a descendent of nlme with overlappping functionality. Currently, residual correlation structures are not easily implemented in lme4 (see <a href="https://bbolker.github.io/mixedmodels-misc/notes/corr_braindump.html" class="uri">https://bbolker.github.io/mixedmodels-misc/notes/corr_braindump.html</a>).</p>
+<!-- 
+As a simple example of model selection -- commented out for now, the cubic random effects improve fit according to LRT but not AIC/BIC
+
+
+```r
+# random slopes do not improve model fit beyond random intercepts
+anova(f.re.i, f.re.is)
+```
+
+```
+##         Model df      AIC      BIC    logLik   Test   L.Ratio p-value
+## f.re.i      1  3 152.1313 156.1280 -73.06567                         
+## f.re.is     2  5 155.8091 162.4701 -72.90456 1 vs 2 0.3222255  0.8512
+```
+
+```r
+# 
+f.ret3.is.ar1 <-lme(follicles ~ Time + I(Time^2) + I(Time^3), 
+                    data=Ovary[wm,], 
+                    random = ~ 1 | Mare,
+                  correlation = corAR1())
+anova(f.ret3.is.ar1, f.ret3.is3.ar1 )
+```
+
+```
+##                Model df      AIC      BIC    logLik   Test      L.Ratio
+## f.ret3.is.ar1      1  7 134.8578 143.3899 -60.42891                    
+## f.ret3.is3.ar1     2 16 152.8578 172.3598 -60.42891 1 vs 2 2.842171e-14
+##                p-value
+## f.ret3.is.ar1         
+## f.ret3.is3.ar1       1
+```
+-->
+</div>
+</div>
+
+
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
