@@ -11,6 +11,8 @@
 #' Apply p.adjust and add output and graphics
 #'
 #' @param DVout A data frame created by \code{\link{PersonAlytic}}.
+#' @param ids The variable in \code{DVout} across which to adjust.
+#' @param output A character string for labeling the output
 #' @param method One of \code{\link{p.adjust.methods}}.
 #' @param nbest The \code{nbest} largest pameters for the target predictor with
 #' \code{p<alpha} to be print to output.
