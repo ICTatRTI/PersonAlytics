@@ -191,8 +191,9 @@ iscorStruct <- function(x)
 #'
 #' @param See \code{\link{Palytic}}
 #'
-#' @keywords internal
+#' @export
 #'
+#  20191209 This was internal but sometimes foreach chokes on it
 forms <- function(data                     ,
                   PalyticObj   = NULL      ,
                   ids          = NULL      ,
