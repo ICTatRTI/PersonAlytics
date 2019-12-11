@@ -75,7 +75,7 @@ htp <- function(data                                                   ,
   #----------------------------------------------------------------------------#
   # functions to export
   #----------------------------------------------------------------------------#
-  exports <- c("forms")
+  exports <- c()
 
   # parralelization options could be implemented as methods for a generic,
   # would that be faster? probably not, and since the user con't touch them,
@@ -700,6 +700,8 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
                         unlist( strsplit(unlist(ivvs[wsplit]), "\\+") ) ) )
     }
     ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
+    ivvs <- ivvs[!grepl("\\(", ivvs)]
+    ivvs <- ivvs[!grepl("\\^", ivvs)]
     ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
                            function(x) !all(duplicated(x)[-1L])) )
 
