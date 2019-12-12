@@ -1575,6 +1575,8 @@ Palytic$set("public", "dist",
 Palytic$set("public", "describe",
             function(subgroup=NULL)
             {
+              subCheck(subgroup, self$datac)
+
               # concatenate all the ivs with double checks for dropped terms or non variable terms
               ivall <- all.vars(self$fixed)[-1]
               ivall <- ivall[! ivall %in% c("0", "1")] # 0,1 make come from random effects
@@ -1650,6 +1652,8 @@ Palytic$set("public", "arma",
             function(subgroup=NULL, max.p=3, max.q=3, dropVars=NULL,
                      max.P=0, max.Q=0, max.d=0, max.D=0, ...)
             {
+              subCheck(subgroup, self$datac)
+
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- data.frame( na.omit( subset(self$datac, subgroup,
                                  all.vars(self$formula)) ) )
@@ -1749,7 +1753,8 @@ Palytic$set("public", "lme",
             function(subgroup=NULL, dropVars=NULL,
                      fpc=FALSE, popsize2, ...)
             {
-			        if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
+              subCheck(subgroup, self$datac)
+              if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
               tempData <- na.omit(subset(self$datac, subgroup,
                                  all.vars(self$formula)))
 
@@ -2006,6 +2011,8 @@ Palytic$set("public", "gamlss",
             function(subgroup=NULL, sigma.formula = ~1, family=NULL,
                      dropVars=NULL, ...)
             {
+              subCheck(subgroup, self$datac)
+
               options(warn = -1)
 
               if(is.null(subgroup)) subgroup <- rep(TRUE, nrow(self$datac))
@@ -2180,6 +2187,8 @@ Palytic$set("public", "gamlss",
 Palytic$set("public", "GroupAR",
             function(subgroup=NULL, doForeach=TRUE, package="nlme")
             {
+              subCheck(subgroup, self$datac)
+
               # check for autodetect inputs
               if( is.null(self$autoDetect$AR$P) | is.null(self$autoDetect$AR$Q) )
               {
@@ -2372,6 +2381,8 @@ Palytic$set("public", "getTO",
 Palytic$set("public", "GroupTO",
             function(subgroup=NULL, package="nlme")
             {
+              subCheck(subgroup, self$datac)
+
               # extract polyMax and whichIC, which should give an error if
               # absent in $autoDetect
               polyMax <- self$autoDetect$TO$polyMax
@@ -2430,6 +2441,8 @@ Palytic$set("public", "plot",
             function(subgroup=NULL, groupvar=NULL, type='histogram', ylim=NULL,
                      title=NULL)
             {
+              subCheck(subgroup, self$datac)
+
               # qc input
               if(!is.null(groupvar))
               {

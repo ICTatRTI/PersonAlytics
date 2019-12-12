@@ -44,6 +44,24 @@ eds <- function(x)
   exists( deparse( substitute(x) ) )
 }
 
+#' subCheck - test whether subgroup is the right length
+#' @author Stephen Tueller \email{stueller@@rti.org}
+#' @param subgroup logical vector on NULL
+#' @param data A data set
+#'
+#' @keywords internal
+subCheck <- function(subgroup, data)
+{
+  if(!is.null(subgroup))
+  {
+    if(length(subgroup) != nrow(data))
+    {
+      stop('\n`subgroup` is length ', length(subgroup), ' but there are',
+           '\n', nrow(data), ' rows in the data. Change your `subgroup` variable.\n\n')
+    }
+  }
+}
+
 #' dstats - print mena, median, sd, skewness, and kurtosis - 3
 #' @export
 dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
