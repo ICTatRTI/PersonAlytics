@@ -78,6 +78,15 @@ clean <- function(data		 	                                            ,
   # check correlation structure
   invisible( iscorStruct(correlation) )
 
+  # check for infinite values
+  isinf <- unlist( lapply(data[,vars], function(x) any(is.infinite(x))) )
+  if(any(isinf))
+  {
+    whichinf <- which(isinf)[1]
+    stop('\nThe variable `', vars[whichinf], '`` contains infinite values. Change to `NA` and try',
+         '\nagain.\n\n')
+  }
+
   # see issue #12 on github
   # check that time is monotonically increasing - this fails for
   # time that is a trigonometric function of raw time
