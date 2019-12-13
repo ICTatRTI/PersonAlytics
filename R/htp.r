@@ -287,7 +287,12 @@ htp <- function(data                                                   ,
 
   row.names(outmat) <- NULL
 
-  #outmat <- outmat[,-1] # drop the 1st column, named 'id', redundants with 'ids'
+  # drop redundant columns that may crop up under some combinations of settings
+  outmat <- outmat[,! names(outmat) %in% c('converge.1',	'estimator.1',
+              'analyzed_N.1',	'call.1',	'targ_ivs_lrt_pvalue.1')]
+  stats <- which( grepl('statName', names(outmat)) | grepl('statValue', names(outmat)) )
+  nostats <- stats[ unlist(lapply(outmat[,stats], function(x) all(is.na(x)))) ]
+  if(length(nostats)>0) outmat <- outmat[,-nostats]
 
   return( outmat )
 }
@@ -642,8 +647,9 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
   err_id['alignPhase']   <- toString( t1$alignPhase )
   if(package=="arma") err_id['correlation']  <- "See 'call' column'"
   if(package!="arma") err_id['correlation']  <- t1$correlation
-  err_id['family']       <- t1$family[[1]][2]
-  err_id['standardize']  <- paste(paste(names(t1$standardize),
+  err_id['family']        <- t1$family[[1]][2]
+  err_id['gamlss.family'] <- t1$family[[1]][1]
+  err_id['standardize']   <- paste(paste(names(t1$standardize),
                                         t1$standardize, sep='='), collapse=', ')
   err_id['method']       <- t1$method
   err_id['package']      <- package
@@ -658,26 +664,25 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
 
   # check for adequate data
   nrt            <- length(unique(temp[[t1$time$analysis[1]]]))
-  err_id['Nobs'] <- paste('There are', nrt,
-                          'time points with complete data.')
+  err_id['N_time_points_complete'] <- paste('There are', nrt, 'time points w/ complete data')
 
   # outcome variance
   dvVar <- round(var(temp[[t1$dv]], na.rm = TRUE),3)
-  err_id['dvVar'] <- paste( 'The variance of `', t1$dv, '` is ', dvVar,
+  err_id['dvVariance'] <- paste( 'The variance of `', t1$dv, '` is ', dvVar,
                             ifelse(all(dims$ID=="All Cases"), ".",
                                    paste(' for ', t1$ids, ' = ', id, '.', sep='')),
                             ' If unexpected, check your settings in `standardize`.',
                             sep='')
 
   # time should be monotonically increasing
-  err_id['timeVar'] <- paste("`", t1$time[1], "` is",
+  err_id['timeVariance'] <- paste("`", t1$time[1], "` is",
                              ifelse(t1$monotone$monotonic[id], "" , "NOT"),
-                             "monotonically increasing for `",
+                             " monotonically increasing for `",
                              t1$ids, "` =", id, ".")
 
   # ivs and ivs variance
   #TODO() add value pass for iv variances and add to output
-  err_id['ivVar'] <- "There are no variables in `ivs`."
+  err_id['ivVariance'] <- "There are no variables in `ivs`."
   if( length(t1$ivs) > 0)
   {
     err_id['ivs']       <- toString( t1$ivs )
@@ -705,23 +710,33 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
     ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
                            function(x) !all(duplicated(x)[-1L])) )
 
-    err_id['ivVar'] <- paste( paste('The variance of `', ivvs, '` is ',
+    err_id['ivVarariance'] <- paste( paste('The variance of `', ivvs, '` is ',
                                     ifelse(ivv, '> 0 ', '= 0 '),
                                     sep=''), collapse='; ')
   }
 
   # target iv and target iv variance
-  err_id['target_ivVar'] <- "No target_ivs"
+  err_id['target_ivVariance'] <- "No target_ivs"
   tivv <- NA
 
   # check for 0 variance in the target iv
   if(!is.null(target_iv))
   {
-    tivv <- !all(duplicated(temp[[target_iv]])[-1L])
-    err_id['target_ivVar'] <- paste('The variance of `',
+    if(is.character(temp[[target_iv]]) | is.factor(temp[[target_iv]]))
+    {
+      tivv <- !all(duplicated(temp[[target_iv]])[-1L])
+      err_id['target_ivVariance'] <- paste('The variance of `',
                                     target_iv, '` is ',
                                     ifelse(tivv, '> 0 ', '= 0 '),
                                     sep='')
+    }
+    if(is.numeric(temp[[target_iv]]))
+    {
+      tivv <- round(var(temp[[target_iv]], na.rm=TRUE), 2)
+      err_id['target_ivVariance'] <- paste('The variance of `',
+                                    target_iv, '` is ', tivv)
+    }
+
   }
 
   return( list(err_id=err_id, tivv=tivv, dvVar=dvVar) )
