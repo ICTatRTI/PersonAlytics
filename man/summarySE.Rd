@@ -2,8 +2,8 @@
 % Please edit documentation in R/utils.r
 \name{summarySE}
 \alias{summarySE}
-\title{subdat - function to take a subset of data with column select, used by
-Palytic$plot()}
+\title{summarySE - function to take a subset of data with column select, used by
+\code{Palytic$plot()}}
 \usage{
 summarySE(data = NULL, measurevar, groupvars = NULL, phase = NULL,
   na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
@@ -20,11 +20,7 @@ summarySE(data = NULL, measurevar, groupvars = NULL, phase = NULL,
 \item{conf.interval}{the percent range of the confidence interval (default is 95%)}
 }
 \description{
-subdat - function to take a subset of data with column select, used by
-Palytic$plot()
-}
-\author{
-http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/#Helper%20functions
-with updates by Stephen Tueller
+summarySE - function to take a subset of data with column select, used by
+\code{Palytic$plot()}
 }
 \keyword{internal}

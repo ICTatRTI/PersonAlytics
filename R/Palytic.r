@@ -937,8 +937,7 @@
 #' @section Methods:
 #' \describe{
 #'
-#'   \item{\code{dist(to01=FALSE, model=NULL,
-#'   parallel="snow", plot=TRUE)}}
+#'   \item{\code{dist(to01=FALSE, model=NULL, parallel="snow", plot=TRUE)}}
 #'   {This method plots the density of your dependent variable if \code{plot=TRUE} and
 #'   lets the user implement \code{gamlss} automated
 #'   distribution comparisons. If \code{model=NULL}, the \code{\link{fitDist}}

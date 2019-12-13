@@ -23,4 +23,3 @@ Note that only the following combinations work, but these are enforced in
 \author{
 Stephen Tueller \email{stueller@rti.org}
 }
-\keyword{internal}

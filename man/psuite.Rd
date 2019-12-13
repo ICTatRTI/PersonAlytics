@@ -10,6 +10,10 @@ psuite(DVout, ids, output, method = "BY", nbest = NULL, alpha = 0.05,
 \arguments{
 \item{DVout}{A data frame created by \code{\link{PersonAlytic}}.}
 
+\item{ids}{The variable in \code{DVout} across which to adjust.}
+
+\item{output}{A character string for labeling the output}
+
 \item{method}{One of \code{\link{p.adjust.methods}}.}
 
 \item{nbest}{The \code{nbest} largest pameters for the target predictor with

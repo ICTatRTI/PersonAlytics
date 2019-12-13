@@ -731,11 +731,10 @@ subdat <- function(data, subgroup, formula)
 }
 
 
-#' subdat - function to take a subset of data with column select, used by
-#' Palytic$plot()
+#' summarySE - function to take a subset of data with column select, used by
+#' \code{Palytic$plot()}
 #'
-#' @author http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/#Helper%20functions
-#' with updates by Stephen Tueller
+#' @author \url{http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/#Helper%20functions} with updates by Stephen Tueller
 #'
 #' @param data a data frame.
 #' @param measurevar the name of a column that contains the variable to be summarized
