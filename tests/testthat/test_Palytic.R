@@ -3,7 +3,7 @@ library(PersonAlytics)
 
 test_that("PalyticBasics",
 {
-  #OvaryICT <<- PersonAlytics::OvaryICT
+  OvaryICT <<- PersonAlytics::OvaryICT
 
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase', autoDetect = list())
@@ -19,8 +19,8 @@ test_that("PalyticBasics",
   t1.lme.ar1    <- t1$lme()
 
   testthat::expect_equal(
-  t1.gamlss.ar1$PalyticSummary$formula,
-  t1.lme.ar1$PalyticSummary$formula$formula)
+    t1.gamlss.ar1$PalyticSummary$formula,
+    t1.lme.ar1$PalyticSummary$formula$formula )
 
   # this test will fail, I don't know why we get hugely different results
   # when adding a residual correlation structure
@@ -131,7 +131,7 @@ test_that("PalyticICC",
 test_that("groupAR_Order",
 {
   # 'manual' model
-  #OvaryICT <<- PersonAlytics::OvaryICT
+  OvaryICT <<- PersonAlytics::OvaryICT
 
   ctrl <- nlme::lmeControl(opt="optim")
   m1 <- lme(follicles ~ Time * Phase, data = OvaryICT, random = ~ Time | Mare,

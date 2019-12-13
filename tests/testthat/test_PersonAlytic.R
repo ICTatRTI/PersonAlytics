@@ -56,7 +56,7 @@ test_that("ManyV1",
   )
 
   testthat::expect_equal( c(t(mare1$tTable[1:5,])),
-             unname(unlist(t1[t1$Mare==1,43:62])) )
+             unname(unlist(t1[t1$Mare==1,44:63])) )
 
   # verify against a 'manual' auto.arima run
   m1   <- OvaryICT$Mare==1
