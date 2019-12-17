@@ -3,18 +3,16 @@
 \name{vcovFPC}
 \alias{vcovFPC}
 \alias{vcovFPC.meMod}
-\alias{vcovFPC.merMod}
 \alias{vcovFPC.lme}
+\alias{vcovFPC.merMod}
 \title{\code{vcovFPC} Obtain finite-population-adjusted standard errors for
 fixed effects estimates for a fitted multilevel model}
 \usage{
 vcovFPC(object, ...)
 
-\method{vcovFPC}{merMod}(object, popsize2 = NULL, popsize1 = NULL,
-  KR = FALSE)
+\method{vcovFPC}{merMod}(object, popsize2 = NULL, popsize1 = NULL, KR = FALSE)
 
-\method{vcovFPC}{lme}(object, popsize2 = NULL, popsize1 = NULL,
-  KR = FALSE)
+\method{vcovFPC}{lme}(object, popsize2 = NULL, popsize1 = NULL, KR = FALSE)
 }
 \arguments{
 \item{object}{an R object of class merMod as resulting from lmer() or

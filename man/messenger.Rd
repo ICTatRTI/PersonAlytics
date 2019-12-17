@@ -4,8 +4,14 @@
 \alias{messenger}
 \title{messenger}
 \usage{
-messenger(dvLoop, dvs = NULL, dv = NULL, dims = NULL, ids = NULL,
-  target_ivs = NULL)
+messenger(
+  dvLoop,
+  dvs = NULL,
+  dv = NULL,
+  dims = NULL,
+  ids = NULL,
+  target_ivs = NULL
+)
 }
 \description{
 messenger

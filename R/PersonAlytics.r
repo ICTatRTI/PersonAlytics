@@ -108,7 +108,7 @@ NULL
 #'
 #' @name OvaryICT
 #' @docType data
-#' @export
+#' @keywords data
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
 #' The Ovary data set from the nlme package, modified as shown in the example.
@@ -189,7 +189,7 @@ NULL
 #' OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
 #' }
 #'
-
+NULL
 
 if(1==2)
 {
@@ -211,5 +211,5 @@ if(1==2)
   OvaryICT <- data.frame(OvaryICT, t1, t2)
   OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
   rm(t1, t2)
-  devtools::use_data(OvaryICT, overwrite = TRUE)
+  usethis::use_data(OvaryICT, overwrite = TRUE)
 }

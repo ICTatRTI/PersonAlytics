@@ -29,7 +29,7 @@ Depends:
     RColorBrewer (>= 1.1.2),
     snow (>= 0.4-3),
     moments (>= 0.14)
-RoxygenNote: 6.1.1
+RoxygenNote: 7.0.2
 Suggests: testthat,
     knitr,
     rmarkdown

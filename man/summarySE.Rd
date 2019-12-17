@@ -5,8 +5,15 @@
 \title{summarySE - function to take a subset of data with column select, used by
 Palytic$plot}
 \usage{
-summarySE(data = NULL, measurevar, groupvars = NULL, phase = NULL,
-  na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
+summarySE(
+  data = NULL,
+  measurevar,
+  groupvars = NULL,
+  phase = NULL,
+  na.rm = FALSE,
+  conf.interval = 0.95,
+  .drop = TRUE
+)
 }
 \arguments{
 \item{data}{a data frame.}

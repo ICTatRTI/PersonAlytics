@@ -5,16 +5,38 @@
 \title{Personalytic, a simplified user interface for linear and generalized linear
 mixed effects models with high throughput options.}
 \usage{
-PersonAlytic(output = NULL, data, ids, dvs, time, phase = NULL,
-  ivs = NULL, target_ivs = NULL, interactions = NULL,
-  time_power = 1, correlation = NULL, family = gamlss.dist::NO(),
-  subgroup = NULL, standardize = list(dv = FALSE, iv = FALSE, byids =
-  FALSE), method = "REML", package = "nlme", individual_mods = FALSE,
-  PalyticObj = NULL, autoDetect = list(AR = list(P = 3, Q = 3), TO =
-  list(polyMax = 3), DIST = list()), whichIC = c("BIC", "AIC"),
-  charSub = NULL, sigma.formula = ~1, p.method = "BY",
-  alpha = 0.05, nbest = NULL, alignPhase = "none", fpc = 0,
-  debugforeach = FALSE, cores = parallel::detectCores() - 1, ...)
+PersonAlytic(
+  output = NULL,
+  data,
+  ids,
+  dvs,
+  time,
+  phase = NULL,
+  ivs = NULL,
+  target_ivs = NULL,
+  interactions = NULL,
+  time_power = 1,
+  correlation = NULL,
+  family = gamlss.dist::NO(),
+  subgroup = NULL,
+  standardize = list(dv = FALSE, iv = FALSE, byids = FALSE),
+  method = "REML",
+  package = "nlme",
+  individual_mods = FALSE,
+  PalyticObj = NULL,
+  autoDetect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list()),
+  whichIC = c("BIC", "AIC"),
+  charSub = NULL,
+  sigma.formula = ~1,
+  p.method = "BY",
+  alpha = 0.05,
+  nbest = NULL,
+  alignPhase = "none",
+  fpc = 0,
+  debugforeach = FALSE,
+  cores = parallel::detectCores() - 1,
+  ...
+)
 }
 \arguments{
 \item{output}{Character. The default is \code{NULL}.

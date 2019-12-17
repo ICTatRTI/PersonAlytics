@@ -4,8 +4,15 @@
 \alias{plotICTraw}
 \title{plotICTraw - function to plot ICT data.}
 \usage{
-plotICTraw(x, npg, id = "id", group = "group", Time = "Time",
-  y = "y", seed = 2)
+plotICTraw(
+  x,
+  npg,
+  id = "id",
+  group = "group",
+  Time = "Time",
+  y = "y",
+  seed = 2
+)
 }
 \arguments{
 \item{x}{A data set}

@@ -3,7 +3,6 @@
 \docType{package}
 \name{PersonAlytics}
 \alias{PersonAlytics}
-\alias{PersonAlytics-package}
 \title{PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials}
 \description{
 The PersonAlytics package provides the simplified user interface

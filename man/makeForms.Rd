@@ -4,10 +4,19 @@
 \alias{makeForms}
 \title{makeForms - function to construct and return formulae (fixed, random, formula)}
 \usage{
-makeForms(ids = "Mare", dv = "follicles", time = "Time",
-  phase = "Phase", ivs = "iv1", interactions = list(c("iv1",
-  "Phase")), rint = "", correlation = "NULL", family = NO(),
-  dropTime = "no", method = "REML")
+makeForms(
+  ids = "Mare",
+  dv = "follicles",
+  time = "Time",
+  phase = "Phase",
+  ivs = "iv1",
+  interactions = list(c("iv1", "Phase")),
+  rint = "",
+  correlation = "NULL",
+  family = NO(),
+  dropTime = "no",
+  method = "REML"
+)
 }
 \arguments{
 \item{See}{\code{\link{Palytic}}}

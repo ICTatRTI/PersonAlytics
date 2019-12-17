@@ -16,5 +16,5 @@ getME(object.merMod, "Lambdat"). See \code{\link{getME}}.
 }
 \examples{
 
-# see examples in \\code{vcovFPC}
+# see examples in \code{vcovFPC}
 }

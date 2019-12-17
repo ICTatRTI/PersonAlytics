@@ -4,8 +4,15 @@
 \alias{getPalytic}
 \title{getPalytic, a function to create a Palytic object from PersonAlytics output}
 \usage{
-getPalytic(output, data, rowNum, id = NULL, dv = NULL,
-  target_iv = NULL, ids = NULL)
+getPalytic(
+  output,
+  data,
+  rowNum,
+  id = NULL,
+  dv = NULL,
+  target_iv = NULL,
+  ids = NULL
+)
 }
 \arguments{
 \item{output}{Character. The path to a csv file produced by the \code{PersonAlytic} function.}
@@ -23,8 +30,6 @@ will be provided, noting that all four of these parameters must be specified exc
 
 \item{target_iv}{Character. The value in the 'target_iv' column of \code{output}. Leave as
 \code{NULL} if this column is absent in \code{output}.}
-
-\item{id}{Character. The value in the 'id' column of \code{output}.}
 }
 \description{
 getPalytic, a function to create a Palytic object from PersonAlytics output

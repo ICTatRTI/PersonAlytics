@@ -4,15 +4,32 @@
 \alias{htp}
 \title{high throughput}
 \usage{
-htp(data, dims, dvs, phase, ids, uids, time, ivs, target_ivs,
-  interactions = NULL, time_power = 1, alignPhase = "none",
-  correlation = NULL, family = gamlss.dist::NO(),
+htp(
+  data,
+  dims,
+  dvs,
+  phase,
+  ids,
+  uids,
+  time,
+  ivs,
+  target_ivs,
+  interactions = NULL,
+  time_power = 1,
+  alignPhase = "none",
+  correlation = NULL,
+  family = gamlss.dist::NO(),
   standardize = list(dvs = FALSE, ivs = FALSE, byids = FALSE),
-  fpc = FALSE, popsize2 = 0, package = "gamlss",
-  autoDetect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST
-  = list()), whichIC = "BIC", sigma.formula = ~1,
-  debugforeach = FALSE, userFormula = list(fixed = NULL, random = NULL,
-  formula = NULL), cores = parallel::detectCores() - 1)
+  fpc = FALSE,
+  popsize2 = 0,
+  package = "gamlss",
+  autoDetect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list()),
+  whichIC = "BIC",
+  sigma.formula = ~1,
+  debugforeach = FALSE,
+  userFormula = list(fixed = NULL, random = NULL, formula = NULL),
+  cores = parallel::detectCores() - 1
+)
 }
 \description{
 high throughput
