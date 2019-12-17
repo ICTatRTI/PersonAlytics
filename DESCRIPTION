@@ -19,24 +19,27 @@ Depends:
     foreach (>= 1.4.4),
     gamlss (>= 5.1-2),
     gamlss.tr (>= 5.1.0),
+    nlme (>= 3.1-131),
+    parallel (>= 3.5.1),
+	  R6 (>= 2.3.0),
+Imports:
     gridExtra (>= 2.3),
     ggplot2 (>= 2.2.1),
   	multilevel (>= 2.6),
-    nlme (>= 3.1-131),
-    parallel (>= 3.5.1),
-    plyr (>= 1.8.4),
-	  R6 (>= 2.3.0),
-    RColorBrewer (>= 1.1.2),
+  	plyr (>= 1.8.4),
+  	RColorBrewer (>= 1.1.2),
+    moments (>= 0.14),
     snow (>= 0.4-3),
-    moments (>= 0.14)
-Imports:
     testthat,
     stats,
     utils,
+    Matrix
 RoxygenNote: 7.0.2
 Suggests: 
     knitr,
-    rmarkdown
+    rmarkdown,
+    lme4,
+    pbkrtest
 VignetteBuilder: knitr
 BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
 URL: https://personalytics.rti.org/ 
