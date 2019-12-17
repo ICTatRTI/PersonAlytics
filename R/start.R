@@ -20,7 +20,7 @@ PersonAlyticsStartupMessage <- function()
 Version ",
 packageVersion("PersonAlytics")),
 "\n\nType 'citation(\"PersonAlytics\")' for citing this R package in publications.",
-"\n\nType 'vignette(package=\"PersonAlytics\")' for the user's guide.\n")
+"\n\nType 'vignette(\"PersonAlytics_Users_Guide\")' for the user's guide.\n")
   return(msg)
 }
 
