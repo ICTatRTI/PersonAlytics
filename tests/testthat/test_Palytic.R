@@ -3,9 +3,7 @@ library(PersonAlytics)
 
 test_that("PalyticBasics",
 {
-  OvaryICT <<- PersonAlytics::OvaryICT
-
-  t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+  t1 <- Palytic$new(data =  PersonAlytics::OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase', autoDetect = list())
 
   t1.gamlss <- summary(t1$gamlss())
@@ -29,7 +27,7 @@ test_that("PalyticBasics",
 
   # repeat 'by hand' to check that gamlss is using AR1
   formar <- t1.gamlss.ar1$PalyticSummary$formula
-  t1.gamlss.ar1s2 <- summary( gamlss(form1, data = OvaryICT) )
+  t1.gamlss.ar1s2 <- summary( gamlss(form1, data =  PersonAlytics::OvaryICT) )
   testthat::expect_false(identical(t1.gamlss.ar1s2, t1.gamlss.ar1s))
 
   # WIP - the lme varFuncs are not working
@@ -37,23 +35,23 @@ test_that("PalyticBasics",
   {
     # some things to check on getting more equal results between gamlss and lme
 
-    g.sig.fix <- gamlss(form1, data = OvaryICT, sigma.formula = ~ 1,
+    g.sig.fix <- gamlss(form1, data =  PersonAlytics::OvaryICT, sigma.formula = ~ 1,
                         sigma.fix = TRUE)
     g.sig.fixs <- summary(g.sig.fix)
 
-    g.sig.identity <- gamlss(form1, data = OvaryICT, sigma.formula = ~ 1,
+    g.sig.identity <- gamlss(form1, data =  PersonAlytics::OvaryICT, sigma.formula = ~ 1,
                              family = NO(sigma.link = 'identity'))
     g.sig.identitys <- summary(g.sig.id)
 
     # varFuncs, see https://fukamilab.github.io/BIO202/03-C-heterogeneity.html
     .varFixed <- varFixed(~Time)
-    .varFixed <- initialize(.varFixed, data = OvaryICT)
-    g.sig.varFixed <- gamlss(form1, data = OvaryICT, sigma.formula = ~ 1,
+    .varFixed <- initialize(.varFixed, data =  PersonAlytics::OvaryICT)
+    g.sig.varFixed <- gamlss(form1, data =  PersonAlytics::OvaryICT, sigma.formula = ~ 1,
                              weights=.varFixed)
     g.sig.varFixeds <- summary(g.sig.varFixed)
 
-    .varIdent <- initialize(varIdent(form=~1|Time), OvaryICT)
-    g.sig.varIdent <- gamlss(form1, data = OvaryICT, sigma.formula = ~ 1,
+    .varIdent <- initialize(varIdent(form=~1|Time),  PersonAlytics::OvaryICT)
+    g.sig.varIdent <- gamlss(form1, data =  PersonAlytics::OvaryICT, sigma.formula = ~ 1,
                              weights=.varIdent)
     g.sig.varIdents <- summary(g.sig.varIdent)
 
@@ -130,16 +128,13 @@ test_that("PalyticICC",
 # the manual model
 test_that("groupAR_Order",
 {
-  # 'manual' model
-  OvaryICT <<- PersonAlytics::OvaryICT
-
   ctrl <- nlme::lmeControl(opt="optim")
-  m1 <- lme(follicles ~ Time * Phase, data = OvaryICT, random = ~ Time | Mare,
+  m1 <- lme(follicles ~ Time * Phase, data =  PersonAlytics::OvaryICT, random = ~ Time | Mare,
             correlation = corARMA(p=0,q=2), control = ctrl, method = "REML")
   #m1$call
   #dim(m1$data)
 
-  t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
+  t1 <- Palytic$new(data =  PersonAlytics::OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase', autoDetect = list(AR=list(P=3,Q=3)))
   t1$GroupAR()
   m1t <- t1$lme()

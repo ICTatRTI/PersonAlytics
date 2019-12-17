@@ -1003,7 +1003,7 @@
 #'   same as \code{getAR} when the ARMA order is desired for the full sample.}
 #'   \item{\code{getTO(subset, polyMax)}}{This method automates the task of
 #'   determining  \code{time_power} for each case in \code{ids}
-#'   (see \code{\link{PersonAlytic} or \code{\link{PersonAlytic}}}). For example,
+#'   (see \code{\link{PersonAlytic}} or \code{\link{PersonAlytic}}). For example,
 #'   if \code{getTO} returns \code{time_power=3},
 #'   then \code{time + time^2 + time^3}
 #'   will be added to the fixed effects of the model.

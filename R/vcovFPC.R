@@ -6,7 +6,7 @@
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'
 #' @param object An \code{\link{lme}} object from \code{\link{nlme}}, or a merMod
-#' object from \code{\link{lmer}}.
+#' object from \code{\link{lme4::lmer}}.
 #'
 #' @param popsize2 The finite population size at level two, i.e., persons when
 #' there are repeated measures at level 1.

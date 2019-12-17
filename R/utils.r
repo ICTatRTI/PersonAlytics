@@ -150,10 +150,10 @@ monotone <- function(ids, time, data)
 #' @keywords internal
 #'
 #' @examples
-#' iscorStruct(NULL)
-#' iscorStruct("NULL")
-#' iscorStruct("corARMA(3,3)")
-#' iscorStruct(c(2,2))
+#' PersonAlytics:::iscorStruct(NULL)
+#' PersonAlytics:::iscorStruct("NULL")
+#' PersonAlytics:::iscorStruct("corARMA(3,3)")
+#' PersonAlytics:::iscorStruct(c(2,2))
 iscorStruct <- function(x)
 {
   if( ! class(x) %in% c('NULL', 'character') &
