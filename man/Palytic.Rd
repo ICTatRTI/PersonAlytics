@@ -204,14 +204,6 @@ t1$lme(fpc = TRUE, popsize2 = 200)$FPCtTable
 Stephen Tueller \email{stueller@rti.org}
 }
 \keyword{data}
-\section{Public fields}{
-\if{html}{\out{<div class="r6-fields">}}
-\describe{
-\item{\code{errors}}{A list of errors that will be populated as methods are called on a
-\code{Palytic} object.}
-}
-\if{html}{\out{</div>}}
-}
 \section{Active bindings}{
 \if{html}{\out{<div class="r6-active-bindings">}}
 \describe{
@@ -250,6 +242,9 @@ can be applied directly by transforming the \code{time} variable.}
 
 \item{\code{correlation}}{See \code{\link{corStruct}}. Defaults to \code{NULL}, see
 \code{\link{lme}}. Used by both \code{\link{lme}} and \code{\link{gamlss}} models.}
+
+\item{\code{correlation0}}{Other options such as \code{autoDetect} can change \code{correlation},
+\code{correlation0} retains the original value provided by the user.}
 
 \item{\code{family}}{The \code{\link{gamlss.family}} distribution.}
 
@@ -341,6 +336,10 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
    time_power to create a piecwise linear growth curve model, and where `#`
    is the number of phases (i.e., one linear growth curve model per phase).}
 
+\item{\code{ismonotone}}{Logical. Is the \code{time} variable for each case monotonically
+increasing (i.e., no returns to prior values). This is determing in data cleaning as
+described for \code{datac}.}
+
 \item{\code{datac}}{data.frame. Cleaned data. Cleaning involves the following steps:
 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
 \code{ivs}, and \code{interactions} are in \code{data}.
@@ -352,8 +351,7 @@ c. 'piecewise', add 'pwtime#' variables, which will replace time and
 7. If patients have < 2 observations, they are dropped from the data set.
 8. Phase alignment (if any, see \code{alignPhase}).}
 
-\item{\code{errors}}{A list of errors that will be populated as methods are called on a
-\code{Palytic} object.}
+\item{\code{debugforeach}}{Logical flag for testing error handling in parralelized runs.}
 
 \item{\code{try_silent}}{Logical flag for testing error handling in \code{Palytic} methods.}
 }

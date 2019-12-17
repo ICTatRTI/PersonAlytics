@@ -531,13 +531,13 @@ makeForms <- function(ids          = "Mare"                   ,
 #' formula7 <- 1 ~ Time * Phase + re(random = ~1 | Mare, method = "REML",
 #'             correlation = NULL, family = )
 #'
-#'  decompFormula(formula1)
-#'  decompFormula(formula2)
-#'  decompFormula(formula3)
-#'  decompFormula(formula4)
-#'  decompFormula(formula5)
-#'  decompFormula(formula6)
-#'  decompFormula(formula7)
+#'  PersonAlytics:::decompFormula(formula1)
+#'  PersonAlytics:::decompFormula(formula2)
+#'  PersonAlytics:::decompFormula(formula3)
+#'  PersonAlytics:::decompFormula(formula4)
+#'  PersonAlytics:::decompFormula(formula5)
+#'  PersonAlytics:::decompFormula(formula6)
+#'  PersonAlytics:::decompFormula(formula7)
 decompFormula <- function(formula=NULL)
 {
   # convert to character

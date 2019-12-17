@@ -428,7 +428,7 @@
       if( missing(value) ) private$.correlation0
       else
       {
-        stop("\n`correlation0`, the input value of `correlattion`, cannot be edited.")
+        stop("\n`correlation0`, the input value of `correlation`, cannot be edited.")
       }
     },
 
@@ -721,12 +721,12 @@
       }
     },
 
-    monotone = function(value)
+    ismonotone = function(value)
     {
-      if( missing(value) ) private$.monotone
+      if( missing(value) ) private$.ismonotone
       else
       {
-        stop("\n`monotone` is read only", call. = FALSE)
+        stop("\n`ismonotone` is read only", call. = FALSE)
       }
     },
 
@@ -827,6 +827,9 @@
 #' @field correlation See \code{\link{corStruct}}. Defaults to \code{NULL}, see
 #' \code{\link{lme}}. Used by both \code{\link{lme}} and \code{\link{gamlss}} models.
 #'
+#' @field correlation0 Other options such as \code{autoDetect} can change \code{correlation},
+#' \code{correlation0} retains the original value provided by the user.
+#'
 #' @field family The \code{\link{gamlss.family}} distribution.
 #'
 #' @field fixed The \code{fixed} effects model for \code{\link{lme}} models.
@@ -917,6 +920,10 @@
 #'       time_power to create a piecwise linear growth curve model, and where `#`
 #'       is the number of phases (i.e., one linear growth curve model per phase).
 #'
+#' @field ismonotone Logical. Is the \code{time} variable for each case monotonically
+#' increasing (i.e., no returns to prior values). This is determing in data cleaning as
+#' described for \code{datac}.
+#'
 #' @field datac data.frame. Cleaned data. Cleaning involves the following steps:
 #' 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
 #' \code{ivs}, and \code{interactions} are in \code{data}.
@@ -928,9 +935,7 @@
 #' 7. If patients have < 2 observations, they are dropped from the data set.
 #' 8. Phase alignment (if any, see \code{alignPhase}).
 #'
-#'
-#' @field errors A list of errors that will be populated as methods are called on a
-#' \code{Palytic} object.
+#' @field debugforeach Logical flag for testing error handling in parralelized runs.
 #'
 #' @field try_silent Logical flag for testing error handling in \code{Palytic} methods.
 #'

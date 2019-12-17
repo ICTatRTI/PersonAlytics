@@ -1,7 +1,7 @@
 Package: PersonAlytics
 Type: Package
 Title: PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
-Version: 0.3.0.0
+Version: 0.3.0.1
 Date: 2019-11-21
 Authors@R: c(person("Stephen", "Tueller", email = "stueller@rti.org", role = c("aut", "cre")),
              person("Ty", "Rinedour", email = "tridenour@rti.org", role = c("aut")),
@@ -29,8 +29,12 @@ Depends:
     RColorBrewer (>= 1.1.2),
     snow (>= 0.4-3),
     moments (>= 0.14)
+Imports:
+    testthat,
+    stats,
+    utils,
 RoxygenNote: 7.0.2
-Suggests: testthat,
+Suggests: 
     knitr,
     rmarkdown
 VignetteBuilder: knitr
