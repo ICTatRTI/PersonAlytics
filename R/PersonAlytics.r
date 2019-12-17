@@ -108,8 +108,8 @@ NULL
 #'
 #' @name OvaryICT
 #' @docType data
-#' @author Stephen Tueller \email{stueller@@rti.org}
 #' @export
+#' @author Stephen Tueller \email{stueller@@rti.org}
 #'
 #' The Ovary data set from the nlme package, modified as shown in the example.
 #'

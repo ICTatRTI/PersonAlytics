@@ -1,6 +1,6 @@
 ---
 title: "PersonAlytics&copy; User's Guide"
-author: "Stephen Tueller, Ty Ridenour, Derek Ramirez"
+author: "Stephen Tueller, Ty Ridenour, Derek Ramirez, Jessica Cance"
 date: "`r Sys.Date()`"
 output: 
   rmarkdown::html_vignette:
@@ -97,13 +97,13 @@ Installing `PersonAlytics` is done by using the `install_github` function of the
 install.packages('devtools')
 ```
 
-Then use
+After re-starting R, type the following into the console: 
 
 ```{r eval=FALSE}
-devtools::install_github("https://github.com/ICTatRTI/PersonAlytics")
+devtools::install_github("ICTatRTI/PersonAlytics", build_opts = c("--no-resave-data", "--no-manual"), build_vignettes = TRUE)
 ```
 
-The `install_github` function may give the user the option update other R packages needed by `PersonAlytics` that the user already have. Unless the user are experienced with R package versions and updates, it is recommended that the user ignore this step and press enter without selecting an option to update packages. If the user does decide to update packages and run into an error, they may need to restart `R`, manually update the package in the error message, and then rerun the `install_github` command. 
+The `install_github` function may give the user the option update other R packages needed by `PersonAlytics` that the user already has. Unless the user is experienced with R package versions and updates, it is recommended that the user ignore this step and press enter without selecting an option to update packages. If the user does decide to update packages and runs into an error, they may need to restart `R`, manually update the package in the error message, and then rerun the `install_github` command. If a newer version of a package is required by `PersonAlytics` the `install_github` will attempt to install it. 
 
 Once `install_github` starts running, it will install all of the other `R` packages required by `PersonAlytics` if the user does not already have them. 
 

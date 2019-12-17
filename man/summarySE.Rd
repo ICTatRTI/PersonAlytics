@@ -3,7 +3,7 @@
 \name{summarySE}
 \alias{summarySE}
 \title{summarySE - function to take a subset of data with column select, used by
-\code{Palytic$plot()}}
+Palytic$plot}
 \usage{
 summarySE(data = NULL, measurevar, groupvars = NULL, phase = NULL,
   na.rm = FALSE, conf.interval = 0.95, .drop = TRUE)
@@ -17,10 +17,14 @@ summarySE(data = NULL, measurevar, groupvars = NULL, phase = NULL,
 
 \item{na.rm}{a boolean that indicates whether to ignore NA's}
 
-\item{conf.interval}{the percent range of the confidence interval (default is 95%)}
+\item{conf.interval}{the percent range of the confidence interval (default is 95\%)}
 }
 \description{
 summarySE - function to take a subset of data with column select, used by
-\code{Palytic$plot()}
+Palytic$plot
+}
+\author{
+Updated by Stephen Tueller \email{Stueller@rti.org} from
+\url{http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)}
 }
 \keyword{internal}

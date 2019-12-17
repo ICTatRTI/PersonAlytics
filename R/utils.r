@@ -730,17 +730,21 @@ subdat <- function(data, subgroup, formula)
   na.omit( subset(data, subgroup, all.vars(formula)) )
 }
 
+# this should be in summarySE's documentation, but causes errors
+# @seealso \url{http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_
+# (ggplot2)/#Helper%20functions}
 
 #' summarySE - function to take a subset of data with column select, used by
-#' \code{Palytic$plot()}
+#' Palytic$plot
 #'
-#' @author \url{http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)/#Helper%20functions} with updates by Stephen Tueller
+#' @author Updated by Stephen Tueller \email{Stueller@@rti.org} from
+#' \url{http://www.cookbook-r.com/Graphs/Plotting_means_and_error_bars_(ggplot2)}
 #'
 #' @param data a data frame.
 #' @param measurevar the name of a column that contains the variable to be summarized
 #' @param groupvars a vector containing names of columns that contain grouping variables
 #' @param na.rm a boolean that indicates whether to ignore NA's
-#' @param conf.interval the percent range of the confidence interval (default is 95%)
+#' @param conf.interval the percent range of the confidence interval (default is 95\%)
 #'
 #' @keywords internal
 summarySE <- function(data=NULL, measurevar, groupvars=NULL, phase=NULL,
