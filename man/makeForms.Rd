@@ -26,9 +26,9 @@ makeForms - function to construct and return formulae (fixed, random, formula)
 }
 \examples{
 
-makeForms()
+PersonAlytics:::makeForms()
 
-makeForms(time = c("time", "time2", "time3"))
+PersonAlytics:::makeForms(time = c("time", "time2", "time3"))
 }
 \author{
 Stephen Tueller \email{stueller@rti.org}

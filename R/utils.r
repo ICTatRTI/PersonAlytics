@@ -405,9 +405,9 @@ remove_terms <- function(form, term) {
 #'
 #' @examples
 #'
-#' makeForms()
+#' PersonAlytics:::makeForms()
 #'
-#' makeForms(time = c("time", "time2", "time3"))
+#' PersonAlytics:::makeForms(time = c("time", "time2", "time3"))
 makeForms <- function(ids          = "Mare"                   ,
                       dv           = "follicles"              ,
                       time         = "Time"                   ,

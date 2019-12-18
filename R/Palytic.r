@@ -763,7 +763,7 @@
 }
 
 
-#' \code{Palytic} class generator.
+#' Palytic class generator.
 #'
 #' @docType class
 #' @author Stephen Tueller \email{stueller@@rti.org}
@@ -791,228 +791,6 @@
 #' \code{phase} is provided, the default model is \eqn{dv=time+phase+phase*time}, and if
 #' \code{ivs} are provided they are included in the model.
 #'
-#' @field data A \code{\link{data.frame}} that contains as variables \code{ids},
-#' \code{dv}, \code{phase}, and \code{time}. Optionally, additional independent
-#' variables can be included in \code{ivs}. \code{fixed} and \code{random} formulae
-#' for \code{\link{lme}} models and \code{formula} for \code{\link{gamlss}} models are
-#' automatically generated when a \code{Palytic} object is created if these fields
-#' are left \code{NULL}.
-#'
-#' @field ids A character string giving the name of the id variable in \code{data}.
-#'
-#' @field dv A character string giving the name of the dependent variable in \code{data}.
-#'
-#' @field time A character string giving the name of the time variable in \code{data}.
-#' Random slopes for time are inclued by default. This can be overridden by specifying
-#' \code{fixed} and \code{random} formula for \code{\link{lme}} models or by specifying
-#' the \code{formula} for \code{\link{gamlss}} models.
-#'
-#' @field phase A character string giving the name of the phase variable in \code{data}.
-#' The \code{phase*time} interaction is included by default. This can be overridden by
-#' specifying \code{fixed} and \code{random} formula for \code{\link{lme}} models or by
-#' specifying the \code{formula} for \code{\link{gamlss}} models.
-#'
-#' @field ivs A \code{\link{list}} of one or more character strings giving the names
-#' of additional variables in \code{data}, e.g., \code{list('iv2', 'iv2')}.
-#'
-#' @field interactions List of vector pairs of variable names for which interaction
-#' terms should be specified, e.g., \code{list(c('time', 'phase'), c('time', 'iv1'),
-#' c('iv1', 'iv2'))} where \code{'iv1'} is the name of a variable in the liste \code{ivs}.
-#'
-#' @field time_power The polynomial for \code{time}, e.g., \code{time^time_power}. Fixed
-#' effects for \code{time^1...time^time_power} will be included in models. Future
-#' releases will allow for other functions of time such as \code{\link{sin}}, but these
-#' can be applied directly by transforming the \code{time} variable.
-#'
-#' @field correlation See \code{\link{corStruct}}. Defaults to \code{NULL}, see
-#' \code{\link{lme}}. Used by both \code{\link{lme}} and \code{\link{gamlss}} models.
-#'
-#' @field correlation0 Other options such as \code{autoDetect} can change \code{correlation},
-#' \code{correlation0} retains the original value provided by the user.
-#'
-#' @field family The \code{\link{gamlss.family}} distribution.
-#'
-#' @field fixed The \code{fixed} effects model for \code{\link{lme}} models.
-#'
-#' @field random The \code{random} effects model for \code{\link{lme}} models.
-#'
-#' @field formula The \code{formula} effects model for \code{\link{gamlss}} models.
-#' \code{sigma.formula}, \code{nu.formula}, and \code{tau.formula} will be implemented in
-#' a future release.
-#'
-#' @field method See \code{method} in \code{\link{lme}}. Is usef for both \code{\link{lme}}
-#' and \code{\link{gamlss}} models.
-#'
-#' @field standardize Named logical list. Which variables should be standardized? The default
-#' is \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}. See \code{dv} and \code{ivs}. The option
-#' \code{byids} controls whether standardization is done by individuals or by group. Any time
-#' variables are changed (e.g., \code{ivs}), the data are subset, or the options in
-#' \code{standardize} are changed, the raw data will be restandardized (see \code{datac}).
-#'
-#' @field autoDetect List. The default is
-#' \code{
-#' list(AR=list(P=3, Q=3)     ,
-#'   TO=list(polyMax=3)       ,
-#'   DIST=list()) }.
-#'
-#' If no automated model selection for the residual covariance structure (\code{AR}),
-#' the polynomial order for the relationship between time and the dependent variable
-#' (\code{TO}), or the dependent variable distribution is desired, an empty list
-#' should be passed (e.g., \code{autoDetect=list()}).
-#'
-#' If \code{AR} is in the list,
-#' the residual correlation structure will be automatically selected from
-#' among \code{ARMA(p,q)} models. See \code{correlation}. Since these models are
-#' not generally nested, model selection is done using information information
-#' criterion (see \code{whichIC}). Model selection for the residual covariance
-#' structure is searches among
-#' \code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
-#' from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
-#' are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}).
-#' If \code{individual_mods=FALSE}, this done
-#' comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
-#' this is done using the \code{\link{auto.arima}} function on the residuals for
-#' each individual. For more detail, see the \code{$GroupAR()}
-#' method.
-#'
-#' If \code{TO} is in the list, models with polynomial powers of time from 1 to
-#' \code{polyMax} will be tested.
-#' For example, if \code{polyMax=3} (implying a cubic growth model), the models
-#' compared include \code{time}, \code{time + I(time^2)}, and
-#' \code{time + I(time^2)+I(time^3)}. Since these models are nested, the best
-#' fitting model is selected using likelihood ratio tests with mixed effects
-#' models fit using maximum likelihood estimators in \code{\link{lme}}.
-#' This is done separately for each individual in \code{ids} if
-#' \code{individual_mods=TRUE}. For more detail, see the \code{$getTO()}
-#' method.
-#'
-#' If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
-#' variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
-#' the gamlss package, and the best fitting distribution will be used for each
-#' depedent variable. For more detail, see the \code{$dist()} method in
-#' \code{\link{Palytic}}.
-#'
-#' @field whichIC Character. The default is \code{whichIC="BIC"}.
-#'
-#' Either the Akaike Information Criterion (\code{whichIC="AIC"}) or
-#' the Bayesian Information Criterion (\code{whichIC="BIC"}).
-#'
-#' If the \code{time} variable is equally spaced, this is
-#' done using the function \code{\link{forecast}}. If the \code{time} variable
-#' is not equally spaced, this is done using comparisons of
-#' mixed effects models using \code{\link{lme}} fit using maximum likelihood
-#' estimators.
-#'
-#' Residual autocorrelation structure is detected separately for each individual
-#' in \code{ids} if \code{individual_mods=TRUE}.
-#'
-#' @field corStructs Vector. A \code{correlation} structure for each case in \code{ids}. Not
-#' user accesible. Populated by \code{\link{PersonAlytic}}.
-#'
-#' @field time_powers Vector. A \code{time_order} for each case in \code{ids}. Not
-#' user accesible. Populated by \code{\link{PersonAlytic}}.
-#'
-#' @field alignPhase Character. Options include
-#'    a. 'none', no changes are made to the time or phase variable.
-#'    b. 'align', align the time variable to be zero at the transition between
-#'       the first and second phase (see \code{\link{alignPhases}}).
-#'    c. 'piecewise', add 'pwtime#' variables, which will replace time and
-#'       time_power to create a piecwise linear growth curve model, and where `#`
-#'       is the number of phases (i.e., one linear growth curve model per phase).
-#'
-#' @field ismonotone Logical. Is the \code{time} variable for each case monotonically
-#' increasing (i.e., no returns to prior values). This is determing in data cleaning as
-#' described for \code{datac}.
-#'
-#' @field datac data.frame. Cleaned data. Cleaning involves the following steps:
-#' 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
-#' \code{ivs}, and \code{interactions} are in \code{data}.
-#' 2. The \code{ids} variable is forced to be numeric.
-#' 3. The validity of the \code{correlation} structure is checked, see \code{\link{corStruct}}.
-#' 4. check that variables have non-zero variance.
-#' 5. If standardization is requested, standardize the data (see \code{standardize}).
-#' 6. Sort the data on \code{ids} and \code{time}.
-#' 7. If patients have < 2 observations, they are dropped from the data set.
-#' 8. Phase alignment (if any, see \code{alignPhase}).
-#'
-#' @field debugforeach Logical flag for testing error handling in parralelized runs.
-#'
-#' @field try_silent Logical flag for testing error handling in \code{Palytic} methods.
-#'
-#' @section Methods:
-#' \describe{
-#'
-#'   \item{\code{dist(to01=FALSE, model=NULL, parallel="snow", plot=TRUE)}}{
-#'   This method plots the density of your dependent variable if \code{plot=TRUE} and
-#'   lets the user implement \code{gamlss} automated
-#'   distribution comparisons. If \code{model=NULL}, the \code{\link{fitDist}}
-#'   function is used to compare unconditional models for all applicable distributions.
-#'   If \code{model} is a \code{gamlss} model, the condition models are fit for
-#'   all applicable distributions using \code{\link{chooseDist}}.
-#'   If you want to rescale your dependent variable to the (0,1)
-#'   range, set \code{to01=TRUE}. If your depedent variable is multinomial,
-#'   automated distribution comparisons are not implemented.
-#'   }
-#'
-#'   \item{\code{summary}}{This method provides a summary of the inputs, the cleaned data,
-#'   and the raw data.}
-#'
-#'   \item{\code{describe}}{This method gives the correlation between \code{dv} and
-#'   each continuous variable in \code{ivs} (as well as the \code{time} variable), or,
-#'   if variablse are factors (including \code{phase}), the mean of \code{dv} is given
-#'   for each factor level of each variable.}
-#'
-#'   \item{\code{lme(subgroup = NULL, dropVars = NULL)}}{This method fits the
-#'   linear mixed effects
-#'    \code{lme} model implied by the \code{Palytic} fields \code{ids},
-#'    \code{dv}, \code{phase}, \code{time}, and optionally \code{ivs},
-#'    \code{time_power}
-#'    \code{correlation}. The default formula can be overridden by specifying
-#'    \code{fixed} and \code{random} and optionally \code{method} and
-#'    \code{correlation}. The see \code{\link{lme}} for the parameter
-#'    \code{subgroup}. The \code{dropVars} parameter indicates which fixed
-#'    effects should be dropped for a likelihood ration test (LRT). This is
-#'    used by \code{\link{PersonAlytic}} to test \code{target_ivs}.}
-#'
-#'   \item{\code{gamlss(subgroup = NULL, sigma.formula = ~1, family = NULL,
-#'   dropVars = NULL)}}{This method fits the \code{lme} model implied
-#'   by the \code{Palytic} fields \code{ids}, \code{dv}, \code{phase}, \code{time}
-#'   and optionally \code{ivs}, \code{time_power}, \code{correlation}. The default
-#'   formula can be overridden by specifying \code{formula} and
-#'   optionally \code{method}, \code{correlation}, and \code{family} (which can be
-#'   used to specify generalized linear mixed effects models,
-#'   see \code{\link{gamlss.family}}).
-#'   The parameter \code{subgroup} operates as in \code{\link{lme}}. The parameter
-#'   \code{sigma.formula} and \code{family} are desribed in \code{\link{gamlss}}.
-#'    The \code{dropVars} parameter indicates which fixed
-#'    effects should be dropped for a likelihood ration test (LRT). This is
-#'    used by \code{\link{PersonAlytic}} to test \code{target_ivs}.}
-#'
-#'   \item{\code{arma(subgroup=NULL, max.p=3, max.q=3, dropVars=NULL,
-#'   max.P=0, max.Q=0, max.d=0, max.D=0)}}{For individual level models,
-#'   random intercepts and
-#'   random slopes are not defined. In this situatation, an \code{ARMA(p,q)}
-#'   should be used. This is implemented using the \code{xreg}
-#'   option of \code{\link{arima}}. The residual correlation search is achieved using
-#'   \code{\link{auto.arima}}.  The \code{dropVars} parameter indicates which fixed
-#'    effects (in \code{xreg}) should be dropped for a likelihood ration test
-#'    (LRT). This is used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
-#'   The other parameters are as in \code{\link{auto.arima}}.}
-#'
-#'   \item{\code{GroupAR(dv, P=3, Q=3, whichIC="BIC", alpha=.05)}}{The
-#'   same as \code{getAR} when the ARMA order is desired for the full sample.}
-#'   \item{\code{getTO(subset, polyMax)}}{This method automates the task of
-#'   determining  \code{time_power} for each case in \code{ids}
-#'   (see \code{\link{PersonAlytic}} or \code{\link{PersonAlytic}}). For example,
-#'   if \code{getTO} returns \code{time_power=3},
-#'   then \code{time + time^2 + time^3}
-#'   will be added to the fixed effects of the model.
-#'   Calling \code{getTO} populates the
-#'   \code{GroupTime_power} field of a \code{Palytic} object. For usage, see the examples.}
-#'
-#'   \item{\code{groupTO(subset, polyMax)}}{The same as \code{getTime_power} when
-#'   the polynomial of time is desired for the full sample.}
-#' }
 #'
 #' @examples
 #'
@@ -1155,6 +933,158 @@ Palytic <- R6::R6Class("Palytic",
                        # initialize ####
                        #--------------------------------------------------------
                        public = list(
+
+                         #' @description
+                         #' Create a new Palytic Object
+                         #' @param data A \code{\link{data.frame}} that contains as variables \code{ids},
+                         #' \code{dv}, \code{phase}, and \code{time}. Optionally, additional independent
+                         #' variables can be included in \code{ivs}. \code{fixed} and \code{random} formulae
+                         #' for \code{\link{lme}} models and \code{formula} for \code{\link{gamlss}} models are
+                         #' automatically generated when a \code{Palytic} object is created if these fields
+                         #' are left \code{NULL}.
+                         #'
+                         #' @param ids A character string giving the name of the id variable in \code{data}.
+                         #'
+                         #' @param dv A character string giving the name of the dependent variable in \code{data}.
+                         #'
+                         #' @param time A character string giving the name of the time variable in \code{data}.
+                         #' Random slopes for time are inclued by default. This can be overridden by specifying
+                         #' \code{fixed} and \code{random} formula for \code{\link{lme}} models or by specifying
+                         #' the \code{formula} for \code{\link{gamlss}} models.
+                         #'
+                         #' @param phase A character string giving the name of the phase variable in \code{data}.
+                         #' The \code{phase*time} interaction is included by default. This can be overridden by
+                         #' specifying \code{fixed} and \code{random} formula for \code{\link{lme}} models or by
+                         #' specifying the \code{formula} for \code{\link{gamlss}} models.
+                         #'
+                         #' @param ivs A \code{\link{list}} of one or more character strings giving the names
+                         #' of additional variables in \code{data}, e.g., \code{list('iv2', 'iv2')}.
+                         #'
+                         #' @param interactions List of vector pairs of variable names for which interaction
+                         #' terms should be specified, e.g., \code{list(c('time', 'phase'), c('time', 'iv1'),
+                         #' c('iv1', 'iv2'))} where \code{'iv1'} is the name of a variable in the liste \code{ivs}.
+                         #'
+                         #' @param time_power The polynomial for \code{time}, e.g., \code{time^time_power}. Fixed
+                         #' effects for \code{time^1...time^time_power} will be included in models. Future
+                         #' releases will allow for other functions of time such as \code{\link{sin}}, but these
+                         #' can be applied directly by transforming the \code{time} variable.
+                         #'
+                         #' @param correlation See \code{\link{corStruct}}. Defaults to \code{NULL}, see
+                         #' \code{\link{lme}}. Used by both \code{\link{lme}} and \code{\link{gamlss}} models.
+                         #'
+                         #' @param correlation0 Other options such as \code{autoDetect} can change \code{correlation},
+                         #' \code{correlation0} retains the original value provided by the user.
+                         #'
+                         #' @param family The \code{\link{gamlss.family}} distribution.
+                         #'
+                         #' @param fixed The \code{fixed} effects model for \code{\link{lme}} models.
+                         #'
+                         #' @param random The \code{random} effects model for \code{\link{lme}} models.
+                         #'
+                         #' @param formula The \code{formula} effects model for \code{\link{gamlss}} models.
+                         #' \code{sigma.formula}, \code{nu.formula}, and \code{tau.formula} will be implemented in
+                         #' a future release.
+                         #'
+                         #' @param method See \code{method} in \code{\link{lme}}. Is usef for both \code{\link{lme}}
+                         #' and \code{\link{gamlss}} models.
+                         #'
+                         #' @param standardize Named logical list. Which variables should be standardized? The default
+                         #' is \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}. See \code{dv} and \code{ivs}. The option
+                         #' \code{byids} controls whether standardization is done by individuals or by group. Any time
+                         #' variables are changed (e.g., \code{ivs}), the data are subset, or the options in
+                         #' \code{standardize} are changed, the raw data will be restandardized (see \code{datac}).
+                         #'
+                         #' @param autoDetect List. The default is
+                         #' \code{
+                         #' list(AR=list(P=3, Q=3)     ,
+                         #'   TO=list(polyMax=3)       ,
+                         #'   DIST=list()) }.
+                         #'
+                         #' If no automated model selection for the residual covariance structure (\code{AR}),
+                         #' the polynomial order for the relationship between time and the dependent variable
+                         #' (\code{TO}), or the dependent variable distribution is desired, an empty list
+                         #' should be passed (e.g., \code{autoDetect=list()}).
+                         #'
+                         #' If \code{AR} is in the list,
+                         #' the residual correlation structure will be automatically selected from
+                         #' among \code{ARMA(p,q)} models. See \code{correlation}. Since these models are
+                         #' not generally nested, model selection is done using information information
+                         #' criterion (see \code{whichIC}). Model selection for the residual covariance
+                         #' structure is searches among
+                         #' \code{p=1,...,P} and \code{p=1,...,Q}, where \code{P} and \code{Q} are taken
+                         #' from \code{PQ}, i.e., \code{PQ=c(P,Q)}. The values of \code{p} and \code{p}
+                         #' are passed to \code{\link{corARMA}} ( e.g., \code{corARMA(p=p,q=q)}).
+                         #' If \code{individual_mods=FALSE}, this done
+                         #' comparing \code{lme} modes for N>1 data. If \code{individual_mods=TRUE},
+                         #' this is done using the \code{\link{auto.arima}} function on the residuals for
+                         #' each individual. For more detail, see the \code{$GroupAR()}
+                         #' method.
+                         #'
+                         #' If \code{TO} is in the list, models with polynomial powers of time from 1 to
+                         #' \code{polyMax} will be tested.
+                         #' For example, if \code{polyMax=3} (implying a cubic growth model), the models
+                         #' compared include \code{time}, \code{time + I(time^2)}, and
+                         #' \code{time + I(time^2)+I(time^3)}. Since these models are nested, the best
+                         #' fitting model is selected using likelihood ratio tests with mixed effects
+                         #' models fit using maximum likelihood estimators in \code{\link{lme}}.
+                         #' This is done separately for each individual in \code{ids} if
+                         #' \code{individual_mods=TRUE}. For more detail, see the \code{$getTO()}
+                         #' method.
+                         #'
+                         #' If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
+                         #' variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
+                         #' the gamlss package, and the best fitting distribution will be used for each
+                         #' depedent variable. For more detail, see the \code{$dist()} method in
+                         #' \code{\link{Palytic}}.
+                         #'
+                         #' @param whichIC Character. The default is \code{whichIC="BIC"}.
+                         #'
+                         #' Either the Akaike Information Criterion (\code{whichIC="AIC"}) or
+                         #' the Bayesian Information Criterion (\code{whichIC="BIC"}).
+                         #'
+                         #' If the \code{time} variable is equally spaced, this is
+                         #' done using the function \code{\link{forecast}}. If the \code{time} variable
+                         #' is not equally spaced, this is done using comparisons of
+                         #' mixed effects models using \code{\link{lme}} fit using maximum likelihood
+                         #' estimators.
+                         #'
+                         #' Residual autocorrelation structure is detected separately for each individual
+                         #' in \code{ids} if \code{individual_mods=TRUE}.
+                         #'
+                         #' @param corStructs Vector. A \code{correlation} structure for each case in \code{ids}. Not
+                         #' user accesible. Populated by \code{\link{PersonAlytic}}.
+                         #'
+                         #' @param time_powers Vector. A \code{time_order} for each case in \code{ids}. Not
+                         #' user accesible. Populated by \code{\link{PersonAlytic}}.
+                         #'
+                         #' @param alignPhase Character. Options include
+                         #'    a. 'none', no changes are made to the time or phase variable.
+                         #'    b. 'align', align the time variable to be zero at the transition between
+                         #'       the first and second phase (see \code{\link{alignPhases}}).
+                         #'    c. 'piecewise', add 'pwtime#' variables, which will replace time and
+                         #'       time_power to create a piecwise linear growth curve model, and where `#`
+                         #'       is the number of phases (i.e., one linear growth curve model per phase).
+                         #'
+                         #' @param ismonotone Logical. Is the \code{time} variable for each case monotonically
+                         #' increasing (i.e., no returns to prior values). This is determing in data cleaning as
+                         #' described for \code{datac}.
+                         #'
+                         #' @param datac data.frame. Cleaned data. Cleaning involves the following steps:
+                         #' 1. Check that the variables in \code{ids}, \code{dv}, \code{time}, \code{phase},
+                         #' \code{ivs}, and \code{interactions} are in \code{data}.
+                         #' 2. The \code{ids} variable is forced to be numeric.
+                         #' 3. The validity of the \code{correlation} structure is checked, see \code{\link{corStruct}}.
+                         #' 4. check that variables have non-zero variance.
+                         #' 5. If standardization is requested, standardize the data (see \code{standardize}).
+                         #' 6. Sort the data on \code{ids} and \code{time}.
+                         #' 7. If patients have < 2 observations, they are dropped from the data set.
+                         #' 8. Phase alignment (if any, see \code{alignPhase}).
+                         #'
+                         #' @param debugforeach Logical flag for testing error handling in parralelized runs.
+                         #'
+                         #' @param try_silent Logical flag for testing error handling in \code{Palytic} methods.
+                         #'
+                         #' @return A new `Palytic` object
                          initialize = function
                          (
                            data                                                ,
@@ -1323,9 +1253,14 @@ Palytic <- R6::R6Class("Palytic",
 
 )
 
-# add methods
+# add methods ####
 
-# $summary() ####
+#' @description
+#' Print a summary of the inputs, the cleaned data,
+#' and the raw data in a Palytic object
+#' @param  wm Which model.
+#' @return A list inlcuding the user's inputs and descriptive statistics for
+#' the raw and cleaned data.
 Palytic$set("public", "summary",
             function(wm=NULL)
             {
@@ -1375,7 +1310,24 @@ Palytic$set("public", "summary",
             overwrite = TRUE
 )
 
-# $detect() ####
+#' @description
+#' Conduction autodetection based on the inputs to the \code{autoDetect} parameter
+#' when initializing an new Palytic object.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
+#' @param model See \code{\link{fitDist}}.
+#' @param parallel See \code{\link{fitDist}}.
+#' @param plot Logical. Should plots of your dependent variable be displayed.
+#' @param userFormula List. Formulae to override the default formulae created
+#' when initializing a Palytic object. Options must be named and include either
+#' \code{formula}, or both \code{fixed} and \code{random}. These are described
+#' in the section documenting the \code{new()} method.
+#' @param dims List. Used internally for high throughput. The user should not
+#' adjust this parameter.
+#' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
+#' described in the section documenting the \code{new()} method.
 Palytic$set("public", "detect",
             function(subgroup    =  NULL                  ,
                      model       =  NULL                  ,
@@ -1458,7 +1410,22 @@ Palytic$set("public", "detect",
             overwrite = TRUE
 )
 
-# $dist() ####
+#' @description
+#' This method plots the density of your dependent variable if \code{plot=TRUE} and
+#' lets the user implement \code{gamlss} automated
+#' distribution comparisons. If \code{model=NULL}, the \code{\link{fitDist}}
+#' function is used to compare unconditional models for all applicable distributions.
+#' If \code{model} is a \code{gamlss} model, the condition models are fit for
+#' all applicable distributions using \code{\link{chooseDist}}.
+#' If you want to rescale your dependent variable to the (0,1)
+#' range, set \code{to01=TRUE}. If your depedent variable is multinomial,
+#' automated distribution comparisons are not implemented.
+#'
+#' @param to01 Logical. Should the dependent variable be rescaled to the (0,1) range?
+#' See \code{\link{to01}}. The option \code{squeeze} is not yet implemented.
+#' @param model See \code{\link{fitDist}}.
+#' @param parallel See \code{\link{fitDist}}.
+#' @param plot Logical. Should plots of your dependent variable be displayed.
 Palytic$set("public", "dist",
             function(to01=FALSE, model=NULL,
                      parallel="snow", plot=TRUE, type=NULL, extra=NULL)
@@ -1575,7 +1542,16 @@ Palytic$set("public", "dist",
             overwrite = TRUE
 )
 
-# $describe() ####
+#' @description
+#' Descriptive statistics for data in a Palytic object. This method gives the
+#' correlation between \code{dv} and each continuous variable in \code{ivs}
+#' (as well as the \code{time} variable), or, if variablse are factors (including
+#' \code{phase}), the mean of \code{dv} is given for each factor level of each
+#' variable.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
 Palytic$set("public", "describe",
             function(subgroup=NULL)
             {
@@ -1651,7 +1627,29 @@ Palytic$set("public", "describe",
             overwrite = TRUE
 )
 
-# $arma() ####
+#' @description
+#' For individual level models, random intercepts and
+#' random slopes are not defined. In this situatation, an \code{ARMA(p,q)}
+#' should be used. This is implemented using the \code{xreg}
+#' option of \code{\link{arima}}. The residual correlation search is achieved using
+#' \code{\link{auto.arima}}. The \code{dropVars} parameter indicates which fixed
+#' effects (in \code{xreg}) should be dropped for a likelihood ration test
+#' (LRT). This is used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
+#' The other parameters are as in \code{\link{auto.arima}}.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
+#' @param max.p See \code{\link{arima}} and the \code{P} option in the
+#' \code{autoDetect} parameter when initializing a Palytic object.
+#' @param max.q See \code{\link{arima}} and the \code{Q} option in the
+#' \code{autoDetect} parameter when initializing a Palytic object.
+#' @param dropVars Character or character vector. Names of variables to drop
+#' from the the analysis.
+#' @param max.P See \code{\link{arima}}
+#' @param max.Q See \code{\link{arima}}
+#' @param max.d See \code{\link{arima}}
+#' @param max.D See \code{\link{arima}}
 Palytic$set("public", "arma",
             function(subgroup=NULL, max.p=3, max.q=3, dropVars=NULL,
                      max.P=0, max.Q=0, max.d=0, max.D=0, ...)
@@ -1753,6 +1751,28 @@ Palytic$set("public", "arma",
 # > args <- list(...)
 # > if("contrasts" %in% names(args)) # then pass `contrasts` to lme
 # or some other method of matching arguments, see ?match.arg
+
+#' @description
+#' This method fits the linear mixed effects
+#' \code{lme} model implied by the \code{Palytic} fields \code{ids},
+#' \code{dv}, \code{phase}, \code{time}, and optionally \code{ivs},
+#' \code{time_power}, and \code{correlation}. The default formula can be
+#' overridden by specifying \code{fixed} and \code{random} and optionally
+#' \code{method} and \code{correlation}. The see \code{\link{lme}} for the parameter
+#' \code{subgroup}. The \code{dropVars} parameter indicates which fixed
+#' effects should be dropped for a likelihood ration test (LRT). This is
+#' used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
+#' @param dropVars Character or character vector. Names of variables to drop
+#' from the the analysis and conduct a likelihood ratio test (LRT) for the full
+#' model and the reduced model without the variables in \code{dropVars}.
+#' @param fpc Logical. Should the finite population correrction (FCP) be made
+#' to the analysis.
+#' @param popsize2 Numeric. If \code{fpc=TRUE}, what is the population size to
+#' be used in the FPC.
 Palytic$set("public", "lme",
             function(subgroup=NULL, dropVars=NULL,
                      fpc=FALSE, popsize2, ...)
@@ -2011,6 +2031,31 @@ getARnEQ1 <- function(m, PQ, dv, debug=FALSE)
 
 # $gamlss() ####
 ### TODO(Stephen) add residual correlation search for n=1
+
+#' @description
+#' This method fits the \code{lme} model implied
+#' by the \code{Palytic} fields \code{ids}, \code{dv}, \code{phase}, \code{time}
+#' and optionally \code{ivs}, \code{time_power}, \code{correlation}. The default
+#' formula can be overridden by specifying \code{formula} and
+#' optionally \code{method}, \code{correlation}, and \code{family} (which can be
+#' used to specify generalized linear mixed effects models,
+#' see \code{\link{gamlss.family}}).
+#' The parameter \code{subgroup} operates as in \code{\link{lme}}. The parameter
+#' \code{sigma.formula} and \code{family} are desribed in \code{\link{gamlss}}.
+#' The \code{dropVars} parameter indicates which fixed
+#' effects should be dropped for a likelihood ration test (LRT). This is
+#' used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
+#' @param sigma.formula Formula. A formula for the sigma part of a
+#' \code{gamlss.family} distribution. Later versions will add nu.formula and
+#' tau.formula.
+#' @param family. A \code{\link{gamlss.family}} distribution.
+#' @param dropVars Character or character vector. Names of variables to drop
+#' from the the analysisand conduct a likelihood ratio test (LRT) for the full
+#' model and the reduced model without the variables in \code{dropVars}.
 Palytic$set("public", "gamlss",
             function(subgroup=NULL, sigma.formula = ~1, family=NULL,
                      dropVars=NULL, ...)
@@ -2185,9 +2230,18 @@ Palytic$set("public", "gamlss",
             overwrite = TRUE
 )
 
-
-# GroupAR ####
-# whichIC can take AIC or BIC
+# this needs much editing
+#' @description
+#' The same as \code{getAR} when the ARMA order is desired for the full sample.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
+#' @param doForeach Logical. Should the search for the best residual ARMA(p,q) order
+#' be parallelized? This option can speed up searches when large values of P and Q
+#' are specified in the autoDetect option of your Palytic object.
+#' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
+#' described in the section documenting the \code{new()} method.
 Palytic$set("public", "GroupAR",
             function(subgroup=NULL, doForeach=TRUE, package="nlme")
             {
@@ -2314,7 +2368,10 @@ ARpq <- function(clone, p, q, subgroup, package="nlme")
   return(corMod)
 }
 
-# getTO ####
+#' @description
+#' Use model comparisons to test for the polynomial order of time
+#' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
+#' described in the section documenting the \code{new()} method.
 Palytic$set("public", "getTO",
             function(package="nlme")
             {
@@ -2382,6 +2439,17 @@ Palytic$set("public", "getTO",
 
 # GroupTO ####
 # TODO:hard coded lme at this point, option for gamlss later
+# needs much editing
+
+#' @description
+#' The same as \code{getTime_power} when the polynomial of time is desired for
+#' the full sample.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
+#' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
+#' described in the section documenting the \code{new()} method.
 Palytic$set("public", "GroupTO",
             function(subgroup=NULL, package="nlme")
             {
@@ -2441,6 +2509,19 @@ Palytic$set("public", "GroupTO",
 
 # This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
 # of the data for ICTviz is theoretical, this function is for real data
+
+#' @description
+#' Plot the data in your Palytic object with design elements including time and
+#' phase.
+#'
+#' @param subgroup Logical vector. If \code{NULL} results are provided for the full
+#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
+#' @param groupVar Character. The name of a grouping variable in the data that
+#' will be used to stratify the plot.
+#' @param type Character. See \code{\link{plotICT}}.
+#' @param ylim See \code{\link{plotICT}}.
+#' @param title Character. A title for you plot.
 Palytic$set("public", "plot",
             function(subgroup=NULL, groupvar=NULL, type='histogram', ylim=NULL,
                      title=NULL)

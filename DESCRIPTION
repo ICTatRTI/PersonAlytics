@@ -35,6 +35,7 @@ Imports:
     utils,
     Matrix
 RoxygenNote: 7.0.2
+Roxygen: list(r6 = FALSE)
 Suggests: 
     knitr,
     rmarkdown,
