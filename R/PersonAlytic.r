@@ -109,10 +109,10 @@
 #' Power of the time variable (e.g., \code{time^time_power}).
 #' A quadratic or cubic growth model would be specified using
 #' \code{time_power=2} or \code{time_power=3}, respectively.
-#' If \code{autoDetect$TO$polyMax} is specified, \code{polyMax} is the largest
+#' If \code{autoSelect$TO$polyMax} is specified, \code{polyMax} is the largest
 #' value tested for. The default value is \code{3}, testing up to a cubic growth
 #' model. If a linear growth model is desired, set
-#' \code{autoDetect$TO=NULL} and \code{time_power=1}.
+#' \code{autoSelect$TO=NULL} and \code{time_power=1}.
 #'
 #' @param correlation Character. The default value is \code{NULL}.
 #'
@@ -181,7 +181,7 @@
 #' structures (in non-\code{NULL} this will override the automated correlation structure
 #' search), and user specified models via \code{formula}.
 #'
-#' @param autoDetect List. The default is
+#' @param autoSelect List. The default is
 #' \code{
 #' list(AR=list(P=3, Q=3)     ,
 #'   TO=list(polyMax=3)       ,
@@ -190,7 +190,7 @@
 #' If no automated model selection for the residual covariance structure (\code{AR}),
 #' the polynomial order for the relationship between time and the dependent variable
 #' (\code{TO}), or the dependent variable distribution is desired, an empty list
-#' should be passed (e.g., \code{autoDetect=list()}).
+#' should be passed (e.g., \code{autoSelect=list()}).
 #'
 #' If \code{AR} is in the list,
 #' the residual correlation structure will be automatically selected from
@@ -265,7 +265,7 @@
 #'
 #' A formula for the variance under \code{\link{gamlss}}.
 #' Currently static: it will not change dynamically over iterations nor will it be
-#' updated by \code{time_power} or \code{autoDetect}. If model fitting using this
+#' updated by \code{time_power} or \code{autoSelect}. If model fitting using this
 #' option fails, another attempt will be made after reseting it to its defaul,
 #' i.e., \code{~1}.
 #'
@@ -382,7 +382,7 @@
 #'                    package         = "lme"                      ,
 #'                    individual_mods = FALSE                      ,
 #'                    target_ivs      = NULL                       ,
-#'                    autoDetect      = list()                     )
+#'                    autoSelect      = list()                     )
 #'
 #'
 #' # repeat t4 with finite population correction
@@ -395,7 +395,7 @@
 #'                    package         = "lme"                      ,
 #'                    individual_mods = FALSE                      ,
 #'                    target_ivs      = NULL                       ,
-#'                    autoDetect      = list()                     ,
+#'                    autoSelect      = list()                     ,
 #'                    fpc             = 200                        )
 #'
 #' # repeat t5 with piecewise model, first making time an integer (required for piecewise)
@@ -409,7 +409,7 @@
 #'                    package         = "lme"                      ,
 #'                    individual_mods = FALSE                      ,
 #'                    target_ivs      = NULL                       ,
-#'                    autoDetect      = list()                     ,
+#'                    autoSelect      = list()                     ,
 #'                    fpc             = 200                        ,
 #'                    alignPhase      = "piecewise"                )
 #'
@@ -456,7 +456,7 @@ PersonAlytic <- function(output          = NULL                                 
                          package         = 'nlme'                                ,
                          individual_mods = FALSE                                 ,
                          PalyticObj      = NULL                                  ,
-						             autoDetect      = list(AR=list(P=3, Q=3)     ,
+						             autoSelect      = list(AR=list(P=3, Q=3)     ,
 						                                 TO=list(polyMax=3)       ,
 						                                 DIST=list())                        ,
                          whichIC         = c("BIC", "AIC")                       ,
@@ -616,7 +616,7 @@ pa1 <- function(e=parent.frame())
                     family=e$family             ,
                     method=e$method             ,
                     standardize=e$standardize   ,
-                    autoDetect=e$autoDetect     )
+                    autoSelect=e$autoSelect     )
 
   # allow for formula override so that we can test intercept only and
   # slope only models
@@ -635,12 +635,12 @@ pa1 <- function(e=parent.frame())
     if( isnnform(e$userFormula$formula) ) t1$formula <- e$userFormula$formula
   }
 
-  # autodetection
+  # autoselection
   if(e$package=="nlme" | e$package=="arma")
   {
-    temp <- t1$autoDetect
+    temp <- t1$autoSelect
     temp$DIST <- NULL
-    t1$autoDetect <- temp; rm(temp)
+    t1$autoSelect <- temp; rm(temp)
   }
   dims <- list(ID="All Cases")
   if(var(t1$datac[[t1$ids]][e$subgroup], na.rm=TRUE)==0)
@@ -736,10 +736,10 @@ paHTP <- function(e=parent.frame())
     stop('target_ivs and ivs cannot share any variables.')
   }
 
-  # autodetection
+  # autoselection
   if(e$package=="nlme" | e$package=="arma")
   {
-    e$autoDetect$DIST <- NULL
+    e$autoSelect$DIST <- NULL
   }
 
   # unique ids
@@ -773,7 +773,7 @@ paHTP <- function(e=parent.frame())
     print(e$fpc          ); cat('\n')
     print(e$popsize2     ); cat('\n')
     print(e$package      ); cat('\n')
-    print(e$autoDetect   ); cat('\n')
+    print(e$autoSelect   ); cat('\n')
     print(e$PQ           ); cat('\n')
     print(e$whichIC      ); cat('\n')
     print(e$polyMax     ); cat('\n')
@@ -804,7 +804,7 @@ paHTP <- function(e=parent.frame())
                  fpc           = e$fpc           ,
                  popsize2      = e$popsize2      ,
                  package       = e$package       ,
-                 autoDetect    = e$autoDetect    ,
+                 autoSelect    = e$autoSelect    ,
                  whichIC       = e$whichIC       ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,
@@ -833,7 +833,7 @@ paHTP <- function(e=parent.frame())
                  fpc           = e$fpc           ,
                  popsize2      = e$popsize2      ,
                  package       = e$package       ,
-                 autoDetect    = e$autoDetect    ,
+                 autoSelect    = e$autoSelect    ,
                  whichIC       = e$whichIC       ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,

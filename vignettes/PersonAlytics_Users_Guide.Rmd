@@ -158,14 +158,14 @@ The four required parameters for `PersonAlytic()` are
 **list()**. In `R`, a list is a collection of variables or `R` objects that may or may not be of the same type. For example, a list might all be character strings, as is the case with `dvs=list('dv1', 'dv2', etc.)`. In other situations, a list may mix data frames, character vectors, or other data types.
 </p>
 
-We now illustrate using the four basic parameters with the `OvaryICT` data. This example also includes setting `autoDetect=NULL`, which turns off automated model comparisons for selecting the trajectory shape and residual correlation structure, options that are discussed in the "Autoselection" section. 
+We now illustrate using the four basic parameters with the `OvaryICT` data. This example also includes setting `autoSelect=NULL`, which turns off automated model comparisons for selecting the trajectory shape and residual correlation structure, options that are discussed in the "Autoselection" section. 
 
 ```{r, eval=doEval, message=FALSE}
 eg_required <- PersonAlytic(data=OvaryICT,
                 ids="Mare",
                 dvs="follicles",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 It is important to assign the results of a call to `PersonAlytic` to an R object. In the example above, the object is named `eg_required`. If the user neglects to assign the results to an R object, minimal output will be printed to the screen and the remaining results will be lost. If high throughput is initialized by including more than one dependent variable, including more than one target independent variables (see parameter `target_ivs` below), or if requesting individual models (see parameter `individual_mods` below), the resulting object is a `data.frame` concatenating results across the options submitted to the high throughput run. Reading the output is detailed in the section titled "Reading `PersonAlytics` Output".
@@ -184,7 +184,7 @@ eg_phase <- PersonAlytic(data=OvaryICT,
                 dvs="follicles",
                 phase="Phase",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 By default, the phase by time interaction will be included in the model. If the model type is `alignPhase=piecewise`, a piecewise growth model (see below), the time by phase interaction will be dropped if it model fails to converge with this interaction.
@@ -192,7 +192,7 @@ By default, the phase by time interaction will be included in the model. If the 
 ### The Shape of the Trajectory
 
 By default, a linear growth model is fit to the data. If the user desires a quadratic growth model, use
-`time_power=2`. Any integer may be supplied to `time_power` to specify the corresponding trajectory shape (e.g., linear, quadratic, cubic, etc.). Alternatively, `PersonAlytics` can automatically detect the order for time using the `TO` option of the `autoDetect` parameter as described below. This example specifies a quadratic growth trajectory.
+`time_power=2`. Any integer may be supplied to `time_power` to specify the corresponding trajectory shape (e.g., linear, quadratic, cubic, etc.). Alternatively, `PersonAlytics` can automatically detect the order for time using the `TO` option of the `autoSelect` parameter as described below. This example specifies a quadratic growth trajectory.
 
 ```{r, eval=doEval}
 eg_time_power <- PersonAlytic(output="MyResults",
@@ -202,7 +202,7 @@ eg_time_power <- PersonAlytic(output="MyResults",
                 phase="Phase",
                 time="Time",
                 time_power=2,
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 ### Residual Correlation Structure
@@ -217,10 +217,10 @@ eg_correlation <- PersonAlytic(output="MyResults",
                 phase="Phase",
                 time="Time",
                 correlation="corARMA(p=3,q=4)",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
-Users unfamiliar with residual correlation structures (or other features of the `nlme` package) should consult the book "Mixed-Effects Models in S and S-PLUS" by Pinheiro and Bates (2000). Alternatively, `PersonAlytics` can automatically detect the values for `p` and `q` for an `ARMA(p,q)` model using the `AR` option of the `autoDetect` parameter as described below. 
+Users unfamiliar with residual correlation structures (or other features of the `nlme` package) should consult the book "Mixed-Effects Models in S and S-PLUS" by Pinheiro and Bates (2000). Alternatively, `PersonAlytics` can automatically detect the values for `p` and `q` for an `ARMA(p,q)` model using the `AR` option of the `autoSelect` parameter as described below. 
 
 ### Distributional Assumptions
 
@@ -234,7 +234,7 @@ eg_normal <- PersonAlytic(data=OvaryICT,
                 time="Time",
                 family=NO(),
                 package="gamlss",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 ```{r, eval=doEval, fig.width=7, fig.height=5, fig.fullwidth=TRUE}
@@ -253,14 +253,14 @@ eg_weibull2 <- PersonAlytic(data=OvaryICT,
                 time="Time",
                 family=WEI2(),
                 package="gamlss",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 ```{r, eval=doEval, fig.width=7, fig.height=5, fig.fullwidth=TRUE}
 plot(eg_weibull2)
 ```
 
-Model comparisons can be implemented to automatically select the best fitting distribution using the approach implemented in the `fitDist` function of the `gamlss` package. See the section on the `autoDetect` parameter.
+Model comparisons can be implemented to automatically select the best fitting distribution using the approach implemented in the `fitDist` function of the `gamlss` package. See the section on the `autoSelect` parameter.
 
 # High Throughput Options
 
@@ -285,7 +285,7 @@ eg_htp <- PersonAlytic(output="htp_example",
                 dvs=list("follicles", "follicles2", "folliclesr"),
                 phase="Phase",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 ## Independent Variables and Target Independent Variables
@@ -300,7 +300,7 @@ eg_ivs <- PersonAlytic(output="MyResults",
                 phase="Phase",
                 time="Time",
                 ivs=list("Target1", "Target2", "Target3"),
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 If the user wishes to iterate over multiple independent variables one at a time, use `target_ivs`. This is a high throughput option. 
@@ -313,7 +313,7 @@ eg_target_ivs <- PersonAlytic(output="MyResults",
                 phase="Phase",
                 time="Time",
                 target_ivs=list("Target4", "Target5", "Target6"),
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 If the user has some independent variables that should be in every model and some that should be added one at a time, both `ivs` and `target_ivs` can be used. Here, Target1-3 will be included in every model, but Target4-6 will be added one at a time.
@@ -327,7 +327,7 @@ eg_target_ivs2 <- PersonAlytic(output="MyResults",
                 time="Time",
                 ivs=list("Target1", "Target2", "Target3"),
                 target_ivs=list("Target4", "Target5", "Target6"),
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 If the user wants variables to be dummy coded, the user should first specify this in the data set. For example, this code specifies that the `Target1` variable should be treated as a categorical variable and dummy coded in any future analyses:
@@ -349,7 +349,7 @@ eg_interactions <- PersonAlytic(output="MyResults",
                 time="Time",
                 interactions=list(c("Target1", "Target2"), c("Target1", "Target3"), 
                          c("Target2", "Target3")),
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 ## Individual Level Models
@@ -377,7 +377,7 @@ library(gamlss)
 
 If the user is not familiar with the `nlme` package, it implements the linear (normal) mixed effects model using the `lme()` function. In `PersonAlytics`, using the `package` parameter can be used to specify the `gamlss` package instead of `lme`. This is used in conjunction with the `family` parameter for outcomes with non-normal distributions. The `family` parameter is described in the section titled "Distributional Assumptions" above. The default distribution assumed when using `package="gamlss"` is the normal distribution.  
 
-First, we run the model using `package="nlme"`. Since this is the default, we need to explicitly specify the `package` parameter. The output will be saved the the R object `eg_nlme` for further use inside the R console. In addition, `output="nlme_example"` will create a file in the working directory named 'nlme_example.txt'. If the user are unsure what the user's current working directory is, type `getwd()` into the R console. A full path using forward slashes '/' instead of backslashes '\\\' can also be used. For example, `output='C:/MyResults'`. For convenience, we will also turn off the `autoDetect` parameter by setting it to `NULL`. The `autoDetect` parameter is discussed in detail below. 
+First, we run the model using `package="nlme"`. Since this is the default, we need to explicitly specify the `package` parameter. The output will be saved the the R object `eg_nlme` for further use inside the R console. In addition, `output="nlme_example"` will create a file in the working directory named 'nlme_example.txt'. If the user are unsure what the user's current working directory is, type `getwd()` into the R console. A full path using forward slashes '/' instead of backslashes '\\\' can also be used. For example, `output='C:/MyResults'`. For convenience, we will also turn off the `autoSelect` parameter by setting it to `NULL`. The `autoSelect` parameter is discussed in detail below. 
 
 ```{r, eval=doEval}
 eg_nlme <- PersonAlytic(output="nlme_example",
@@ -386,7 +386,7 @@ eg_nlme <- PersonAlytic(output="nlme_example",
                 dvs="follicles",
                 phase="Phase",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 Then we run the same model using `package="gamlss"`. The output will be saved the the R object `eg_gamlss` for further use inside the R console. In addition, `output="gamlss_example"` will create a file in the working directory named 'gamlss_example.txt'.
@@ -399,7 +399,7 @@ eg_gamlss <- PersonAlytic(output="gamlss_example",
                 phase="Phase",
                 time="Time",
                 package="gamlss",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 In these examples, the R object `eg_nlme` is a class `lme` object, and the R object `eg_gamlss` is a class `gamlss` object.
@@ -443,7 +443,7 @@ eg_htp <- PersonAlytic(output="htp_example",
                 dvs=list("follicles", "follicles2", "folliclesr"),
                 phase="Phase",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 The output will be saved in the R object `eg_htp` for further use inside the R console and `output="htp_example"` will create a file in the working directory named 'htp_example.csv' that is the same thing as the R object `eg_htp`. This csv file can be opened in any spreadsheet program. The rows are all possible combinations of `dvs`, `target_ivs`, and `ids` (if `individual_mods=TRUE`). The column variables are listed below and come in five sets:
@@ -540,11 +540,11 @@ names(eg_htp)
 
 # Autoselection of the Residual Autocorrelation Structure, Time Order, and Dependent Variable Distribution
 
-The Autoselection options automate the tedious process of conducting ML model comparisons to determine any of three options described in this section. The value `NULL` (`autoDetect=NULL`), or an empty list (`autoDetect=list()`) turns all options off. Leaving any option out of the list will turn that option off (e.g., `autoDetect=list(TO=list(polyMax=3))` will only implement Autoselection of the time order). The default is `autoDetect=list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list())`. As noted above, a list in `R` is a collection of objects (or variables) that need not be of the same type. In this example,
+The Autoselection options automate the tedious process of conducting ML model comparisons to determine any of three options described in this section. The value `NULL` (`autoSelect=NULL`), or an empty list (`autoSelect=list()`) turns all options off. Leaving any option out of the list will turn that option off (e.g., `autoSelect=list(TO=list(polyMax=3))` will only implement Autoselection of the time order). The default is `autoSelect=list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list())`. As noted above, a list in `R` is a collection of objects (or variables) that need not be of the same type. In this example,
 
-* `autoDetect` is a list that has length 3. 
+* `autoSelect` is a list that has length 3. 
 
-* The first object in `autoDetect` is another list, `AR = list(P = 3, Q = 3)`. 
+* The first object in `autoSelect` is another list, `AR = list(P = 3, Q = 3)`. 
 
     * `AR` has length 2
     
@@ -552,9 +552,9 @@ The Autoselection options automate the tedious process of conducting ML model co
     
     * The second value is named `Q` and also have a value of 3. 
     
-* The second object in `autoDetect` is also a list, `TO = list(polyMax = 3)`. In this example `TO` has length 1 containing a value named `polyMax` with a value of 3. 
+* The second object in `autoSelect` is also a list, `TO = list(polyMax = 3)`. In this example `TO` has length 1 containing a value named `polyMax` with a value of 3. 
 
-* The final object in `autoDetect` is a list `DIST = list()`. `DIST` has length 0, i.e., it is an empty list. 
+* The final object in `autoSelect` is a list `DIST = list()`. `DIST` has length 0, i.e., it is an empty list. 
 
 This preceding discussion is meant to familiarize new `R` users with lists, and `AR`, `TO`, and `DIST` are explained in more detail in the remaind of this section.
 
@@ -562,54 +562,54 @@ This preceding discussion is meant to familiarize new `R` users with lists, and 
 
 `AR` is the autoregressive moving-average (ARMA) order of the residual correlation structure. Determining a good fitting correlation structure will provide more accurate standard errors. The default, `AR=list(P=3, Q=3)` will search all combinations of `p=c(0,1,2,3)` and `q=c(0,1,2,3)`, as well as the default with no within-group correlations (`correlation=NULL`), for the best fitting ARMA correlation structure. This is done with a fit index instead of ML likelihood ratio tests (LRT) because not all ARMA models are nested (a requirement of the LRT). The fit index that will be used is set using the `whichIC` parameter with options `BIC` or `AIC`. It is beyond the scope of this document to discuss the LRT or choosing between BIC and AIC, and users should leave the default as `BIC` untill they have familiarized themselves with the differences between them. If $n=1$ or `individual_mods=TRUE`, correlation model selection is implemented using the `auto.arima` function of the `forecast` package. See `?auto.arima`.
 
-Here is an example of using the `AR` option of the `autoDetect` parameter without the `TO` or `DIST` options:
+Here is an example of using the `AR` option of the `autoSelect` parameter without the `TO` or `DIST` options:
 
 ```{r, eval=doEval}
-eg_autoDetect_AR <- PersonAlytic(data=OvaryICT,
+eg_autoSelect_AR <- PersonAlytic(data=OvaryICT,
                 ids="Mare",
                 dvs="follicles",
                 phase="Phase",
                 time="Time",
                 method="ML",
                 package="gamlss",
-                autoDetect = list(AR=list(P=3, Q=2)))
+                autoSelect = list(AR=list(P=3, Q=2)))
 ```
 
 ## The Trajectory Shape `TO`
 
-This parameter sets the shape of the trajectory using the polynomial order of the time/outcome relationship. Determining a good shape for the trajectory over time helps with model interpretation. Automatic detection is implemented using likelihood ratio test of the model with $Y=Time + Time^2 + \dots + Time^{O}$ vs. $Y=Time + Time^2 + \dots + Time^{O \mbox{-} 1}$ where $O$ is the polynomial order of the time variable. The default is `TO=list(polyMax=3)`, where `polyMax` is the largest values of $O$ to test. An alternative to using a polynomial order for time is to approximate the trajectory shape using a separate linear model within each of the phases. This can be set using the `piecewise` option of the `alignPhase` parameter as described below. As noted above, `time_power` is used when the user wants to specify a value for $O$, and doing so requires setting `TO=list()` or leaving it out of the `autoDetect` parameter. 
+This parameter sets the shape of the trajectory using the polynomial order of the time/outcome relationship. Determining a good shape for the trajectory over time helps with model interpretation. Automatic detection is implemented using likelihood ratio test of the model with $Y=Time + Time^2 + \dots + Time^{O}$ vs. $Y=Time + Time^2 + \dots + Time^{O \mbox{-} 1}$ where $O$ is the polynomial order of the time variable. The default is `TO=list(polyMax=3)`, where `polyMax` is the largest values of $O$ to test. An alternative to using a polynomial order for time is to approximate the trajectory shape using a separate linear model within each of the phases. This can be set using the `piecewise` option of the `alignPhase` parameter as described below. As noted above, `time_power` is used when the user wants to specify a value for $O$, and doing so requires setting `TO=list()` or leaving it out of the `autoSelect` parameter. 
 
-Here is an example of using the `TO` option of the `autoDetect` parameter without the `AR` or `DIST` options:
+Here is an example of using the `TO` option of the `autoSelect` parameter without the `AR` or `DIST` options:
 
 ```{r, eval=doEval}
-eg_autoDetect_TO <- PersonAlytic(data=OvaryICT,
+eg_autoSelect_TO <- PersonAlytic(data=OvaryICT,
                 ids="Mare",
                 dvs="follicles",
                 phase="Phase",
                 time="Time",
                 method="ML",
                 package="gamlss",
-                autoDetect = list(TO=list(polyMax=4)))
+                autoSelect = list(TO=list(polyMax=4)))
 ```
 
 ## Dependent Variable Distributional Assumption `DIST` 
 
-Autoselection of the best fitting distribution of the dependent variable using the `fitDist` function of the `gamlss` package. The default is `DIST=list()`, which initializes this option. To turn off Autoselection of the best fitting distribution, remove `DIST` from the `autoDetect` list. To see all of the available options, type
+Autoselection of the best fitting distribution of the dependent variable using the `fitDist` function of the `gamlss` package. The default is `DIST=list()`, which initializes this option. To turn off Autoselection of the best fitting distribution, remove `DIST` from the `autoSelect` list. To see all of the available options, type
 
 ```{r, eval=FALSE}
 ?gamlss.family
 ```
 
-into the console. Here is an example of using the `DIST` option of the `autoDetect` parameter without the `TO` or `AR` options:
+into the console. Here is an example of using the `DIST` option of the `autoSelect` parameter without the `TO` or `AR` options:
 
 ```{r, eval=doEval}
-eg_autoDetect_DIST <- PersonAlytic(data=OvaryICT,
+eg_autoSelect_DIST <- PersonAlytic(data=OvaryICT,
                 ids="Mare",
                 dvs="follicles",
                 phase="Phase",
                 time="Time",
                 package="gamlss",
-                autoDetect = list(DIST=list()))
+                autoSelect = list(DIST=list()))
 ```
 
 When running this code, the following is printed to the screen
@@ -625,7 +625,7 @@ Count       :  TRUE  (positive integer)
 Continuous  :  FALSE  (non-integer)
 ```
 
-The best fitting distribution is the "Weibull type 2" distribution. The resulting object `eg_autoDetect_DIST` is a `gamlss` object fit using the Weibull type 2 distribution. 
+The best fitting distribution is the "Weibull type 2" distribution. The resulting object `eg_autoSelect_DIST` is a `gamlss` object fit using the Weibull type 2 distribution. 
 
 
 
@@ -642,7 +642,7 @@ eg_subgroup <- PersonAlytic(data=OvaryICT,
                 phase="Phase",
                 time="Time",
                 subgroup=OvaryICT$Mare<6,
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 where the code `OvaryICT$Mare<6` creates a logical vector which is true if the mare id is less than 6. 
@@ -667,7 +667,7 @@ eg_standardize <- PersonAlytic(data=OvaryICT,
                 time="Time",
                 target_ivs=list("Target1", "Target2", "Target3"),
                 standardize=list(dv=FALSE, ivs=TRUE, byids=FALSE),
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 ## Estimation Methods
@@ -681,7 +681,7 @@ eg_method <- PersonAlytic(data=OvaryICT,
                 phase="Phase",
                 time="Time",
                 method="ML",
-                autoDetect=NULL)
+                autoSelect=NULL)
 ```
 
 
@@ -704,7 +704,7 @@ Note that inputs to `charSub` must be in double quotes and are case sensitive. A
 #                ivs=list("Target1", "Target2", "Target3"),
 #                method="ML",
 #                package="gamlss",,
-#                autoDetect=NULL
+#                autoSelect=NULL
 #                sigma.formula = formula(.~Target1)
 #                )
 ```
@@ -723,7 +723,7 @@ eg_p.method <- PersonAlytic(data=OvaryICT,
                 target_ivs=list("Target1", "Target2", "Target3"),
                 p.method='BY',
                 alpha=.1,
-                autoDetect=NULL
+                autoSelect=NULL
                 )
 ```
 
@@ -757,7 +757,7 @@ eg_fpc <- PersonAlytic(data=OvaryICT,
                 time="Time",
                 ivs=list("Target1", "Target2", "Target3"),
                 fpc=6000,
-                autoDetect=NULL
+                autoSelect=NULL
                 )
 ```
 

@@ -41,7 +41,7 @@ eg_required <- PersonAlytic(data=OvaryICT,
                 ids="Mare",
                 dvs="follicles",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 
 ## ---- eval=doEval--------------------------------------------------------
 eg_nlme <- PersonAlytic(output="nlme_example",
@@ -50,7 +50,7 @@ eg_nlme <- PersonAlytic(output="nlme_example",
                 dvs="follicles",
                 phase="Phase",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 
 ## ---- eval=doEval--------------------------------------------------------
 eg_gamlss <- PersonAlytic(output="gamlss_example",
@@ -60,7 +60,7 @@ eg_gamlss <- PersonAlytic(output="gamlss_example",
                 phase="Phase",
                 time="Time",
                 package="gamlss",
-                autoDetect=NULL)
+                autoSelect=NULL)
 
 ## ---- eval=doEval--------------------------------------------------------
 class(eg_nlme)
@@ -81,7 +81,7 @@ eg_htp <- PersonAlytic(output="htp_example",
                 dvs=list("follicles", "follicles2", "folliclesr"),
                 phase="Phase",
                 time="Time",
-                autoDetect=NULL)
+                autoSelect=NULL)
 
 ## ---- eval=doEval, echo=FALSE, comment=NA--------------------------------
 names(eg_htp)

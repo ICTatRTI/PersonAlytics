@@ -163,7 +163,7 @@ iscorStruct <- function(x)
     stop('`correlation` must be one of\n\n',
          '- A quoted character string of an `nlme` `corStruct`, see `?corStruct`\n',
          '- `"NULL"` or `NULL` to get the default for `lme`\n',
-         '- A numeric vector of length 2, `correlation` and `autoDetect` in `?PersonAlytic`')
+         '- A numeric vector of length 2, `correlation` and `autoSelect` in `?PersonAlytic`')
   }
   if( is.numeric(x) )
   {

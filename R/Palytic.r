@@ -654,18 +654,18 @@
       }
     },
 
-    autoDetect = function(value)
+    autoSelect = function(value)
     {
-      if( missing(value) ) private$.autoDetect
+      if( missing(value) ) private$.autoSelect
       else
       {
         opts <- c("AR", "TO", "DIST", "Done")
         if(! all(names(value) %in% opts ) )
         {
-          stop("\n`autodetect` must include each of\n",
+          stop("\n`autoselect` must include each of\n",
                paste(opts, collapse="\n"))
         }
-        private$.autoDetect <- value
+        private$.autoSelect <- value
         self
       }
     },
@@ -798,7 +798,7 @@
 #'
 #' # construct a new Payltic object and examine the default formulae#'
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-#'                   time='Time', phase='Phase', autoDetect=list())
+#'                   time='Time', phase='Phase', autoSelect=list())
 #'
 #' # summary, descriptive, and plot methods
 #' t1$summary()
@@ -849,12 +849,12 @@
 #' t2$formula
 #'
 #' # note that prior examples set
-#' # `autoDetect=list()`, here we use the default, which is to autodetect
+#' # `autoSelect=list()`, here we use the default, which is to autoselect
 #' # the correlation structure (AR), the polynomial order of time (TO) and
 #' # the distribution
 #' t1 <- Palytic$new(data = OvaryICT, ids='Mare',
 #'                   dv='follicles', time='Time', phase='Phase',
-#'                   autoDetect=list(AR=list(P=3, Q=3)     ,
+#'                   autoSelect=list(AR=list(P=3, Q=3)     ,
 #'                                TO=list(polyMax=3)    ,
 #'                                DIST=list())  )
 #'
@@ -886,7 +886,7 @@
 #' OvaryICT$TimeP <- round(30*OvaryICT$Time)
 #' t1 <- Palytic$new(data = OvaryICT, ids = 'Mare',
 #'                   dv = 'follicles', time = 'TimeP', phase = 'Phase',
-#'                   alignPhase = 'piecewise', autoDetect=list())
+#'                   alignPhase = 'piecewise', autoSelect=list())
 #' t1$time
 #' t1$lme()
 #'
@@ -917,7 +917,7 @@ Palytic <- R6::R6Class("Palytic",
                          .formula      = NULL,
                          .method       = NULL,
                          .standardize  = list(dv=FALSE, iv=FALSE, byids=FALSE),
-                         .autoDetect   = NULL,
+                         .autoSelect   = NULL,
                          .whichIC      = NULL,
                          .corStructs   = NULL,
                          .time_powers  = NULL,
@@ -972,7 +972,7 @@ Palytic <- R6::R6Class("Palytic",
                          #' @param correlation See \code{\link{corStruct}}. Defaults to \code{NULL}, see
                          #' \code{\link{lme}}. Used by both \code{\link{lme}} and \code{\link{gamlss}} models.
                          #'
-                         #' @param correlation0 Other options such as \code{autoDetect} can change \code{correlation},
+                         #' @param correlation0 Other options such as \code{autoSelect} can change \code{correlation},
                          #' \code{correlation0} retains the original value provided by the user.
                          #'
                          #' @param family The \code{\link{gamlss.family}} distribution.
@@ -994,7 +994,7 @@ Palytic <- R6::R6Class("Palytic",
                          #' variables are changed (e.g., \code{ivs}), the data are subset, or the options in
                          #' \code{standardize} are changed, the raw data will be restandardized (see \code{datac}).
                          #'
-                         #' @param autoDetect List. The default is
+                         #' @param autoSelect List. The default is
                          #' \code{
                          #' list(AR=list(P=3, Q=3)     ,
                          #'   TO=list(polyMax=3)       ,
@@ -1003,7 +1003,7 @@ Palytic <- R6::R6Class("Palytic",
                          #' If no automated model selection for the residual covariance structure (\code{AR}),
                          #' the polynomial order for the relationship between time and the dependent variable
                          #' (\code{TO}), or the dependent variable distribution is desired, an empty list
-                         #' should be passed (e.g., \code{autoDetect=list()}).
+                         #' should be passed (e.g., \code{autoSelect=list()}).
                          #'
                          #' If \code{AR} is in the list,
                          #' the residual correlation structure will be automatically selected from
@@ -1102,7 +1102,7 @@ Palytic <- R6::R6Class("Palytic",
                            formula      = NULL                                  ,
                            method       = "REML"                                ,
                            standardize  = list(dv=FALSE, iv=FALSE, byids=FALSE) ,
-                           autoDetect   = list(AR=list(P=3, Q=3)     ,
+                           autoSelect   = list(AR=list(P=3, Q=3)     ,
                                                TO=list(polyMax=3)    ,
                                                DIST=list())                     ,
                            whichIC      = c("BIC", "AIC")                       ,
@@ -1116,7 +1116,7 @@ Palytic <- R6::R6Class("Palytic",
                          )
                          {
                            ### consider adding option to read a file, could
-                           #   autodetect file type
+                           #   autoselect file type
 
                            #if( is.character(data) )
                            #{
@@ -1211,10 +1211,10 @@ Palytic <- R6::R6Class("Palytic",
                            # check whether time is monotorically increasing
                            ismonotone <- monotone(ids, time$raw, datac)
 
-                           # add 'Done' to autoDetect
-                           if(! any(names(autoDetect) %in% "Done"))
+                           # add 'Done' to autoSelect
+                           if(! any(names(autoSelect) %in% "Done"))
                            {
-                             autoDetect$Done <- FALSE
+                             autoSelect$Done <- FALSE
                            }
 
                            # populate private
@@ -1234,7 +1234,7 @@ Palytic <- R6::R6Class("Palytic",
                            private$.formula      <- frms$formula
                            private$.method       <- method
                            private$.standardize  <- standardize
-                           private$.autoDetect   <- autoDetect
+                           private$.autoSelect   <- autoSelect
                            private$.whichIC      <- whichIC
                            private$.corStructs   <- corStructs
                            private$.time_powers  <- time_powers
@@ -1311,7 +1311,7 @@ Palytic$set("public", "summary",
 )
 
 #' @description
-#' Conduction autodetection based on the inputs to the \code{autoDetect} parameter
+#' Conduction autoselection based on the inputs to the \code{autoSelect} parameter
 #' when initializing an new Palytic object.
 #'
 #' @param subgroup Logical vector. If \code{NULL} results are provided for the full
@@ -1342,15 +1342,15 @@ Palytic$set("public", "detect",
                      )
             {
 
-              # prevent recursive calls to autodetect
-              temp <- self$autoDetect
+              # prevent recursive calls to autoselect
+              temp <- self$autoSelect
               temp$Done <- TRUE
-              self$autoDetect <- temp; rm(temp)
+              self$autoSelect <- temp; rm(temp)
 
               # extract logicals
-              detectAR=FALSE  ; if("AR" %in% names(self$autoDetect))   detectAR=TRUE
-              detectTO=FALSE  ; if("TO" %in% names(self$autoDetect))   detectTO=TRUE
-              detectDist=FALSE; if("DIST" %in% names(self$autoDetect)) detectDist=TRUE
+              detectAR=FALSE  ; if("AR" %in% names(self$autoSelect))   detectAR=TRUE
+              detectTO=FALSE  ; if("TO" %in% names(self$autoSelect))   detectTO=TRUE
+              detectDist=FALSE; if("DIST" %in% names(self$autoSelect)) detectDist=TRUE
 
               # allow for formula override so that we can test intercept only and
               # slope only models
@@ -1366,7 +1366,7 @@ Palytic$set("public", "detect",
               # are generalized for gamlss()
               if(detectDist)
               {
-                self$dist(self$autoDetect$DIST$to01,
+                self$dist(self$autoSelect$DIST$to01,
                           model=model, parallel=parallel,
                           plot=plot)
               }
@@ -1641,9 +1641,9 @@ Palytic$set("public", "describe",
 #' sample. If a logical vector of the same length as the nmuber of rows in the data,
 #' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
 #' @param max.p See \code{\link{arima}} and the \code{P} option in the
-#' \code{autoDetect} parameter when initializing a Palytic object.
+#' \code{autoSelect} parameter when initializing a Palytic object.
 #' @param max.q See \code{\link{arima}} and the \code{Q} option in the
-#' \code{autoDetect} parameter when initializing a Palytic object.
+#' \code{autoSelect} parameter when initializing a Palytic object.
 #' @param dropVars Character or character vector. Names of variables to drop
 #' from the the analysis.
 #' @param max.P See \code{\link{arima}}
@@ -1783,8 +1783,8 @@ Palytic$set("public", "lme",
                                  all.vars(self$formula)))
 
               # detect
-              if(any(names(self$autoDetect) %in% c("AR", "TO", "DIST")) &
-                 !self$autoDetect$Done)
+              if(any(names(self$autoSelect) %in% c("AR", "TO", "DIST")) &
+                 !self$autoSelect$Done)
               {
                 self$detect()
               }
@@ -1872,9 +1872,9 @@ Palytic$set("public", "lme",
               # as it may affect the lrt (we should probably do the same for
               # group ar...);
               if( length(table(tempData[[self$ids]]))==1 &
-                  !is.null(self$autoDetect$AR) )
+                  !is.null(self$autoSelect$AR) )
               {
-                PQ <- c(self$autoDetect$AR$P, self$autoDetect$AR$Q)
+                PQ <- c(self$autoSelect$AR$P, self$autoSelect$AR$Q)
                 self$correlation  <- getARnEQ1(m1, PQ, self$dv)
                 cor  <- eval(parse(text = ifelse(!is.null(self$correlation),
                                                  self$correlation,
@@ -2070,8 +2070,8 @@ Palytic$set("public", "gamlss",
                                             all.vars(sigma.formula))) )
 
               # detect
-              if(any(names(self$autoDetect) %in% c("AR", "TO", "DIST"))  &
-                 !self$autoDetect$Done)
+              if(any(names(self$autoSelect) %in% c("AR", "TO", "DIST"))  &
+                 !self$autoSelect$Done)
               {
                 self$detect()
               }
@@ -2162,9 +2162,9 @@ Palytic$set("public", "gamlss",
               # as it may affect the lrt (we should probably do the same for
               # group ar...);
               if( length(table(tempData[[self$ids]]))==1 &
-                  !is.null(self$autoDetect$AR) )
+                  !is.null(self$autoSelect$AR) )
               {
-                PQ <- c(self$autoDetect$AR$P, self$autoDetect$AR$Q)
+                PQ <- c(self$autoSelect$AR$P, self$autoSelect$AR$Q)
                 self$correlation <- getARnEQ1(m1, PQ, self$dv)
                 cor <- eval(parse(text = ifelse(!is.null(self$correlation),
                                                 self$correlation,
@@ -2239,7 +2239,7 @@ Palytic$set("public", "gamlss",
 #' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
 #' @param doForeach Logical. Should the search for the best residual ARMA(p,q) order
 #' be parallelized? This option can speed up searches when large values of P and Q
-#' are specified in the autoDetect option of your Palytic object.
+#' are specified in the autoSelect option of your Palytic object.
 #' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
 #' described in the section documenting the \code{new()} method.
 Palytic$set("public", "GroupAR",
@@ -2247,11 +2247,11 @@ Palytic$set("public", "GroupAR",
             {
               subCheck(subgroup, self$datac)
 
-              # check for autodetect inputs
-              if( is.null(self$autoDetect$AR$P) | is.null(self$autoDetect$AR$Q) )
+              # check for autoselect inputs
+              if( is.null(self$autoSelect$AR$P) | is.null(self$autoSelect$AR$Q) )
               {
                 stop("\nYour Palytic object does not contain both P and Q in",
-                     "\nthe `autoDetect$AR` field.")
+                     "\nthe `autoSelect$AR` field.")
               }
 
               # if family is !NO override package
@@ -2263,10 +2263,10 @@ Palytic$set("public", "GroupAR",
                         "\nSwitching to package='gamlss'.")
               }
 
-              # prevent recursive calls to autodetect
-              temp <- self$autoDetect
+              # prevent recursive calls to autoselect
+              temp <- self$autoSelect
               temp$Done <- TRUE
-              self$autoDetect <- temp; rm(temp)
+              self$autoSelect <- temp; rm(temp)
 
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "residual correlation structure starting...")
@@ -2277,11 +2277,11 @@ Palytic$set("public", "GroupAR",
 
               if( class(nullMod) %in% c("lme", "gamlss")  )
               {
-                DIMS <- expand.grid(p=0:self$autoDetect$AR$P,
-                                    q=0:self$autoDetect$AR$Q)
+                DIMS <- expand.grid(p=0:self$autoSelect$AR$P,
+                                    q=0:self$autoSelect$AR$Q)
                 DIMS <- DIMS[-1,]
 
-                capture.output( pb <- txtProgressBar(max = self$autoDetect$AR$P,
+                capture.output( pb <- txtProgressBar(max = self$autoSelect$AR$P,
                                                      style = 3),
                                 file='NUL')
 
@@ -2376,8 +2376,8 @@ Palytic$set("public", "getTO",
             function(package="nlme")
             {
               # extract polyMax and whichIC, which should give an error if
-              # absent in $autoDetect
-              polyMax <- self$autoDetect$TO$polyMax
+              # absent in $autoSelect
+              polyMax <- self$autoSelect$TO$polyMax
               whichIC <- self$whichIC[1]
 
               # if family is !NO override package
@@ -2389,10 +2389,10 @@ Palytic$set("public", "getTO",
                         "\nSwitching to package='gamlss'.")
               }
 
-              # prevent recursive calls to autodetect
-              temp <- self$autoDetect
+              # prevent recursive calls to autoselect
+              temp <- self$autoSelect
               temp$Done <- TRUE
-              self$autoDetect <- temp; rm(temp)
+              self$autoSelect <- temp; rm(temp)
 
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "time/outcome relationship starting...")
@@ -2456,8 +2456,8 @@ Palytic$set("public", "GroupTO",
               subCheck(subgroup, self$datac)
 
               # extract polyMax and whichIC, which should give an error if
-              # absent in $autoDetect
-              polyMax <- self$autoDetect$TO$polyMax
+              # absent in $autoSelect
+              polyMax <- self$autoSelect$TO$polyMax
               whichIC <- self$whichIC[1]
 
               # if family is !NO override package
@@ -2469,10 +2469,10 @@ Palytic$set("public", "GroupTO",
                         "\nSwitching to package='gamlss'.")
               }
 
-              # prevent recursive calls to autodetect
-              temp <- self$autoDetect
+              # prevent recursive calls to autoselect
+              temp <- self$autoSelect
               temp$Done <- TRUE
-              self$autoDetect <- temp; rm(temp)
+              self$autoSelect <- temp; rm(temp)
 
               message("\n\nPersonAlytics: Automatic detection of the\n",
                       "time/outcome relationship starting...")

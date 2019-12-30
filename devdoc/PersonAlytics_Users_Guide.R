@@ -47,7 +47,7 @@ kable(head(PersonAlytics::OvaryICT))
 #                  dvs="follicles",
 #                  phase="Phase",
 #                  time="Time",
-#                  autoDetect=list())
+#                  autoSelect=list())
 
 ## ---- eval=doEval--------------------------------------------------------
 #  eg_gamlss <- PersonAlytic(output="gamlss_example",
@@ -57,7 +57,7 @@ kable(head(PersonAlytics::OvaryICT))
 #                  phase="Phase",
 #                  time="Time",
 #                  package="gamlss",
-#                  autoDetect=list(),
+#                  autoSelect=list(),
 #                  sigma.formula = ~ Targe1)
 
 ## ---- eval=doEval--------------------------------------------------------
@@ -142,7 +142,7 @@ kable(head(PersonAlytics::OvaryICT))
 #                  dvs="follicles",
 #                  phase="Phase",
 #                  time="Time",
-#                  autoDetect=NULL,
+#                  autoSelect=NULL,
 #                  family=NO(),
 #                  package="gamlss")
 #  plot(t1.normal)
@@ -153,7 +153,7 @@ kable(head(PersonAlytics::OvaryICT))
 #                  dvs="follicles",
 #                  phase="Phase",
 #                  time="Time",
-#                  autoDetect=NULL,
+#                  autoSelect=NULL,
 #                  family=WEI2(),
 #                  package="gamlss")
 #  plot(t1.skew)
@@ -192,7 +192,7 @@ kable(head(PersonAlytics::OvaryICT))
 #                  time="Time",
 #                  method="ML",
 #                  package="gamlss",
-#                  autoDetect = list(DIST=list()))
+#                  autoSelect = list(DIST=list()))
 
 ## ---- eval=doEval--------------------------------------------------------
 #  t1 <- PersonAlytic(data=OvaryICT,
@@ -202,7 +202,7 @@ kable(head(PersonAlytics::OvaryICT))
 #                  time="Time",
 #                  method="ML",
 #                  package="gamlss",
-#                  autoDetect = list(TO=list(polyMax=4)))
+#                  autoSelect = list(TO=list(polyMax=4)))
 
 ## ---- eval=doEval--------------------------------------------------------
 #  t1 <- PersonAlytic(data=OvaryICT,
@@ -213,7 +213,7 @@ kable(head(PersonAlytics::OvaryICT))
 #                  ivs=list("Target1", "Target2", "Target3"),
 #                  method="ML",
 #                  package="gamlss",
-#                  autoDetect = list(),
+#                  autoSelect = list(),
 #                  sigma.formula = formula(.~Target1)
 #                  )
 

@@ -2,9 +2,9 @@ if(1==2)
 {
   library(PersonAlytics)
 
-  # set up the palytic object, turning off autoDetection for now
+  # set up the palytic object, turning off autoSelection for now
   t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-                    time='Time', phase='Phase', autoDetect = list(Done=TRUE))
+                    time='Time', phase='Phase', autoSelect = list(Done=TRUE))
   t1$plot()
 
   # get the best distribution via palytic
@@ -28,7 +28,7 @@ if(1==2)
   # Demo fully automatic DIST, TO, AR
   t2 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
                     time='Time', phase='Phase',
-                    autoDetect=list(AR=list(P=3, Q=3)     ,
+                    autoSelect=list(AR=list(P=3, Q=3)     ,
                                     TO=list(polyMax=3)    ,
                                     DIST=list()))
   m2 <- t2$gamlss() # this will take some time to run

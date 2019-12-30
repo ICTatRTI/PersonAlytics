@@ -25,7 +25,7 @@ htp <- function(data                                                   ,
                 fpc = FALSE                                            ,
                 popsize2 = 0                                           ,
                 package='gamlss'                                       ,
-                autoDetect = list(AR=list(P=3, Q=3)    ,
+                autoSelect = list(AR=list(P=3, Q=3)    ,
                                TO=list(polyMax=3)      ,
                                DIST=list())            ,
                 whichIC = "BIC"                                        ,
@@ -38,7 +38,7 @@ htp <- function(data                                                   ,
                 cores=parallel::detectCores()-1                        )
 {
 
-  PQ <- c(autoDetect$AR$P, autoDetect$AR$Q)
+  PQ <- c(autoSelect$AR$P, autoSelect$AR$Q)
 
   #----------------------------------------------------------------------------#
   # log files - create a log directory and overwrite all logs
@@ -62,12 +62,12 @@ htp <- function(data                                                   ,
   }
 
   #----------------------------------------------------------------------------#
-  # autoDetect$TO not implemented for alignPhase == "piecewise"
+  # autoSelect$TO not implemented for alignPhase == "piecewise"
   #----------------------------------------------------------------------------#
-  if(alignPhase == "piecewise" & !is.null(autoDetect$TO))
+  if(alignPhase == "piecewise" & !is.null(autoSelect$TO))
   {
-    autoDetect$TO <- NULL
-    message("\n`alignPhase=='piecewise'`, hence `autoDetect$TO` has been set to NULL",
+    autoSelect$TO <- NULL
+    message("\n`alignPhase=='piecewise'`, hence `autoSelect$TO` has been set to NULL",
             "\nbecause automatic decection of the time order is not implemented",
             "within phases.")
   }
@@ -114,7 +114,7 @@ htp <- function(data                                                   ,
                         ivs=ivs                   ,
                         interactions=interactions ,
                         standardize=standardize   ,
-                        autoDetect=autoDetect     ,
+                        autoSelect=autoSelect     ,
                         time_power=time_power     ,
                         alignPhase=alignPhase     ,
                         correlation=correlation   ,
@@ -123,7 +123,7 @@ htp <- function(data                                                   ,
 
       )
 
-      # autodetect
+      # autoselect
       t0$detect(subgroup    = NULL        ,
                 model       = NULL        ,
                 parallel    = "no"        ,
@@ -196,7 +196,7 @@ htp <- function(data                                                   ,
                         ivs          = ivs          , # target_ivs added later
                         interactions = interactions ,
                         standardize  = standardize  ,
-                        autoDetect   = autoDetect   ,
+                        autoSelect   = autoSelect   ,
                         time_power   = time_power   ,
                         alignPhase   = alignPhase   ,
                         correlation  = correlation  ,
@@ -204,7 +204,7 @@ htp <- function(data                                                   ,
                         method       = "ML"         # requested method used later
       )
 
-      # autodetect
+      # autoselect
       t0$detect(subgroup    = NULL        ,
                 model       = NULL        ,
                 parallel    = "snow"      ,

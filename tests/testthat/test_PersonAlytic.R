@@ -14,7 +14,7 @@ test_that("ManyV1",
                      phase   = "Phase"     ,
                      time    = "Time"      ,
                      package = "nlme"      ,
-                     autoDetect = list(TO=list(polyMax=3))   )
+                     autoSelect = list(TO=list(polyMax=3))   )
 
   testthat::expect_equal(t0$tTable[,1],
                c( `(Intercept)`     =   10.487701 ,

@@ -4,7 +4,7 @@ library(PersonAlytics)
 test_that("PalyticBasics",
 {
   t1 <- Palytic$new(data =  PersonAlytics::OvaryICT, ids='Mare', dv='follicles',
-                    time='Time', phase='Phase', autoDetect = list())
+                    time='Time', phase='Phase', autoSelect = list())
 
   t1.gamlss <- summary(t1$gamlss())
   t1.lme    <- summary(t1$lme())
@@ -135,7 +135,7 @@ test_that("groupAR_Order",
   #dim(m1$data)
 
   t1 <- Palytic$new(data =  PersonAlytics::OvaryICT, ids='Mare', dv='follicles',
-                    time='Time', phase='Phase', autoDetect = list(AR=list(P=3,Q=3)))
+                    time='Time', phase='Phase', autoSelect = list(AR=list(P=3,Q=3)))
   t1$GroupAR()
   m1t <- t1$lme()
   #m1t$call
