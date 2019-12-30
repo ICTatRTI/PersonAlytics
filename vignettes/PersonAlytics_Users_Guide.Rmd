@@ -58,17 +58,17 @@ The purpose of this user's guide is to illustrate how to use `PersonAlytics` to 
 
 2. Small sample intensive longitudinal design data.
 
-3. Idiographic clinical trial data (ICT), which a single-case or small sample longitudinal data set where all participants experience two or more treatment phases (e.g., baseline and follow-up). 
+3. Idiographic clinical trial data (ICT), which uses a single-case or small sample longitudinal data set where all participants experience two or more treatment phases (e.g., baseline and follow-up). 
 
-These three types of data are analyzed using longitudinal mixed effects models, also known as hierarchical linear models, multilevel models, latent growth curve models, or mixed method trajectory analysis. There are already several R packages such as `nlme` and `gamlss` that can be used to implement these models. 
+These three types of data are analyzed using longitudinal mixed effects models, also known as hierarchical linear models, multilevel models, latent growth curve models, or mixed method trajectory analysis. 
 
-The purpose of the PersonAlytics package is to automate the following aspects of analyzing these types of data: 
+While there are already several R packages such as `nlme` and `gamlss` that can be used to implement these models, the purpose of the `PersonAlytics` package is to automate the following aspects of analyzing these types of data: 
 
-1. Model selection for detecting the shape of the trajectory over time. Using a good fitting trajectory shape yields parameters that correspond to the shape and improve interpretability. Current options include polynomial growth (e.g., linear, quadratic, cubic, etc.) and piecewise growth (e.g., linear growth within each phase). 
+1. Model selection for detecting the shape of the trajectory of the dependent variable over time. Using a good fitting trajectory shape yields parameters that correspond to the shape and improve interpretability. Current options include polynomial growth (e.g., linear, quadratic, cubic, etc.) and piecewise growth (e.g., linear growth within each phase). 
 
 2. Model selection for detecting an appropriate time series model for the residuals. Getting a good fitting residual correlation model improves standard error estimation.
 
-3. Automated, paralellized, high throughput analyses of mixed effects models in situations where the combination of predictors, outcomes, and/or individuals (i.e., in the case where individual level models are desired such as in personalized medicine) yields a number of analyses to unwieldy implement manually. This is especially true if the model selection process for the trajectory shape and the residual correlation model is conducted for each combination of predictors, outcomes, and/or individuals. Included in PersonAlytics are options for the user to specify Type I error rate or False Discovery Rate (FDR) corrections. See the section title "High Throughput Examples" for details on implementing high throughput analyses. 
+3. Analysis of mixed effects models in situations where the combination of predictors, outcomes, and/or individuals (i.e., in the case where individual level models are desired such as in personalized medicine) yields a number of analyses to unwieldy implement manually. This is especially true if the model selection process for the trajectory shape and the residual correlation model is conducted for each combination of predictors, outcomes, and/or individuals. High throughput analyses are achieved in `PersonAlytics` through parallelization. Jobs are split amoung two or more processors on a computer and run in parallel. Results are recombined at the end of the process. Included in `PersonAlytics` are options for the user to specify Type I error rate or False Discovery Rate (FDR) corrections. See the section title "High Throughput Examples" for details on implementing high throughput analyses. 
 
 <p class="comment">
 **High Throughput**. The `PersonAlytics` package automates the task of conducting large numbers of analyses using high throughput computating. A large number of analyses may be required when the combination of predictors, outcomes, and/or individuals yields a number of analyses to unwieldy implement manually.
@@ -93,9 +93,11 @@ Ty to write content here
 
 # Installing `PersonAlytics`
 
-First the user must install `R`, available at `https://cran.r-project.org/`. It is also suggested that the user use a modern code editor such as Rstudio (`https://www.rstudio.com/`). It is assumed that the reader is familiar with basic `R` use. If needed, an internet search will provide tutorials to help the user become familiar with R. 
+*Note. It is assumed that the user has basic familiarity with `R`. If needed, there are numerous onlise totorials to help the user become familiar with `R`.*
 
-Installing `PersonAlytics` is done by using the `install_github` function of the `devtools` package. First install `devtools` using
+First the user must install `R`, available at [https://cran.r-project.org/](https://cran.r-project.org/). It is also suggested that the user install a modern code editor such as Rstudio available at [`https://www.rstudio.com/`](`https://www.rstudio.com/`). It is assumed that the reader is familiar with basic `R` use. If needed, an internet search will provide tutorials to help the user become familiar with R. The `RTools` software (which is not an `R` package) should be also installed from [https://cran.r-project.org/bin/windows/Rtools/](https://cran.r-project.org/bin/windows/Rtools/) prior to installing `Personalytics`.
+
+Installing `PersonAlytics` is done using the `install_github` function of the `devtools` package. First install `devtools` using
 
 ```{r eval=FALSE}
 install.packages('devtools')
@@ -107,9 +109,9 @@ After re-starting R, type the following into the console:
 devtools::install_github("ICTatRTI/PersonAlytics", build_opts = c("--no-resave-data", "--no-manual"), build_vignettes = TRUE)
 ```
 
-The `install_github` function may give the user the option update other R packages needed by `PersonAlytics` that the user already has. Unless the user is experienced with R package versions and updates, it is recommended that the user ignore this step and press enter without selecting an option to update packages. If the user does decide to update packages and runs into an error, they may need to restart `R`, manually update the package in the error message, and then rerun the `install_github` command. If a newer version of a package is required by `PersonAlytics` the `install_github` will attempt to install it. 
+The `install_github` function may give the user the option to update other R packages needed by `PersonAlytics` that are already installed by the user. Unless the user is experienced with R package versions and updates, it is recommended that the user ignore this step and press enter without selecting an option to update packages. If the user does decide to update packages and runs into an error, they may need to restart `R`, manually update the package in the error message, and then rerun the `install_github` command. If a newer version of a package is required by `PersonAlytics` the `install_github` will attempt to install it. 
 
-Once `install_github` starts running, it will install all of the other `R` packages required by `PersonAlytics` if the user does not already have them. Building of the vignettes (such as this one) can take several minutes. 
+Once `install_github` starts running, it will install all the other `R` packages required by `PersonAlytics` if the user does not already have them. Building of the vignettes (such as this one) can take several minutes. 
 
 <!-- add listing of other vignettes here -->
 
@@ -123,7 +125,7 @@ library(PersonAlytics)
 
 # Basic `PersonAlytics` Use
 
-We will illustrate the basic options of the `PersonAlytic()` function using the OvaryICT data from modified from the Ovary data in the `nlme` package to represent the structure of an ICT. The `PersonAlytic()` function is the primary user interface for the `PersonAlytics` package. the user can access the documentation for `PersonAlytic()` by typing
+The `PersonAlytic()` function is the primary user interface for the `PersonAlytics` package and the user can access the documentation for `PersonAlytic()` by typing
 
 ```{r, eval=FALSE}
 ?PersonAlytic
@@ -131,7 +133,9 @@ We will illustrate the basic options of the `PersonAlytic()` function using the 
 
 ## The OvaryICT Data
 
-The first six rows of the OvaryICT data are shown in Table x where it can be seen that the original Ovary data set has been augmented with Phase variables which are an essential component of an ICT but which are not required by the PersonAlytics package. Note that the data are in 'long format'. In the example below, Mare 1's first six time points are represented in separate rows. The time points are days prior to ovulation (for negative values), at ovulation (for values of 0 or 1) or between ovulations (for positive values other than 0 and 1). There are also six randomly generated predictors named Target1 to Target6 which will be used to illustrate other `PersonAlytics` features. 
+We will illustrate the basic options of the `PersonAlytic()` function using a data set called OvaryICT, which contains data modified from the Ovary data in the `nlme` package. A description is available by typing `?Ovary` in the `R` console. The `OvaryICT` data set was modified to include a phase varibale to represent the structure of an ICT. A description of the modifications are availabel by typing `?OvaryICT` in the `R` console. The `OvaryICT` data come with the `PersonAlytics` package and are used in most of the documentation examples. A phase variable is an essential component of an ICT. A typical phase variable rerpesents pre- and post-trement phases of a study, and more that two phases are an option in `PersonAlytics`.
+
+The first six rows of the OvaryICT data are shown in Table x. Note that the data are in 'long format'. In the example below, Mare 1's first six time points are represented in separate rows. The time points are days prior to ovulation (for negative values), at ovulation (for values of 0 or 1) or between ovulations (for positive values other than 0 and 1). In addition to the phase variables (phase 1 and phase 2), the `OvaryICT` data also includes six randomly generated predictors (or independent variables) named Target1 to Target6 which will be used to illustrate other `PersonAlytics` features. 
 
 ```{r, echo=FALSE}
 kable(head(PersonAlytics::OvaryICT), digits = 2)
@@ -141,20 +145,20 @@ kable(head(PersonAlytics::OvaryICT), digits = 2)
 
 The four required parameters for `PersonAlytic()` are
 
-1. `data`: the name of the user's data set. This data needs to have been read into R prior to using `PersonAlytic()`. A web search can be used to learn how to read in multiple types of data into R, including (but not limited to) csv, xlsx, sas, stata, spss, and most database formats. The data must be structured in 'long format' where time points are repeated within individual as was illustrated above for the `OvaryICT` data. In the example below, we use the `OvaryICT` data set.
+1. `data`: the name of the user's data set. This data needs to have been read into R prior to using `PersonAlytic()`. A web search can be used to learn how to read in multiple types of data into R, including (but not limited to) csv, xlsx, sas, stata, spss, and most database formats. The data must be structured in 'long format' where time points are repeated within individual as was illustrated above for the `OvaryICT` data. The examples in this user's guide are based on the `OvaryICT` data.
 
 2. `ids`: the name of the identification variable for individuals. This must be a quoted variable name matching the user's ID variable in the data set that the user provided to the parameter `data`. 
 
-3. `dvs`: the name of the dependent variable. This must be a quoted variable name matching the user's dependent variable in the data set that the user provided to the parameter `data`. If the user has multiple dependent variables, `PersonAlytics` will iterate over them one at a time. Multiple dependent variables are specified as a character list, e.g., `dvs=list('dv1', 'dv2', etc.)`. This is a high throughput option. 
+3. `dvs`: the name of the dependent variable. This must be a quoted variable name matching the user's dependent variable in the data set that the user provided to the parameter `data`. If the user has multiple dependent variables, `PersonAlytics` will iterate over them one at a time. Multiple dependent variables are specified as a character list, e.g., `dvs=list('dv1', 'dv2', etc.)`. This is a high throughput option that will be described in more detail in the section titled "Highe Throughput Options". 
 
 4. `time`: the name of the time variable. This must be a quoted variable name matching the user's dependent variable in the data set that the user provided to the parameter `data`.
 
 
 <p class="comment">
-**list()**. In `R`, a list is a collection of variables or `R` objects that may or may not be of the same type. For example, a list might all be character strings, as is the case with `dvs`. In other situations, a list may mix data frames, character vectors, or other data types.
+**list()**. In `R`, a list is a collection of variables or `R` objects that may or may not be of the same type. For example, a list might all be character strings, as is the case with `dvs=list('dv1', 'dv2', etc.)`. In other situations, a list may mix data frames, character vectors, or other data types.
 </p>
 
-Here is an illustration using the four basic parameters. This example also includes setting `autoDetect=NULL`, which turns off automated model comparisons for selecting the trajectory shape and residual correlation structure until this is discussed in its own section. 
+We now illustrate using the four basic parameters with the `OvaryICT` data. This example also includes setting `autoDetect=NULL`, which turns off automated model comparisons for selecting the trajectory shape and residual correlation structure, options that are discussed in the "Autoselection" section. 
 
 ```{r, eval=doEval, message=FALSE}
 eg_required <- PersonAlytic(data=OvaryICT,
@@ -164,7 +168,7 @@ eg_required <- PersonAlytic(data=OvaryICT,
                 autoDetect=NULL)
 ```
 
-It is important to assign the results of a call to `PersonAlytic` to an R object. In the example above, the object is named `eg_required`. If the user neglects to assign the results to an R object, minimal output will be printed to the screen and the remaining results will be lost. If high throughput is initialized by including more than one dependent variable (discussed above), more than one target independent variables (see parameter `target_ivs` below), or if individual models are requested (see parameter `individual_mods` below), the resulting object is a `data.frame` concatenating results across of the options submitted to the high throughput run. Reading the output is detailed in the next section.
+It is important to assign the results of a call to `PersonAlytic` to an R object. In the example above, the object is named `eg_required`. If the user neglects to assign the results to an R object, minimal output will be printed to the screen and the remaining results will be lost. If high throughput is initialized by including more than one dependent variable, including more than one target independent variables (see parameter `target_ivs` below), or if requesting individual models (see parameter `individual_mods` below), the resulting object is a `data.frame` concatenating results across the options submitted to the high throughput run. Reading the output is detailed in the section titled "Reading `PersonAlytics` Output".
 
 ## Commonly Used Optional `PersonAlytics` Parameters
 
@@ -358,11 +362,20 @@ Any combination `dvs`, `target_ivs` and `individuals_mods` can be specified. The
 
 # Reading `PersonAlytics` Output
 
-The argument `output` is character string that will be used to name a file for saving output. If left `NULL`, the default is 'PersonAlytic_Output'. Do not give a file extension, these will be added automatically depending on whether a single analysis was run (yielding a txt file) versus when high throughput options are invoked (yielding a csv file).
+The parameter `output` is a character string that is used to name a file for saving output. If left `NULL`, the default is 'PersonAlytic_Output'. Do not give a file extension, these will be added automatically depending on whether a single analysis was run (yielding a .txt file) or high throughput options were invoked (yielding a .csv file).
 
 ## Single Analysis Output
 
-Here we fit the same model using `nlme` and `gamlss` and illustrate options for viewing and manipulating the output. If the user is familiar with the `lme` package, this is an implementation of the linear (normal) mixed effects model. Using the `package` parameter, the `gamlss` package can alternatively be used in conjunction with the `family` parameter for outcomes with non-normal distributions. The `family` parameter is described in more detail later, the default distribution assumed when using `package="gamlss"` is the normal distribution.  
+Here we fit the same model using `nlme` and `gamlss` and illustrate options for viewing and manipulating the output. Documentation for these `R` packages can be obtained by typing
+
+```{r, eval=FALSE}
+library(nlme)
+?lme
+library(gamlss)
+?gamlss
+```
+
+If the user is not familiar with the `nlme` package, it implements the linear (normal) mixed effects model using the `lme()` function. In `PersonAlytics`, using the `package` parameter can be used to specify the `gamlss` package instead of `lme`. This is used in conjunction with the `family` parameter for outcomes with non-normal distributions. The `family` parameter is described in the section titled "Distributional Assumptions" above. The default distribution assumed when using `package="gamlss"` is the normal distribution.  
 
 First, we run the model using `package="nlme"`. Since this is the default, we need to explicitly specify the `package` parameter. The output will be saved the the R object `eg_nlme` for further use inside the R console. In addition, `output="nlme_example"` will create a file in the working directory named 'nlme_example.txt'. If the user are unsure what the user's current working directory is, type `getwd()` into the R console. A full path using forward slashes '/' instead of backslashes '\\\' can also be used. For example, `output='C:/MyResults'`. For convenience, we will also turn off the `autoDetect` parameter by setting it to `NULL`. The `autoDetect` parameter is discussed in detail below. 
 
@@ -435,7 +448,7 @@ eg_htp <- PersonAlytic(output="htp_example",
 
 The output will be saved in the R object `eg_htp` for further use inside the R console and `output="htp_example"` will create a file in the working directory named 'htp_example.csv' that is the same thing as the R object `eg_htp`. This csv file can be opened in any spreadsheet program. The rows are all possible combinations of `dvs`, `target_ivs`, and `ids` (if `individual_mods=TRUE`). The column variables are listed below and come in five sets:
 
-1. Variables identify the combination of user inputs that lead to a given row's analysis. Most column names correspond to their respective parameter name in `PersonAlytic`. Other variables include information on the version of 'PersonAlytics', date, time, and the directory in which the models were run.
+1. Variables identify the combination of user inputs that lead to a given row's analysis. Most column names correspond to their respective parameter name in `PersonAlytic`. Other variables include information on the version of `PersonAlytics`, date, time, and the directory in which the models were run.
 
     * 'Mare': This is is the name of the id variable passed to the `ids` parameter. In the current example, the value is 'All Cases'. If individual models are requested by setting `individual_mods=TRUE`, this column will give the id for each case in the data set.
     
