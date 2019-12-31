@@ -23,7 +23,7 @@ htp(
   fpc = FALSE,
   popsize2 = 0,
   package = "gamlss",
-  autoDetect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list()),
+  autoSelect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list()),
   whichIC = "BIC",
   sigma.formula = ~1,
   debugforeach = FALSE,

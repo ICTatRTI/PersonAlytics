@@ -44,7 +44,7 @@ can be applied directly by transforming the \code{time} variable.}
 \item{correlation}{See \code{\link{corStruct}}. Defaults to \code{NULL}, see
 \code{\link{lme}}. Used by both \code{\link{lme}} and \code{\link{gamlss}} models.}
 
-\item{correlation0}{Other options such as \code{autoDetect} can change \code{correlation},
+\item{correlation0}{Other options such as \code{autoSelect} can change \code{correlation},
 \code{correlation0} retains the original value provided by the user.}
 
 \item{family}{The \code{\link{gamlss.family}} distribution.}
@@ -66,7 +66,7 @@ is \code{list(dv=FALSE, ivs=FALSE, byids=FALSE)}. See \code{dv} and \code{ivs}. 
 variables are changed (e.g., \code{ivs}), the data are subset, or the options in
 \code{standardize} are changed, the raw data will be restandardized (see \code{datac}).}
 
-\item{autoDetect}{List. The default is
+\item{autoSelect}{List. The default is
 \code{
 list(AR=list(P=3, Q=3)     ,
   TO=list(polyMax=3)       ,
@@ -75,7 +75,7 @@ list(AR=list(P=3, Q=3)     ,
 If no automated model selection for the residual covariance structure (\code{AR}),
 the polynomial order for the relationship between time and the dependent variable
 (\code{TO}), or the dependent variable distribution is desired, an empty list
-should be passed (e.g., \code{autoDetect=list()}).
+should be passed (e.g., \code{autoSelect=list()}).
 
 If \code{AR} is in the list,
 the residual correlation structure will be automatically selected from
@@ -175,7 +175,7 @@ and random intercepts for \code{time} is constructed. See the example. If
 
 # construct a new Payltic object and examine the default formulae#'
 t1 <- Palytic$new(data = OvaryICT, ids='Mare', dv='follicles',
-                  time='Time', phase='Phase', autoDetect=list())
+                  time='Time', phase='Phase', autoSelect=list())
 
 # summary, descriptive, and plot methods
 t1$summary()
@@ -226,12 +226,12 @@ t2$random
 t2$formula
 
 # note that prior examples set
-# `autoDetect=list()`, here we use the default, which is to autodetect
+# `autoSelect=list()`, here we use the default, which is to autoselect
 # the correlation structure (AR), the polynomial order of time (TO) and
 # the distribution
 t1 <- Palytic$new(data = OvaryICT, ids='Mare',
                   dv='follicles', time='Time', phase='Phase',
-                  autoDetect=list(AR=list(P=3, Q=3)     ,
+                  autoSelect=list(AR=list(P=3, Q=3)     ,
                                TO=list(polyMax=3)    ,
                                DIST=list())  )
 
@@ -263,7 +263,7 @@ t1$plot()
 OvaryICT$TimeP <- round(30*OvaryICT$Time)
 t1 <- Palytic$new(data = OvaryICT, ids = 'Mare',
                   dv = 'follicles', time = 'TimeP', phase = 'Phase',
-                  alignPhase = 'piecewise', autoDetect=list())
+                  alignPhase = 'piecewise', autoSelect=list())
 t1$time
 t1$lme()
 

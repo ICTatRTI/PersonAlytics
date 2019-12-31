@@ -15,7 +15,7 @@ t1 <- PersonAlytic(data=OvaryICT,
                    phase="Phase",
                    time="Time",
                    package="nlme",
-                   autoDetect=list(),
+                   autoSelect=list(),
                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
                    alignPhase = 'none')
 summary(t1)
@@ -47,7 +47,7 @@ t3 <- PersonAlytic(data=OvaryICT,
                    phase="Phase2",
                    time="Time",
                    package="nlme",
-                   autoDetect=list(),
+                   autoSelect=list(),
                    standardize = list(dvs=FALSE,ivs=FALSE,byids=FALSE),
                    alignPhase = 'align')
 summary(t3)

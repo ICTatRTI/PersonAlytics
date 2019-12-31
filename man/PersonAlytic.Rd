@@ -24,7 +24,7 @@ PersonAlytic(
   package = "nlme",
   individual_mods = FALSE,
   PalyticObj = NULL,
-  autoDetect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list()),
+  autoSelect = list(AR = list(P = 3, Q = 3), TO = list(polyMax = 3), DIST = list()),
   whichIC = c("BIC", "AIC"),
   charSub = NULL,
   sigma.formula = ~1,
@@ -108,10 +108,10 @@ to include in the model, e.g., \code{list(c('iv1','phase'), c('iv1','iv2'))}.}
 Power of the time variable (e.g., \code{time^time_power}).
 A quadratic or cubic growth model would be specified using
 \code{time_power=2} or \code{time_power=3}, respectively.
-If \code{autoDetect$TO$polyMax} is specified, \code{polyMax} is the largest
+If \code{autoSelect$TO$polyMax} is specified, \code{polyMax} is the largest
 value tested for. The default value is \code{3}, testing up to a cubic growth
 model. If a linear growth model is desired, set
-\code{autoDetect$TO=NULL} and \code{time_power=1}.}
+\code{autoSelect$TO=NULL} and \code{time_power=1}.}
 
 \item{correlation}{Character. The default value is \code{NULL}.
 
@@ -180,7 +180,7 @@ mixed effects models via the \code{family} option, user specified \code{correlat
 structures (in non-\code{NULL} this will override the automated correlation structure
 search), and user specified models via \code{formula}.}
 
-\item{autoDetect}{List. The default is
+\item{autoSelect}{List. The default is
 \code{
 list(AR=list(P=3, Q=3)     ,
   TO=list(polyMax=3)       ,
@@ -189,7 +189,7 @@ list(AR=list(P=3, Q=3)     ,
 If no automated model selection for the residual covariance structure (\code{AR}),
 the polynomial order for the relationship between time and the dependent variable
 (\code{TO}), or the dependent variable distribution is desired, an empty list
-should be passed (e.g., \code{autoDetect=list()}).
+should be passed (e.g., \code{autoSelect=list()}).
 
 If \code{AR} is in the list,
 the residual correlation structure will be automatically selected from
@@ -263,7 +263,7 @@ the resulting row label for this variable would be "123.x".}
 
 A formula for the variance under \code{\link{gamlss}}.
 Currently static: it will not change dynamically over iterations nor will it be
-updated by \code{time_power} or \code{autoDetect}. If model fitting using this
+updated by \code{time_power} or \code{autoSelect}. If model fitting using this
 option fails, another attempt will be made after reseting it to its defaul,
 i.e., \code{~1}.}
 
@@ -414,7 +414,7 @@ t4 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
                    package         = "lme"                      ,
                    individual_mods = FALSE                      ,
                    target_ivs      = NULL                       ,
-                   autoDetect      = list()                     )
+                   autoSelect      = list()                     )
 
 
 # repeat t4 with finite population correction
@@ -427,7 +427,7 @@ t5 <- PersonAlytic(output          = 'MultiDVnoIDnoIVFPC'       ,
                    package         = "lme"                      ,
                    individual_mods = FALSE                      ,
                    target_ivs      = NULL                       ,
-                   autoDetect      = list()                     ,
+                   autoSelect      = list()                     ,
                    fpc             = 200                        )
 
 # repeat t5 with piecewise model, first making time an integer (required for piecewise)
@@ -441,7 +441,7 @@ t6 <- PersonAlytic(output          = 'PiecewiseExample'         ,
                    package         = "lme"                      ,
                    individual_mods = FALSE                      ,
                    target_ivs      = NULL                       ,
-                   autoDetect      = list()                     ,
+                   autoSelect      = list()                     ,
                    fpc             = 200                        ,
                    alignPhase      = "piecewise"                )
 
