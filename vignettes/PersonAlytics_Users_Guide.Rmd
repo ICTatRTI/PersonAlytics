@@ -137,6 +137,14 @@ Now we can load `PersonAlytics` using
 library(PersonAlytics)
 ```
 
+After loading all of the R packages that `PersonAlytics` requires, you'll see instructions to bring up this document by typing the following in the console (assuming you left `build_vignettes = TRUE` when installing `PersonAlytics`):
+
+```{r, eval=FALSE}
+vignette("PersonAlytics_Users_Guide")
+```
+
+*Note: If you are using Rstudio the R documentation, such as accessed by typing `?PersonAlytic` in the console, will appear under the "Help" tab. Included in most documentation pages is an example section. If you highlight code in the example and press ctrl+enter, than code will run in the R console. Typing `vignette("PersonAlytics_Users_Guide")` will bring up this user's guide in the "Viewer" tab. Although highlighted code cannot be run from the viewer, you can copy/paste from the guide into the console to run the examples herein.*
+
 # Basic `PersonAlytics` Use
 
 The `PersonAlytic()` function is the primary user interface for the `PersonAlytics` package and the user can access the documentation for `PersonAlytic()` by typing
