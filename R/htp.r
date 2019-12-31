@@ -316,7 +316,7 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
             ),
             ifelse( length(target_ivs)>0,
                     paste('\n and for', length(target_ivs),
-                          'target indepented variables in `target_ivs`.\n'),
+                          'target independent variables in `target_ivs`.\n'),
                     ".")
     )
   }
