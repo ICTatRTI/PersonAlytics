@@ -68,10 +68,10 @@ While there are already several R packages such as `nlme` and `gamlss` that can 
 
 2. Model selection for detecting an appropriate time series model for the residuals. Getting a good fitting residual correlation model improves standard error estimation.
 
-3. Analysis of mixed effects models in situations where the combination of predictors, outcomes, and/or individuals (i.e., in the case where individual level models are desired such as in personalized medicine) yields a number of analyses to unwieldy implement manually. This is especially true if the model selection process for the trajectory shape and the residual correlation model is conducted for each combination of predictors, outcomes, and/or individuals. High throughput analyses are achieved in `PersonAlytics` through parallelization. Jobs are split amoung two or more processors on a computer and run in parallel. Results are recombined at the end of the process. Included in `PersonAlytics` are options for the user to specify Type I error rate or False Discovery Rate (FDR) corrections. See the section title "High Throughput Examples" for details on implementing high throughput analyses. 
+3. Analysis of mixed effects models in situations where the combination of predictors, outcomes, and/or individuals (i.e., in the case where individual level models are desired such as in personalized medicine) yields a number of analyses to unwieldy implement manually. This is especially true if the model selection process for the trajectory shape and the residual correlation model is conducted for each combination of predictors, outcomes, and/or individuals. High throughput analyses are achieved in `PersonAlytics` through parallelization. Jobs are split among two or more processors on a computer and run in parallel. Results are recombined at the end of the process. Included in `PersonAlytics` are options for the user to specify Type I error rate or False Discovery Rate (FDR) corrections. See the section title "High Throughput Examples" for details on implementing high throughput analyses. 
 
 <p class="comment">
-**High Throughput**. The `PersonAlytics` package automates the task of conducting large numbers of analyses using high throughput computating. A large number of analyses may be required when the combination of predictors, outcomes, and/or individuals yields a number of analyses to unwieldy implement manually.
+**High Throughput**. The `PersonAlytics` package automates the task of conducting large numbers of analyses using high throughput computation. A large number of analyses may be required when the combination of predictors, outcomes, and/or individuals yields a number of analyses to unwieldy implement manually.
 </p>
 
 <p class="comment">
@@ -101,11 +101,11 @@ Ty to write content here
 
 * Environment: This is `R`'s current "active memory" that stores all of the objects you have created or loaded into `R`. Type `ls()` to view them all. 
 
-* Function: An `R` object that takes in other `R` objects (called parameters), performs some computation on them, and may (or may not) return a new object. A simple example is the `mean()` function. The pamater is some numeric data called a vector such as `x <- c(1,2,3)`. Passing `x` to the mean function `mean(x)` returns a value of 2.  
+* Function: An `R` object that takes in other `R` objects (called parameters), performs some computation on them, and may (or may not) return a new object. A simple example is the `mean()` function. The parameter is some numeric data called a vector such as `x <- c(1,2,3)`. Passing `x` to the mean function `mean(x)` returns a value of 2.  
 
 * Parameter: Named `R` objects that are passed to an `R` function.
 
-* R documentation: `R` functions, including the functions of `PersonAlytics` are documented. This includes a descriptions of their parameters and how they should be used. The documentation can be accesssed by typing a questions mark followed by the name of the function (e.g., `?mean`). 
+* R documentation: `R` functions, including the functions of `PersonAlytics` are documented. This includes a descriptions of their parameters and how they should be used. The documentation can be accessed by typing a questions mark followed by the name of the function (e.g., `?mean`). 
 
 * Working directory: The directory on your computer where `R` is "working". An `R` function may return objects to the environment or they may save results to the working directory. To see the current working directory type 'getwd()'.  
 
@@ -147,7 +147,7 @@ The `PersonAlytic()` function is the primary user interface for the `PersonAlyti
 
 ## The OvaryICT Data
 
-We will illustrate the basic parameters of the `PersonAlytic()` function using a data set called OvaryICT, which contains data modified from the Ovary data in the `nlme` package. A description is available by typing `?Ovary` in the `R` console. The `OvaryICT` data set was modified to include a phase varibale to represent the structure of an ICT. A description of the modifications are availabel by typing `?OvaryICT` in the `R` console. The `OvaryICT` data come with the `PersonAlytics` package and are used in most of the documentation examples. A phase variable is an essential component of an ICT. A typical phase variable rerpesents pre- and post-trement phases of a study, and more that two phases are an option in `PersonAlytics`.
+We will illustrate the basic parameters of the `PersonAlytic()` function using a data set called OvaryICT, which contains data modified from the Ovary data in the `nlme` package. A description is available by typing `?Ovary` in the `R` console. The `OvaryICT` data set was modified to include a phase variable to represent the structure of an ICT. A description of the modifications are available by typing `?OvaryICT` in the `R` console. The `OvaryICT` data come with the `PersonAlytics` package and are used in most of the documentation examples. A phase variable is an essential component of an ICT. A typical phase variable represents pre- and post-treatment phases of a study, and more that two phases are an option in `PersonAlytics`.
 
 The first six rows of the OvaryICT data are shown in Table x. Note that the data are in 'long format'. In the example below, Mare 1's first six time points are represented in separate rows. The time points are days prior to ovulation (for negative values), at ovulation (for values of 0 or 1) or between ovulations (for positive values other than 0 and 1). In addition to the phase variables (phase 1 and phase 2), the `OvaryICT` data also includes six randomly generated predictors (or independent variables) named Target1 to Target6 which will be used to illustrate other `PersonAlytics` features. 
 
@@ -224,7 +224,7 @@ eg_time_power <- PersonAlytic(output="MyResults",
 
 The residual autocorrelation structure can be specified by the user using the `correlation` parameter. The `correlation` parameter default is NULL, corresponding to no within-group correlations. 
 
-Any option listed in the  `?corStruct` documentation of the `nlme` package can be specified (see also the correlation parameter in `?lme`). When specifying a correlation structure, the parameters P and Q  must be specified explicitly and the entire correlation structure must be in quotes. Alternatively, PersonAlytics can automatically detect the values for P and Q for an ARMA(P,Q) model using the AR option of the autoDetect parameter as described below.
+Any option listed in the  `?corStruct` documentation of the `nlme` package can be specified (see also the correlation parameter in `?lme`). When specifying a correlation structure, the parameters P and Q  must be specified explicitly and the entire correlation structure must be in quotes. Alternatively, PersonAlytics can automatically detect the values for P and Q for an ARMA(P,Q) model using the AR option of the `autoSelect` parameter as described below.
 
 Here is an example specifying an ARMA(3,4) residual correlation structure: 
 
@@ -239,7 +239,7 @@ eg_correlation <- PersonAlytic(output="MyResults",
                 autoSelect=NULL)
 ```
 
-Note that the parameters `p` and `q` must be lower case and the entire correlation structure must be in quotes. Alternatively, `PersonAlytics` can perform automatic model selection for the values for `p` and `q` in an `ARMA(p,q)` model using the `AR` parameter of the `autoSelect` parameter as described in the section on autolesection. 
+Note that the parameters `p` and `q` must be lower case and the entire correlation structure must be in quotes. Alternatively, `PersonAlytics` can perform automatic model selection for the values for `p` and `q` in an `ARMA(p,q)` model using the `AR` parameter of the `autoSelect` parameter as described in the section on autoselection. 
 
 *Note: For users unfamiliar with residual correlation structures (or other features of the `nlme` package), a helpful reference is the book "Mixed-Effects Models in S and S-PLUS" by Pinheiro and Bates (2000).* 
 
@@ -281,7 +281,7 @@ eg_weibull2 <- PersonAlytic(data=OvaryICT,
 plot(eg_weibull2)
 ```
 
-Alternatively, the `PersonAlytic()` function can automatically select the best fitting distribution using the `DIST` parameter described inthe autoselection section below. 
+Alternatively, the `PersonAlytic()` function can automatically select the best fitting distribution using the `DIST` parameter described in the autoselection section below. 
 
 # High Throughput Options
 
@@ -289,9 +289,9 @@ High throughput automation is invoked by any combination of the following:
 
 1. Multiple dependent variables, which are analyzed one at a time. 
 
-2. Multiple target independent variables, which are included one at a time. This is often neccessary when there are too many independent variables to be analyzed simultaneously as illustrated in the two high throughput examples (migraine triggers and THC metabolomics).
+2. Multiple target independent variables, which are included one at a time. This is often necessary when there are too many independent variables to be analyzed simultaneously as illustrated in the two high throughput examples (migraine triggers and THC metabolomics).
 
-3. Individual level models, in which separate models are fit for each participant in the data set. This is neccessary when it is unrealistic to expect each individual to have the same residual correlation structure or if it is expected that each participant will have a unique set of target indepednet variables that have the biggest effects on their outcomes as is the case in the migraine triggers example. 
+3. Individual level models, in which separate models are fit for each participant in the data set. This is necessary when it is unrealistic to expect each individual to have the same residual correlation structure or if it is expected that each participant will have a unique set of target independent variables that have the biggest effects on their outcomes as is the case in the migraine triggers example. 
 
 ## Multiple Dependent Variables
 
@@ -667,9 +667,9 @@ The output above is printed to the console, and users should focus on the follow
 
 * The first section titled "The variable follicles has the following characteristics" describes the variable. If any of these appear incorrect, check your data.
 
-* The next section may contain errors. This occur when distributions are fit to the depedent variable but do not converge. These distributions will be removed from consideration. 
+* The next section may contain errors. This occur when distributions are fit to the dependent variable but do not converge. These distributions will be removed from consideration. 
 
-* The section starting with "Family:" returns the best fitting distribution. In this example, the best fitting distribution is the "Weibull type 2" distribution. The resulting object `eg_autoSelect_DIST` is a `gamlss` object fit using the Weibull type 2 distribution. The remaining output gives parameter estimates and descriptives statistics for the best fitting distribution. 
+* The section starting with "Family:" returns the best fitting distribution. In this example, the best fitting distribution is the "Weibull type 2" distribution. The resulting object `eg_autoSelect_DIST` is a `gamlss` object fit using the Weibull type 2 distribution. The remaining output gives parameter estimates and descriptive statistics for the best fitting distribution. 
 
 # Other Optional `PersonAlytic()` Parameters
 
@@ -714,7 +714,7 @@ eg_standardize <- PersonAlytic(data=OvaryICT,
 
 ## Estimation Methods
 
-A challenge of single subject and small sample mixed effect modeling is a lack of statistical power. One result of research in this area recommends that model comparisons be made using maximum likelihood (ML) estimation, while final model results should be estimated using restricted maximum likelihood (REML). The Autoselection parameters detailed below use ML model comparisons by default, and final results reported in the output are estimated using REML by default. This cannot be changed, but for a single model without Autoselection, the `method` parameter can be used select ML instead of REML:
+A challenge of single subject and small sample mixed effect modeling is a lack of statistical power. One result of research in this area recommends that model comparisons be made using maximum likelihood (ML) estimation, while final model results should be estimated using restricted maximum likelihood (REML). The Autoselection parameters detailed below use ML model comparisons by default, and final results reported in the output are estimated using REML by default. This cannot be changed, but for a single model without Autoselection, the `method` parameter can be used to select ML instead of REML:
 
 ```{r, eval=doEval}
 eg_method <- PersonAlytic(data=OvaryICT,
@@ -729,7 +729,7 @@ eg_method <- PersonAlytic(data=OvaryICT,
 
 ## Dealing with Invalid Variable Names
 
-If the names of the target predictors in `target_ivs` had to be edited to make valid variable names (see `?make.names`), this parameter allows the user to put the illegal characters back in for the row variable names in high throughput output. For example, if the original variable name was "17.00_832.2375m/z", a letter would need to prefix the variable name and the "/" would need to be replaced with another character, e.g., "X17.00_832.2375m.z". To get the row names of the output back to original variable name, use `charSub=list(c("X", ""), c("m.z", "m/z"))`. 
+If the names of the target predictors in `target_ivs` had to be edited to make valid variable names (see `?make.names`), the `charSub` parameter allows the user to put the illegal characters back in for the row variable names in high throughput output. For example, if the original variable name was "17.00_832.2375m/z", a letter would need to prefix the variable name and the "/" would need to be replaced with another character, ("X17.00_832.2375m.z"). To get the row names of the output back to original variable name, use `charSub=list(c("X", ""), c("m.z", "m/z"))`. 
 
 Note that inputs to `charSub` must be in double quotes and are case sensitive. All duplicates will be substituted. For example, if the variable name was "X1X23.x" and charSub=list(c("X", "")), the resulting row label for this variable would be "123.x".
 
@@ -754,7 +754,9 @@ Note that inputs to `charSub` must be in double quotes and are case sensitive. A
 
 ## Type I Error or False Discovery Rate Adjustment
 
-For high throughput analyses, we recommend selecting either a Type I error rate adjustment (such as Bonferonni) or a False Discovery Rate (FDR) adjustments (such as the method of Benjamini, Hochberg, and Yekutieli). This is implemented using the `p.method` parameter which takes on any value available in the `?p.adjust` function. In conjunction with the `p.method` is the Type I error rate `alpha`, which has a default of .05. Here is an example using the method of Benjamini, Hochberg, and Yekutieli (`p.method=BY`) and a Type I error rate of .1, adjusting for the FDR across the three predictors in `target_ivs`. If there are multiple dependent variables in `dvs`, adjustments are made across target independent variables within each dependent variable. If `individual_mods=TRUE`, adjustments are made across target independent variables within each dependent variable. 
+For high throughput analyses, we recommend selecting either a Type I error rate adjustment (such as Bonferonni) or a False Discovery Rate (FDR) adjustments (such as the method of Benjamini, Hochberg, and Yekutieli). This is implemented using the `p.method` parameter which takes on any value available in the `?p.adjust` function. In conjunction with the `p.method` is the Type I error rate `alpha`, which has a default of .05. If there are multiple dependent variables in `dvs`, adjustments are made across target independent variables within each dependent variable. If `individual_mods=TRUE`, adjustments are made across target independent variables within each dependent variable within each case. 
+
+Here is an example using the method of Benjamini, Hochberg, and Yekutieli (`p.method=BY`) and a Type I error rate of .1, adjusting for the FDR across the three predictors in `target_ivs`: 
 
 ```{r, eval=doEval}
 eg_p.method <- PersonAlytic(data=OvaryICT,
@@ -771,25 +773,20 @@ eg_p.method <- PersonAlytic(data=OvaryICT,
 
 ## Phase Alignment
 
-The `alignPhase` parameter provides options for aligning the time variable with the phase variable. 
-
-1. `alignPhase='none'` is the default and the time variable is left as-is.
+The `alignPhase` parameter provides options for aligning the time variable with the phase variable. The default is `alignPhase='none'` and the time variable is left as-is.
     
-2. `alignPhase='align'` aligns the time variable at the transition from the first and second phase within each participant. This alignment makes it so the effect at time=0 is the start of the second phase. For example, if the second phase starts at time 6 for participant A, and at time 8 for participant B, and there are 15 time points for each starting at 1:
+1. `alignPhase='align'` aligns the time variable at the transition from the first and second phase within each participant. This alignment makes it so the effect at time=0 is the start of the second phase. For example, consider two participants who each have 15 time points of data, but the second phase starts at time 6 for participant A, and at time 8 for participant B:
     
     * Participant A's resulting time variable will be -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9.
     * Participant B's resulting time variable will be -7, -6, -5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5, 6, 7.
         
-3. `alignPhase='piecewise'` create a piecewise straight-line growth model within each phase. This parameter can be use to simplify complex trajectories when the within-phase trajectory is approximately linear within each phase. Although this may make results easier to interpret than a curvelinear model (e.g., when O=3), the piecewise model may have many more random effects and therefore be less parsimonious than a model with polynomial time. If `alignPhase='piecewise'`, the `TO` parameter of the `autodDetect` parameter and the `time_power` parameter are ignored.
+2. `alignPhase='piecewise'` creates a piecewise straight-line growth model within each phase. This parameter can be used to simplify complex trajectories when the within-phase trajectory is approximately linear for each phase. Although this may make results easier to interpret than a curvelinear model (e.g., when `time_power=3`), the piecewise model may have many more random effects and therefore be less parsimonious than a model with polynomial time. If `alignPhase='piecewise'`, the `TO` parameter of the `autodDetect` parameter and the `time_power` parameter are ignored.
 
 ## Finite Population Correction
 
-A finite population correction (FPC) can be made if the size of the population from which the user's sample originated is known. As an example, population sizes may be known for rare diseases. The parameter `fpc` has a default of 0, which turns off the FPC. If the user's population size is known, set `fpc` to the population size. In this example, the population size is set to 6,000.  
+A finite population correction (FPC) can be made if the size of the population from which the user's sample originated is known. As an example, population sizes may be known for rare diseases. Preliminary simulation studies by the authors of this guide have found that on average, the FPC generally reduces standard errors, but only by a small amount. The parameter `fpc` has a default of 0, which turns off the FPC. If the user's population size is known, set `fpc` to the population size. In this example, the population size is set to 6,000.  
 
-A finite population correction (FPC) can be used when the sample more than 5% of the population without replacement. In this situation the central limit theorem doesn't hold and the standard errors of the user's parameter estimates will be to large. Before illustrating how to implement a finite population correction, we first discuss the conditions under which a finite population correction may make a difference in a power analysis. This will only occur in situation where a large number of the `B` replications have p-values just larger than alpha and the FPC results in these p-values being less than alpha. In our experience, this situation is rare but possible. The p-value distributions are usually smoothly positively skewed or near uniform. Neither of this distributions puts enough p-values near alpha for the FPC to have a large effect on power. Users can apply the FPC to real data analyses using the `PersonAlytics` packag but they should not expect the FPC to yield large improvements in power.
-
-The argument `fpc` can be set to the user's finite population size and an FPC will be included in the analyses and output.
-
+Here is an example where the user's finite population size is 6,000.
 
 ```{r, eval=doEval}
 eg_fpc <- PersonAlytic(data=OvaryICT,
@@ -803,11 +800,13 @@ eg_fpc <- PersonAlytic(data=OvaryICT,
                 )
 ```
 
-Preliminary simulation studies have found that on average, the FPC generally reduces standard errors, but only by a small amount. 
+The argument `fpc` can be set to the user's finite population size and an FPC will be included in the analyses and output.
+
+A finite population correction (FPC) can be used when the sample is more than 5% of the population. In this situation the central limit theorem doesn't hold and the standard errors of the user's parameter estimates will be too large. It is important to understand the conditions under which a finite population correction may make a difference in a power analysis conducting via simulation in the companion package `PersonAlyticsPower`. In the simulation, `B` data sets are simulated, a model is fit to the simulated data, and the proportion of data sets for which $p<\alpha$ is the statistical power. The FPC will only make a difference in situation where a large number of the `B` replications have p-values just larger than alpha and the FPC results in these p-values being less than alpha. In our experience, this situation is rare but possible. The p-value distributions are usually smoothly positively skewed or near uniform. Neither of this distributions puts enough p-values near alpha for the FPC to have a large effect on power. Users can apply the FPC to real data analyses using the `PersonAlytics` package but they should not expect the FPC to yield large improvements in power. 
 
 ## Processors for Paralellization
 
-The `cores` parameter allows the user to specify how many processors (or cores) on their computer can be devoted to a high throughput `PersonAlytic` run. By default, `PersonAlytic` detects the number of cores and uses one fewer than are on the machine. This allows the user to still do other work. If the user has a machine dedicated to analyses that won't be needed until analyses are completed, setting the the number of cores to the maximum available will reduce computation time. Do not set this value to a number greater than the number of processors on the user's machine or it may cause R or the user's computer to crash. To determine the number of cores the user has, type the following into the R console:
+The `cores` parameter allows the user to specify how many processors (or cores) on their computer can be devoted to a high throughput `PersonAlytics` run. By default, the `PersonAlytic()` function detects the number of cores and uses one fewer than are on the machine, which allows the user to use other programs while `PersonAlytics` runs. If the user has a machine dedicated to analyses, setting the the number of cores to the maximum available will reduce computation time. Do not set this value to a number greater than the number of processors on the user's machine or it may cause R or the user's computer to crash. To determine the number of cores the user has, type the following into the R console:
 
 ```{r, comment=NA, eval=FALSE}
 parallel::detectCores()
