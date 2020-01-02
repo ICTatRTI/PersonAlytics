@@ -15,7 +15,8 @@ getPalytic(
 )
 }
 \arguments{
-\item{output}{Character. The path to a csv file produced by the \code{PersonAlytic} function.}
+\item{output}{Character. The path to a csv file produced by the \code{PersonAlytic} function or
+the data.frame returned by the \code{PersonAlytic} function.}
 
 \item{data}{Data Frame. The same data provided to your \code{PersonAlytic} run.}
 
@@ -45,7 +46,7 @@ t1 <- PersonAlytic(output          = 'Test1'     ,
                    time            = "Time"      ,
                    package         = "arma"      ,
                    individual_mods = TRUE        )
- Mare1 <- getPalytic('Test1_PersonAlytic.csv', rowNum=1, data=OvaryICT)
+ Mare1 <- getPalytic('Test1_PersonAlytic.csv', data=OvaryICT, rowNum=1)
 
 }
 

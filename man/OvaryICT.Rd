@@ -3,9 +3,9 @@
 \docType{data}
 \name{OvaryICT}
 \alias{OvaryICT}
-\title{Ovary data from nlme modified for ideographic clinical trial analysis}
+\title{Ovary data from nlme modified for idiographic clinical trial analysis}
 \description{
-Ovary data from nlme modified for ideographic clinical trial analysis
+Ovary data from nlme modified for idiographic clinical trial analysis
 }
 \examples{
 # A simple mixed effects models using PersonAlytic and lme
@@ -74,7 +74,7 @@ OvaryICT <- OvaryICT[order(OvaryICT$Mare),]
 
 }
 \references{
-Pinero, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS
+Pinheiro, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS
 (statistics and computing).
 }
 \author{

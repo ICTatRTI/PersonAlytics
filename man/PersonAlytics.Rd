@@ -49,7 +49,7 @@ can be fit in either the \code{\link{nlme}} framework or the \code{\link{gamlss}
 approach. The two approaches give nearly identical fixed effects estimates but differ
 in their computation of standard errors and random effects. Generalized linear
 mixed effects models can be fit using the \code{\link{gamlss}} option
-(see \code{\link{gamlss.family}}). The \code{\link{gamlss}}  appoarch also allows models
+(see \code{\link{gamlss.family}}). The \code{\link{gamlss}}  approach also allows models
 for dealing with heteroscedasticity implemented by including mixed effects models for
 the variance.
 }

@@ -53,6 +53,9 @@
 #' path is not given, the results will be saved in the working directory (see
 #' \code{\link{getwd}}).
 #'
+#' If \code{p.method} and \code{nbest} are specified, the output will be saved in
+#' a subfolder.
+#'
 #' @param data A \code{\link{data.frame}}. \code{data} must be provided by the user.
 #'
 #' \code{data}  that contains the variables \code{ids},
@@ -221,12 +224,12 @@
 #' If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
 #' variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
 #' the gamlss package, and the best fitting distribution will be used for each
-#' depedent variable. For more detail, see the \code{$dist()} method in
+#' dependent variable. For more detail, see the \code{$dist()} method in
 #' \code{\link{Palytic}}. To narrow the distributions that will be tested,
 #' the user must specify whether to
 #' rescale the dependent variable to the (0,1) range with \code{to01}.
 #' Currently settings
-#' for \code{DIST} apply to all depedent variables in \code{dvs}. This will be
+#' for \code{DIST} apply to all dependent variables in \code{dvs}. This will be
 #' generalized to dependent variable specifics settings in a future release. If
 #' your dependent variables require different \code{DIST} settings, use separate
 #' calls to \code{PersonAlytic}.
@@ -266,12 +269,13 @@
 #' A formula for the variance under \code{\link{gamlss}}.
 #' Currently static: it will not change dynamically over iterations nor will it be
 #' updated by \code{time_power} or \code{autoSelect}. If model fitting using this
-#' option fails, another attempt will be made after reseting it to its defaul,
+#' option fails, another attempt will be made after resetting it to its default,
 #' i.e., \code{~1}.
 #'
 #' @param p.method See \code{\link{p.adjust.methods}}. When \code{individual_mods=TRUE},
 #' \code{length(dvs)>1}, or \code{length(target_ivs)>1}, p-value adjustments
-#' are made and reported in separate output saved to the working directory.
+#' are made and reported in a separate folder saved to the working directory. The
+#' parameter \code{nbest} must also be specified.
 #'
 #' @param alpha Numeric value in the (0,1) interval. The Type I error rate for
 #' adjusting p-values.
@@ -284,7 +288,7 @@
 #' as is.
 #'
 #' Other options are \code{'piecewise'} which leads to a piecewise growth model
-#' and sets time to be 0 at the begining of each phase, see \code{\link{pwtime}}.
+#' and sets time to be 0 at the beginning of each phase, see \code{\link{pwtime}}.
 #' The other option is \code{'align'} which aligns time at 0 between the first
 #' and second phase.
 #'
@@ -855,7 +859,7 @@ paHTP <- function(e=parent.frame())
   DVout <- do.call(data.frame, lapply(DVout, nnull))
 
   # attempt adjusted p-values
-  if(!is.null(e$p.method) & length(e$target_ivs) > 1)
+  if(!is.null(e$p.method) & length(e$target_ivs) > 1 & !is.null(e$nbest) )
   {
     DVpsuite <- try( psuite(DVout, e$ids,
                             output = e$output,
@@ -870,12 +874,15 @@ paHTP <- function(e=parent.frame())
     }
   }
 
+  # save location same as the folder created by psuite
+  dn <- paste('PersonAlytics output for', e$output)
+  if(!dir.exists((dn)))  dir.create(dn)
+  outfile <- paste(dn, e$output, sep="/")
+
   # save the output
-  write.csv(DVout, file=e$output, row.names=FALSE)
+  write.csv(DVout, file=outfile, row.names=FALSE)
 
   return(DVout)
-
-
 }
 
 

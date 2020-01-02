@@ -2,7 +2,7 @@
 % Please edit documentation in R/clean_curelator.r
 \name{clean_curelator}
 \alias{clean_curelator}
-\title{clean_curelator, a function to clean Curelator input dataa.}
+\title{clean_curelator, a function to clean Curelator input data.}
 \usage{
 clean_curelator(data)
 }

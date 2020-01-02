@@ -62,7 +62,7 @@ subCheck <- function(subgroup, data)
   }
 }
 
-#' dstats - print mena, median, sd, skewness, and kurtosis - 3
+#' dstats - print mean, median, sd, skewness, and kurtosis - 3
 #' @export
 dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
 {
@@ -858,11 +858,11 @@ distTypes <- function(type)
 #'
 #' @param time Numeric vector. A sequence of study times. If any times are
 #' negative (e.g., if time is center at 0 between the first and second
-#' phase) it is rescale to have a minimum of 0 so that the first obesravation
+#' phase) it is rescale to have a minimum of 0 so that the first observation
 #' within each phase has time=0.
 #'
 #' @param phase Numeric or character vector of the same length as time. The
-#' phases within which time is rescale to creat the time variables needed for
+#' phases within which time is rescale to create the time variables needed for
 #' a piecewise growth model.
 #'
 #' @examples

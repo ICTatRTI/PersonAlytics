@@ -201,7 +201,7 @@ When high throughput analyses are invoked, the following arguments control the m
 
 ### Selecting predictors with the largest effect sizes
 
-* `nbest`: When `target_ivs` has more than one target independent variable, an additional report can extract the `nbest` target independent variables as defined by those target indepedent variable with the largest coefficients among those with $p<=\alpha$. If the target independent variables are on different scales, you should standardize them first using the `standardize` argument (descriped in detail later in its own section).
+* `nbest`: When `target_ivs` has more than one target independent variable, an additional report can extract the `nbest` target independent variables as defined by those target independent variable with the largest coefficients among those with $p<=\alpha$. If the target independent variables are on different scales, you should standardize them first using the `standardize` argument (descriped in detail later in its own section).
 
 ## Generalized linear mixed effects models
 
@@ -219,7 +219,7 @@ The high throughput output is a *.csv file that can be opened in any spreadsheet
 
 1. Variables identify the combination of user inputs that lead to a given row's analysis. 
 
-2. Variables describing whether the analysis converged and variables to help diagnose a failed run (e.g., zero variance in an outcome or indepedent variable.).
+2. Variables describing whether the analysis converged and variables to help diagnose a failed run (e.g., zero variance in an outcome or independent variable.).
 
 3. Descriptive statistics.
 
@@ -235,7 +235,7 @@ The argument `interactions` can be use to specify interactions between independe
 
 ## Standardizing data
 
-Comparisons across multiple depedent variables, or across multiple indepedent variables are made possible by standardizing these variables. This can be done by the user prior to analysis, or via the `standardize` argument. The `standardize` argument is a list with three slots named 'dv', 'iv', and 'byids'. If `dv=TRUE` the dependent variables are standardized. If `iv=TRUE` all of indepedent variables in `ivs` and `target_ivs` are standardized. If `byids=TRUE` standardization is done within each individual rather than across invidivuals. 
+Comparisons across multiple depedent variables, or across multiple independent variables are made possible by standardizing these variables. This can be done by the user prior to analysis, or via the `standardize` argument. The `standardize` argument is a list with three slots named 'dv', 'iv', and 'byids'. If `dv=TRUE` the dependent variables are standardized. If `iv=TRUE` all of independent variables in `ivs` and `target_ivs` are standardized. If `byids=TRUE` standardization is done within each individual rather than across invidivuals. 
 
 ## Phase alignment
 

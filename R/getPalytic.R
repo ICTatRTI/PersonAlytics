@@ -1,6 +1,7 @@
 #' getPalytic, a function to create a Palytic object from PersonAlytics output
 #'
-#' @param output Character. The path to a csv file produced by the \code{PersonAlytic} function.
+#' @param output Character. The path to a csv file produced by the \code{PersonAlytic} function or
+#' the data.frame returned by the \code{PersonAlytic} function.
 #' @param data Data Frame. The same data provided to your \code{PersonAlytic} run.
 #' @param rowNum Numeric. The row number you want to create a \code{Palytic} object for. Set to
 #'   \code{NULL} if \code{id}, \code{dv}, \code{target_iv}, and \code{ids}
@@ -25,7 +26,7 @@
 #'                    time            = "Time"      ,
 #'                    package         = "arma"      ,
 #'                    individual_mods = TRUE        )
-#'  Mare1 <- getPalytic('Test1_PersonAlytic.csv', rowNum=1, data=OvaryICT)
+#'  Mare1 <- getPalytic('Test1_PersonAlytic.csv', data=OvaryICT, rowNum=1)
 #'
 #' }
 #'
@@ -33,12 +34,21 @@
 getPalytic <- function(output, data, rowNum,
                        id=NULL,	dv=NULL, target_iv=NULL, ids=NULL)
 {
-  paout <- read.csv(output)
+  if(is.character(output)) paout <- read.csv(output)
+  if(is.matrix(output) | is.data.frame(output)) paout <- output
+  if(is.null(output$Personalytics))
+  {
+    stop('\nThe data provided to the `output` parameter is not PersonAyltics',
+         '\nOutput. `Output` must be the data.frame produced by the',
+         '\n`PersonAlytic()` function or the file name of the csv file',
+         '\nproduced by the `PersonAlytic()` function.')
+  }
 
   if(is.null(rowNum))
   {
     hasTarg <- "target_iv" %in% names(paout)
-    if( hasTarg) rowNum <- which(paout$id==id & paout$dv==dv & paout$ids==ids & paout$target_iv==target_iv)
+    if( hasTarg) rowNum <- which(paout$id==id & paout$dv==dv & paout$ids==ids &
+                                   paout$target_iv==target_iv)
     if(!hasTarg) rowNum <- which(paout$id==id & paout$dv==dv & paout$ids==ids)
   }
 
@@ -64,7 +74,7 @@ getPalytic <- function(output, data, rowNum,
   vars <- vars[!is.na(vars)]
   ivs  <- vars[!vars %in% c(ids, dv, time, phase)]
 
-  # for reverse compatibility with versions that don't have `gamlss.family`
+  # conditional for reverse compatibility with versions that don't have `gamlss.family`
   fam <- NO()
   if(!is.null(paout$gamlss.family))
   {

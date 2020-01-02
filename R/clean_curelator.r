@@ -1,4 +1,4 @@
-#' clean_curelator, a function to clean Curelator input dataa.
+#' clean_curelator, a function to clean Curelator input data.
 #'
 #' @export
 #' @author Stephen Tueller \email{stueller@@rti.org}

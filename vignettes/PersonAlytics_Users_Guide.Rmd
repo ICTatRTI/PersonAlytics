@@ -504,7 +504,7 @@ The output will be saved in the R object `eg_htp` for further use inside the R c
     
     * 'time': The name of the time variable.
     
-    * 'ivs': The names of the indepedent variables (describe below).
+    * 'ivs': The names of the independent variables (describe below).
     
     * 'target_iv': The name of a target independent variable (described below).
     
@@ -536,7 +536,7 @@ The output will be saved in the R object `eg_htp` for further use inside the R c
     
     * 'N_time_points_complete': The number of time points with complete data.
     
-    * 'dvVariance': The variance of the depenent variable.
+    * 'dvVariance': The variance of the dependent variable.
     
     * 'timeVariance': The variance of the time variable.
     
@@ -554,7 +554,7 @@ The output will be saved in the R object `eg_htp` for further use inside the R c
     
     * 'call': The model formula created from the user inputs.
     
-    * 'wasLRTrun': If 'target_ivs' were provided, a likelihood ratio test (LRT) for models with and without the target independent variable will be attempted, and if succesfull, 'wasLRTrun' will be 'TRUE'. 
+    * 'wasLRTrun': If 'target_ivs' were provided, a likelihood ratio test (LRT) for models with and without the target independent variable will be attempted, and if successful, 'wasLRTrun' will be 'TRUE'. 
     
     * 'targ_ivs_lrt_pvalue': If the LRT was run, the p-value is recorded here. 
     
@@ -812,7 +812,7 @@ The argument `fpc` can be set to the user's finite population size and an FPC wi
 
 A finite population correction (FPC) can be used when the sample is more than 5% of the population. In this situation the central limit theorem doesn't hold and the standard errors of the user's parameter estimates will be too large. It is important to understand the conditions under which a finite population correction may make a difference in a power analysis conducting via simulation in the companion package `PersonAlyticsPower`. In the simulation, `B` data sets are simulated, a model is fit to the simulated data, and the proportion of data sets for which $p<\alpha$ is the statistical power. The FPC will only make a difference in situation where a large number of the `B` replications have p-values just larger than alpha and the FPC results in these p-values being less than alpha. In our experience, this situation is rare but possible. The p-value distributions are usually smoothly positively skewed or near uniform. Neither of this distributions puts enough p-values near alpha for the FPC to have a large effect on power. Users can apply the FPC to real data analyses using the `PersonAlytics` package but they should not expect the FPC to yield large improvements in power. 
 
-## Processors for Paralellization
+## Processors for Parallelization
 
 The `cores` parameter allows the user to specify how many processors (or cores) on their computer can be devoted to a high throughput `PersonAlytics` run. By default, the `PersonAlytic()` function detects the number of cores and uses one fewer than are on the machine, which allows the user to use other programs while `PersonAlytics` runs. If the user has a machine dedicated to analyses, setting the the number of cores to the maximum available will reduce computation time. Do not set this value to a number greater than the number of processors on the user's machine or it may cause R or the user's computer to crash. To determine the number of cores the user has, type the following into the R console:
 

@@ -23,7 +23,7 @@ psuite(
 
 \item{method}{One of \code{\link{p.adjust.methods}}.}
 
-\item{nbest}{The \code{nbest} largest pameters for the target predictor with
+\item{nbest}{The \code{nbest} largest parameters for the target predictor with
 \code{p<alpha} to be print to output.}
 
 \item{alpha}{The type I error rate.}

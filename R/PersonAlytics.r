@@ -44,7 +44,7 @@
 #' approach. The two approaches give nearly identical fixed effects estimates but differ
 #' in their computation of standard errors and random effects. Generalized linear
 #' mixed effects models can be fit using the \code{\link{gamlss}} option
-#' (see \code{\link{gamlss.family}}). The \code{\link{gamlss}}  appoarch also allows models
+#' (see \code{\link{gamlss.family}}). The \code{\link{gamlss}}  approach also allows models
 #' for dealing with heteroscedasticity implemented by including mixed effects models for
 #' the variance.
 #'
@@ -104,7 +104,7 @@ NULL
 #'
 NULL
 
-#' Ovary data from nlme modified for ideographic clinical trial analysis
+#' Ovary data from nlme modified for idiographic clinical trial analysis
 #'
 #' @name OvaryICT
 #' @docType data
@@ -121,7 +121,7 @@ NULL
 #'   \item Time. Equal to \code{sin(2*pi*Ovary$Time)}. See Pinheiro & Bates (2000).
 #' }
 #'
-#' @references Pinero, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS
+#' @references Pinheiro, J., & Bates, D. (2000). Mixed-effects models in S and S-PLUS
 #' (statistics and computing).
 #'
 #' @examples

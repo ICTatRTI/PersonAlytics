@@ -14,7 +14,7 @@
 #' @param ids The variable in \code{DVout} across which to adjust.
 #' @param output A character string for labeling the output
 #' @param method One of \code{\link{p.adjust.methods}}.
-#' @param nbest The \code{nbest} largest pameters for the target predictor with
+#' @param nbest The \code{nbest} largest parameters for the target predictor with
 #' \code{p<alpha} to be print to output.
 #' @param alpha The type I error rate.
 #' @param rawdata The raw data for plotting.
@@ -52,7 +52,7 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
     #st[2] <- gsub(":", "-", st[2])
     #st <- paste(st, collapse=".")
 
-    dn <- paste('PersonAlytics p-value report for', output)
+    dn <- paste('PersonAlytics output for', output)
     if(!dir.exists((dn)))  dir.create(dn)
 
     fn <- paste(paste("./", dn, "/", sep=""),

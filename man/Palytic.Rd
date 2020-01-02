@@ -20,7 +20,7 @@ are left \code{NULL}.}
 \item{dv}{A character string giving the name of the dependent variable in \code{data}.}
 
 \item{time}{A character string giving the name of the time variable in \code{data}.
-Random slopes for time are inclued by default. This can be overridden by specifying
+Random slopes for time are included by default. This can be overridden by specifying
 \code{fixed} and \code{random} formula for \code{\link{lme}} models or by specifying
 the \code{formula} for \code{\link{gamlss}} models.}
 
@@ -34,7 +34,7 @@ of additional variables in \code{data}, e.g., \code{list('iv2', 'iv2')}.}
 
 \item{interactions}{List of vector pairs of variable names for which interaction
 terms should be specified, e.g., \code{list(c('time', 'phase'), c('time', 'iv1'),
-c('iv1', 'iv2'))} where \code{'iv1'} is the name of a variable in the liste \code{ivs}.}
+c('iv1', 'iv2'))} where \code{'iv1'} is the name of a variable in the list \code{ivs}.}
 
 \item{time_power}{The polynomial for \code{time}, e.g., \code{time^time_power}. Fixed
 effects for \code{time^1...time^time_power} will be included in models. Future
@@ -106,7 +106,7 @@ method.
 If \code{DIST} is in the list and \code{package='gamlss'}, each dependent
 variable in \code{dvs} will utilize the \code{\link{fitDist}} function of
 the gamlss package, and the best fitting distribution will be used for each
-depedent variable. For more detail, see the \code{$dist()} method in
+dependent variable. For more detail, see the \code{$dist()} method in
 \code{\link{Palytic}}.}
 
 \item{whichIC}{Character. The default is \code{whichIC="BIC"}.
@@ -124,21 +124,21 @@ Residual autocorrelation structure is detected separately for each individual
 in \code{ids} if \code{individual_mods=TRUE}.}
 
 \item{corStructs}{Vector. A \code{correlation} structure for each case in \code{ids}. Not
-user accesible. Populated by \code{\link{PersonAlytic}}.}
+user accessible. Populated by \code{\link{PersonAlytic}}.}
 
 \item{time_powers}{Vector. A \code{time_order} for each case in \code{ids}. Not
-user accesible. Populated by \code{\link{PersonAlytic}}.}
+user accessible. Populated by \code{\link{PersonAlytic}}.}
 
 \item{alignPhase}{Character. Options include
 a. 'none', no changes are made to the time or phase variable.
 b. 'align', align the time variable to be zero at the transition between
    the first and second phase (see \code{\link{alignPhases}}).
 c. 'piecewise', add 'pwtime#' variables, which will replace time and
-   time_power to create a piecwise linear growth curve model, and where `#`
+   time_power to create a piecewise linear growth curve model, and where `#`
    is the number of phases (i.e., one linear growth curve model per phase).}
 
 \item{ismonotone}{Logical. Is the \code{time} variable for each case monotonically
-increasing (i.e., no returns to prior values). This is determing in data cleaning as
+increasing (i.e., no returns to prior values). This is determining in data cleaning as
 described for \code{datac}.}
 
 \item{datac}{data.frame. Cleaned data. Cleaning involves the following steps:
@@ -152,7 +152,7 @@ described for \code{datac}.}
 7. If patients have < 2 observations, they are dropped from the data set.
 8. Phase alignment (if any, see \code{alignPhase}).}
 
-\item{debugforeach}{Logical flag for testing error handling in parralelized runs.}
+\item{debugforeach}{Logical flag for testing error handling in parallelized runs.}
 
 \item{try_silent}{Logical flag for testing error handling in \code{Palytic} methods.}
 }

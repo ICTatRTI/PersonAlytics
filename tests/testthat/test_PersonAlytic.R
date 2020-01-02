@@ -78,6 +78,8 @@ test_that("ManyV1",
 
   # clean up
   file.remove( dir(getwd(), glob2rx("*.txt")) )
-  file.remove( dir(getwd(), glob2rx("*.csv")) )
+  file.remove( dir(getwd(), glob2rx("*.csv"), recursive = TRUE) )
+  unlink( dir(getwd(), glob2rx("*.csv"), recursive = TRUE) )
+
 
 })
