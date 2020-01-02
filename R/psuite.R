@@ -53,7 +53,7 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
     #st <- paste(st, collapse=".")
 
     dn <- paste('PersonAlytics output for', output)
-    if(!dir.exists((dn)))  dir.create(dn)
+    if(!dir.exists(dn))  dir.create(dn)
 
     fn <- paste(paste("./", dn, "/", sep=""),
                 paste("Best", nbest, 'pvalues', sep="_"), sep="")

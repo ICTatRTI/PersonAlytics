@@ -481,9 +481,9 @@ PersonAlytic <- function(output          = NULL                                 
   if(is.null(correlation)) correlation <- "NULL"
 
   # output labeling ####
-  #TODO(Stephen) consider adding date/time/version info to output
-  if(is.null(output))  fileLabel <- "PersonAlytics_Output"
-  if(!is.null(output)) fileLabel <- paste(output, 'PersonAlytic', sep='_')
+  if( is.null(output)) output <- "PersonAlytics_Output"
+  # create copy that can be manipulated w/o loosing original
+  fileLabel <- output
 
   # check the subgroup input ####
   if(!is.logical(subgroup) & !is.null(subgroup))
@@ -592,14 +592,7 @@ PersonAlytic <- function(output          = NULL                                 
 pa1 <- function(e=parent.frame())
 {
   # set output filename ####
-  if(is.null(e$output))
-  {
-    e$output <- paste(e$fileLabel, 'txt', sep='.')
-  }
-  if(!is.null(e$output))
-  {
-    e$output <- paste(e$output, '.txt', sep='')
-  }
+  fileName <- paste(e$fileLabel, '_PersonAlytic.txt', sep='')
 
   if(is.null(e$subgroup)) e$subgroup <- rep(TRUE, nrow(e$data))
 
@@ -663,7 +656,7 @@ pa1 <- function(e=parent.frame())
                                             popsize2=e$popsize2)
   if(e$package=="arma")   Grp.out <- t1$arma(e$subgroup )
 
-  sink(file=e$output)
+  sink(file=fileName)
   print( Grp.out$tTable )
   sink()
 
@@ -677,14 +670,7 @@ pa1 <- function(e=parent.frame())
 paHTP <- function(e=parent.frame())
 {
   # set output filename ####
-  if(is.null(e$output))
-  {
-    e$output <- paste(e$fileLabel, 'csv', sep='.')
-  }
-  if(!is.null(e$output))
-  {
-    e$output <- paste(e$fileLabel, '.csv', sep='')
-  }
+  fileName <- paste(e$fileLabel, '_PersonAlytic.csv', sep='')
 
   # check that dvs, target_ivs are lists, if not, force
   if( ! "list" %in% class(e$dvs) ) e$dvs <- as.list(e$dvs)
@@ -862,7 +848,7 @@ paHTP <- function(e=parent.frame())
   if(!is.null(e$p.method) & length(e$target_ivs) > 1 & !is.null(e$nbest) )
   {
     DVpsuite <- try( psuite(DVout, e$ids,
-                            output = e$output,
+                            output = e$fileLabel,
                      rawdata=e$data,
                      method=e$p.method,
                      nbest=e$nbest,
@@ -875,12 +861,15 @@ paHTP <- function(e=parent.frame())
   }
 
   # save location same as the folder created by psuite
-  dn <- paste('PersonAlytics output for', e$output)
-  if(!dir.exists((dn)))  dir.create(dn)
-  outfile <- paste(dn, e$output, sep="/")
+  dn <- paste('PersonAlytics output for', e$fileLabel)
+  Imoved <- FALSE
+  if(dir.exists(dn)) setwd(dn); Imoved <- TRUE
 
   # save the output
-  write.csv(DVout, file=outfile, row.names=FALSE)
+  write.csv(DVout, file=fileName, row.names=FALSE)
+
+  # move back to parent directory
+  if(Imoved) setwd("../")
 
   return(DVout)
 }

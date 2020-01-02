@@ -33,6 +33,7 @@ test_that("ManyV1",
 
   testthat::expect_equal(summary(mod.lme)$tTable, t0$tTable)
 
+
   # individual models
   t1 <- PersonAlytic(output          = NULL        ,
                      data            = OvaryICT    ,
@@ -76,10 +77,24 @@ test_that("ManyV1",
                               Phase        = -2.0250462 ,
                               `Time:Phase` = 10.7527872 ))
 
-  # clean up
+  # target ivs + psuite
+  t2 <- PersonAlytic(output          = "targets"   ,
+                     data            = OvaryICT    ,
+                     ids             = "Mare"      ,
+                     dvs             = "follicles" ,
+                     phase           = "Phase"     ,
+                     time            = "Time"      ,
+                     package         = "arma"      ,
+                     target_ivs      = paste("Target", 1:2, sep=""),
+                     nbest           = 2
+                     )
+  # no real test, but it needs to run to check directory jumping
+
+  # just clean up
   file.remove( dir(getwd(), glob2rx("*.txt")) )
   file.remove( dir(getwd(), glob2rx("*.csv"), recursive = TRUE) )
-  unlink( dir(getwd(), glob2rx("*.csv"), recursive = TRUE) )
-
+  dirs <- list.dirs(getwd())
+  dirs <- dirs[grepl("PersonAlytics output for", dirs)]
+  unlink( dirs, recursive = TRUE, force = TRUE)
 
 })
