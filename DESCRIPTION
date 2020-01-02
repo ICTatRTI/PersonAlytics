@@ -1,7 +1,7 @@
 Package: PersonAlytics
 Type: Package
 Title: PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
-Version: 0.3.0.4
+Version: 0.3.0.5
 Date: 2019-11-21
 Authors@R: c(person("Stephen", "Tueller", email = "stueller@rti.org", role = c("aut", "cre")),
              person("Ty", "Rinedour", email = "tridenour@rti.org", role = c("aut")),
