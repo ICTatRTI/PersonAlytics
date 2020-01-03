@@ -2,7 +2,7 @@ Package: PersonAlytics
 Type: Package
 Title: PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
 Version: 0.3.0.6
-Date: 2019-11-21
+Date: 2020-01-03
 Authors@R: c(person("Stephen", "Tueller", email = "stueller@rti.org", role = c("aut", "cre")),
              person("Ty", "Rinedour", email = "tridenour@rti.org", role = c("aut")),
              person("Derek", "Ramirez", email = "dramirez@rti.org", role = c("aut"))
@@ -14,33 +14,33 @@ Encoding: UTF-8
 LazyData: true		
 Depends:
 	  R (>= 3.5.0),
-    doSNOW (>= 1.0.16),
-    forecast (>= 8.4),
-    foreach (>= 1.4.4),
-    gamlss (>= 5.1-2),
-    gamlss.tr (>= 5.1.0),
-    nlme (>= 3.1-131),
-    parallel (>= 3.5.1),
-	  R6 (>= 2.3.0),
+    doSNOW (>= 1.0.18),
+    forecast (>= 8.10),
+    foreach (>= 1.4.7),
+    gamlss (>= 5.1-5),
+    gamlss.tr (>= 5.1-0),
+    nlme (>= 3.1-142),
+    parallel (>= 3.6.2),
+	  R6 (>= 2.4.1),
 Imports:
     gridExtra (>= 2.3),
-    ggplot2 (>= 2.2.1),
+    ggplot2 (>= 3.2.1),
   	multilevel (>= 2.6),
-  	plyr (>= 1.8.4),
+  	plyr (>= 1.8.5),
   	RColorBrewer (>= 1.1.2),
     moments (>= 0.14),
     snow (>= 0.4-3),
-    testthat,
-    stats,
-    utils,
-    Matrix
+    testthat (>= 2.3.1),
+    stats (>= 3.6.2),
+    utils (>= 3.6.2),
+    Matrix (>= 1.2.18)
 RoxygenNote: 7.0.2
 Roxygen: list(r6 = FALSE)
 Suggests: 
-    knitr,
-    rmarkdown,
-    lme4,
-    pbkrtest
+    knitr (>= 1.26),
+    rmarkdown (>= 2.0),
+    lme4 (>= 1.1.21),
+    pbkrtest (>= 0.4.7)
 VignetteBuilder: knitr
 BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
 URL: https://personalytics.rti.org/ 
