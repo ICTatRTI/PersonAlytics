@@ -847,6 +847,10 @@ paHTP <- function(e=parent.frame())
   # attempt adjusted p-values
   if(!is.null(e$p.method) & length(e$target_ivs) > 1 & !is.null(e$nbest) )
   {
+    message("\np-value adjustment method is: ", e$p.method, ",",
+            "\nsaving the ", e$nbest, " adjusted p-values for ", length(e$target_ivs),
+            "\ntarget ivs...\n\n")
+
     DVpsuite <- try( psuite(DVout, e$ids,
                             output = e$fileLabel,
                      rawdata=e$data,
@@ -857,13 +861,20 @@ paHTP <- function(e=parent.frame())
     if( ncol(DVpsuite) == (ncol(DVout)+length(e$p.method)+1) )
     {
       DVout <- DVpsuite
+
+      message("\np-value adjustments completed.")
     }
+    else message("\np-value adjustments failed.")
   }
 
   # save location same as the folder created by psuite
   dn <- paste('PersonAlytics output for', e$fileLabel)
   Imoved <- FALSE
-  if(dir.exists(dn)) setwd(dn); Imoved <- TRUE
+  if(dir.exists(dn))
+  {
+    setwd(dn)
+    Imoved <- TRUE
+  }
 
   # save the output
   write.csv(DVout, file=fileName, row.names=FALSE)
