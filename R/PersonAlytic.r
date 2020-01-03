@@ -848,8 +848,8 @@ paHTP <- function(e=parent.frame())
   if(!is.null(e$p.method) & length(e$target_ivs) > 1 & !is.null(e$nbest) )
   {
     message("\np-value adjustment method is: ", e$p.method, ",",
-            "\nsaving the ", e$nbest, " adjusted p-values for ", length(e$target_ivs),
-            "\ntarget ivs...\n\n")
+            "\nsaving the adjusted p-values for the", e$nbest, " largest effect sizes of the\n",
+            length(e$target_ivs), " target ivs...\n\n")
 
     DVpsuite <- try( psuite(DVout, e$ids,
                             output = e$fileLabel,
