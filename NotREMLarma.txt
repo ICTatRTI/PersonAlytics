@@ -1,0 +1,22 @@
+For id  4  and iv  1 I made Model<-modid
+
+For id  5  and iv  1 I made Model<-modid
+
+For id  6  and iv  1 I made Model<-modid
+
+For id  1  and iv  1 I made Model<-modid
+
+For id  3  and iv  1 I made Model<-modid
+
+For id  7  and iv  1 I made Model<-modid
+
+For id  2  and iv  1 I made Model<-modid
+
+For id  9  and iv  1 I made Model<-modid
+
+For id  8  and iv  1 I made Model<-modid
+
+For id  11  and iv  1 I made Model<-modid
+
+For id  10  and iv  1 I made Model<-modid
+

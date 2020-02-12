@@ -2242,8 +2242,10 @@ Palytic$set("public", "gamlss",
 #' are specified in the autoSelect option of your Palytic object.
 #' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
 #' described in the section documenting the \code{new()} method.
+#' @param manual Logical. Should the \code{manual} option be used when making
+#' clusters when \code{doForeach=TRUE}?
 Palytic$set("public", "GroupAR",
-            function(subgroup=NULL, doForeach=TRUE, package="nlme")
+            function(subgroup=NULL, doForeach=TRUE, package="nlme", manual=FALSE)
             {
               subCheck(subgroup, self$datac)
 
@@ -2287,7 +2289,8 @@ Palytic$set("public", "GroupAR",
 
                 if(doForeach)
                 {
-                  cl       <- snow::makeCluster(parallel::detectCores(), type="SOCK")
+                  cl       <- snow::makeCluster(parallel::detectCores(),
+                                                type="SOCK", manual=manual)
                   snow::clusterExport(cl, list())
                   doSNOW::registerDoSNOW(cl)
                   pkgs     <- c("gamlss", "nlme")

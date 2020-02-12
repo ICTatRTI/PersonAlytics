@@ -43,12 +43,14 @@ htp <- function(data                                                   ,
   #----------------------------------------------------------------------------#
   # log files - create a log directory and overwrite all logs
   #----------------------------------------------------------------------------#
+  manual <- FALSE
   if(debugforeach)
   {
     if(!file.exists('PAlogs')) dir.create('PAlogs')
     cat( correlation, '\n\n', file = './PAlogs/getARnEQ1run.log', append=FALSE)
     cat( 'Start $lme.log\n\n', file = "./PAlogs/$lme.log", append=FALSE)
     cat( 'Start formula.log\n\n', file = "./PAlogs/formula.log", append=FALSE)
+    manual <- TRUE
   }
 
   #----------------------------------------------------------------------------#
@@ -94,7 +96,7 @@ htp <- function(data                                                   ,
 
     # parralelization setup
     pkgs  <- c("gamlss", "nlme", "foreach")
-    cl <- snow::makeCluster(cores, type="SOCK", outfile="")
+    cl <- snow::makeCluster(cores, type="SOCK", outfile="", manual=manual)
     snow::clusterExport(cl, list())
     doSNOW::registerDoSNOW(cl)
 
@@ -215,7 +217,7 @@ htp <- function(data                                                   ,
 
       # parralelization setup -- must reoccur for each dv in dims$DV
       pkgs  <- c("gamlss", "nlme", "foreach")
-      cl <- snow::makeCluster(cores, type="SOCK", outfile="")
+      cl <- snow::makeCluster(cores, type="SOCK", outfile="", manual=manual)
       snow::clusterExport(cl, list())
       doSNOW::registerDoSNOW(cl)
 

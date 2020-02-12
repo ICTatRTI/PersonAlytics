@@ -685,7 +685,7 @@ dohtp <- function()
   require(foreach)
   # parralelization
   funcs <- c("mean") # c(".eds") -- not importing from PersonAlytic correctly
-  cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK")
+  cl    <- snow::makeCluster(parallel::detectCores(), type="SOCK", manual=manual)
   snow::clusterExport(cl, funcs)
   doSNOW::registerDoSNOW(cl)
   pkgs  <- c("gamlss", "nlme")

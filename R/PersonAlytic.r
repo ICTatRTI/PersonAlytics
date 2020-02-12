@@ -858,13 +858,18 @@ paHTP <- function(e=parent.frame())
                      nbest=e$nbest,
                      alpha=e$alpha), silent = TRUE )
 
-    if( ncol(DVpsuite) == (ncol(DVout)+length(e$p.method)+1) )
+    if(!class(DVpsuite) %in% "try-error")
     {
-      DVout <- DVpsuite
+      if( ncol(DVpsuite) == (ncol(DVout)+length(e$p.method)+1) )
+      {
+        DVout <- DVpsuite
 
-      message("\np-value adjustments completed.")
+        message("\np-value adjustments completed.")
+      }
+      else message("\np-value adjustments failed.")
     }
     else message("\np-value adjustments failed.")
+
   }
 
   # save location same as the folder created by psuite
