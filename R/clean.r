@@ -131,17 +131,25 @@ clean <- function(data		 	                                            ,
     }
     data <- data[order(data[[ids]], data[[time$raw]]),]
   }
-  # data <- data[order(data[[ids]]), ] # see issue #12 on github
 
-  # if any cases have only 1 observation, drop them
-  tuid <- table(data[[ids]])
-  toofew <- names(tuid)[ tuid<2 ]
-  if(length(toofew)>0)
+  # if any cases have only 1 observation, "drop" them but only in n=1
+  if(length(unique(data[[ids]]))==1)
   {
-    warning(paste('\nThe following have less than 2 observations and will be dropped:\n\n'),
-            paste(paste(ids, toofew), collapse='\n'))
-    data <- data[!data[[ids]]%in%as.numeric(toofew),]
+    tuid <- table(data[[ids]])
+    toofew <- names(tuid)[ tuid<2 ]
+    if(length(toofew)>0)
+    {
+      warning(paste('\nThe following have less than 2 observations and will be dropped:\n\n'),
+              paste(paste(ids, toofew), collapse='\n'))
+      # don't actually drop rows, this causes mismatch when the user provides
+      # a subgroup variable as it will be longer than nrow(data)
+      for(i in seq_along(dvs))
+      {
+        data[[dvs[i]]][toofew] <- NA
+      }
+    }
   }
+
 
   # align the data
   if(!is.null(phase))
