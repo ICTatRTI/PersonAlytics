@@ -23,24 +23,24 @@ VignetteBuilder: knitr
 BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
 URL: https://personalytics.rti.org/ 
 Depends: 
-    R,
     R6
 Imports: 
-    doSNOW,
-    forecast,
     foreach,
+    forecast,
     gamlss,
+    gamlss.dist,
     gamlss.tr,
+    ggplot2,
+    gridExtra,
+    Matrix,
+    moments,
+    multilevel,
     nlme,
     parallel,
-    gridExtra,
-    ggplot2,
-    multilevel,
     plyr,
     RColorBrewer,
-    moments,
     snow,
-    testthat,
     stats,
-    utils,
-    Matrix
+    testthat,
+    utils,    
+    doSNOW
