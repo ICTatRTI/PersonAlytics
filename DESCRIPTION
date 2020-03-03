@@ -23,12 +23,13 @@ VignetteBuilder: knitr
 BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
 URL: https://personalytics.rti.org/ 
 Depends: 
+    gamlss.dist,
+    R (>= 3.6),
     R6
 Imports: 
     foreach,
     forecast,
     gamlss,
-    gamlss.dist,
     gamlss.tr,
     ggplot2,
     gridExtra,

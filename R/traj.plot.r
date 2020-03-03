@@ -322,7 +322,7 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
           "The whiskers extend from the edge of the box to the observed data point that is, at most, 1.5 times the interquartile range.")) +
         theme(plot.caption=element_text(hjust=0))
     )
-    ggsave(file = b1nm, device="jpeg", width = w, height = h, units = "in", dpi = 300)
+    ggsave(filename = b1nm, device="jpeg", width = w, height = h, units = "in", dpi = 300)
   }
 
   ### Ty"s custom boxplot
@@ -356,6 +356,6 @@ traj.plot <- function(plotName	      = paste("_PACT_trajectory_plot.jpg", sep=""
                              "The whiskers extend from the line in the middle of the box to +/- 1 SD of the fitted values."))+
         theme(plot.caption=element_text(hjust=0))
     )
-    ggsave(file = b2nm, device="jpeg", width = w, height = h, units = "in", dpi = 300)
+    ggsave(filename = b2nm, device="jpeg", width = w, height = h, units = "in", dpi = 300)
   }
 }

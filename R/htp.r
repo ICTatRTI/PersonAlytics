@@ -3,6 +3,9 @@
 #' high throughput
 #'
 #' @keywords internal
+#'
+#' @import gamlss.dist
+#' @import foreach
 
 # the current state of using Palytic is to create one object for
 # loops across individuals, but overwrite the the Palytic object

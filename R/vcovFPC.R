@@ -65,6 +65,8 @@ fpcCheck <- function(popsize2, n)
 #' @aliases vcovFPC.meMod
 #' @aliases vcovFPC.lme
 #'
+#' @import pbkrtest
+#'
 #' @title \code{vcovFPC} Obtain finite-population-adjusted standard errors for
 #' fixed effects estimates for a fitted multilevel model
 #'

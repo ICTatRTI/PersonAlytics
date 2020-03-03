@@ -244,7 +244,7 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
 
 
   g <- ggplot(pdat, aes(x=time, y=y, group=id, col=g)) +
-    geom_line(position=position_jitter(h=.05), alpha=.25) +
+    geom_line(position=position_jitter(height=.05), alpha=.25) +
     ylab("Standardized Scale (mean 0, unit variance)") +
     ggtitle(target_nm) +
     stat_summary(aes(group=g), fun.y=mean, geom="line", size=2) +
@@ -262,7 +262,7 @@ trajplot <- function(data, ids, dv, time, phase, ivs, target_iv, target_nm)
   #pdat$y[pdat$g==t1$ivs[[1]]] <- 2^( tempdata$X19.43_887.1030m.zr )
   #
   #ggplot(pdat, aes(x=Time, y=y, group=id, col=g)) +
-  #  geom_line(position=position_jitter(h=.05), alpha=.25) +
+  #  geom_line(position=position_jitter(height=.05), alpha=.25) +
   #  ylab("Standardized Scale (mean 0, unit variance)") +
   #  ggtitle(paste(as.character(t1$fixed)[c(2,1,3)], collapse = "")) +
   #  stat_summary(aes(group=g), funy.y=mean, geom="line", size=2.5) +
@@ -291,7 +291,7 @@ if(1==2)
 
   ggplot(tempdata, aes(x=Time, y=target_iv, group=interaction(ID, Tx),
                        color=Tx)) + ylab('') +
-    geom_line(position=position_jitter(h=.1), alpha=.5) +
+    geom_line(position=position_jitter(height=.1), alpha=.5) +
     stat_summary(aes(group=Tx), fun.y=median, geom="line", size=3) +
     facet_grid(transform~., scales="free")
 }

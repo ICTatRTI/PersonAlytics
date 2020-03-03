@@ -1,6 +1,7 @@
 #' .active - active bindings for Palytic objects
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #' @keywords internal
+#' @import gamlss.dist
 .active <- function()
 {
   list(
@@ -775,6 +776,7 @@
 #' @importFrom nlme corCompSymm
 #' @importFrom nlme corSymm
 #' @import gamlss
+#' @import gamlss.dist
 #' @importFrom gamlss re
 #' @import moments
 #'
@@ -1426,6 +1428,8 @@ Palytic$set("public", "detect",
 #' @param model See \code{\link{fitDist}}.
 #' @param parallel See \code{\link{fitDist}}.
 #' @param plot Logical. Should plots of your dependent variable be displayed.
+#'
+#' @import gamlss.dist
 Palytic$set("public", "dist",
             function(to01=FALSE, model=NULL,
                      parallel="snow", plot=TRUE, type=NULL, extra=NULL)
@@ -2244,6 +2248,8 @@ Palytic$set("public", "gamlss",
 #' described in the section documenting the \code{new()} method.
 #' @param manual Logical. Should the \code{manual} option be used when making
 #' clusters when \code{doForeach=TRUE}?
+#'
+#' @import gamlss.dist
 Palytic$set("public", "GroupAR",
             function(subgroup=NULL, doForeach=TRUE, package="nlme", manual=FALSE)
             {
@@ -2375,6 +2381,8 @@ ARpq <- function(clone, p, q, subgroup, package="nlme")
 #' Use model comparisons to test for the polynomial order of time
 #' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
 #' described in the section documenting the \code{new()} method.
+#'
+#' @import gamlss.dist
 Palytic$set("public", "getTO",
             function(package="nlme")
             {
@@ -2453,6 +2461,8 @@ Palytic$set("public", "getTO",
 #' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
 #' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
 #' described in the section documenting the \code{new()} method.
+#'
+#' @import gamlss.dist
 Palytic$set("public", "GroupTO",
             function(subgroup=NULL, package="nlme")
             {

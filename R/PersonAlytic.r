@@ -6,6 +6,7 @@
 #' @import doSNOW
 #' @import foreach
 #' @import plyr
+#' @import gamlss.dist
 #'
 #' @description A simplified user interface for longitudinal linear mixed
 #' effects models (also known as growth models or hierarchical linear models) using
