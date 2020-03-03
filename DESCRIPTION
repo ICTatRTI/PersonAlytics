@@ -17,8 +17,7 @@ Roxygen: list(r6 = FALSE)
 Suggests: 
     knitr (>= 1.26),
     rmarkdown (>= 2.0),
-    lme4 (>= 1.1.21),
-    pbkrtest (>= 0.4.7)
+    lme4 (>= 1.1.21)
 VignetteBuilder: knitr
 BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
 URL: https://personalytics.rti.org/ 
@@ -43,5 +42,6 @@ Imports:
     snow,
     stats,
     testthat,
-    utils,    
-    doSNOW
+    utils,
+    doSNOW,
+    pbkrtest

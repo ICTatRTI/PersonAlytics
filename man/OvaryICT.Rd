@@ -21,7 +21,7 @@ t1 <- PersonAlytic(data=OvaryICT,
 summary(t1)
 
 # Verify the PersonAlytic results to a direct call to lme
-t2 <- lme(follicles ~ Time * Phase,
+t2 <- nlme::lme(follicles ~ Time * Phase,
           data = OvaryICT,
           random = ~Time | Mare,
           method = "REML",
