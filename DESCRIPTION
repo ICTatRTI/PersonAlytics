@@ -12,28 +12,6 @@ Description: Tools and illustrations for fitting idiographic trial data using ga
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true		
-Depends:
-	  R (>= 3.6.2),
-    doSNOW (>= 1.0.18),
-    forecast (>= 8.10),
-    foreach (>= 1.4.7),
-    gamlss (>= 5.1-5),
-    gamlss.tr (>= 5.1-0),
-    nlme (>= 3.1-142),
-    parallel (>= 3.6.2),
-	  R6 (>= 2.4.1),
-Imports:
-    gridExtra (>= 2.3),
-    ggplot2 (>= 3.2.1),
-  	multilevel (>= 2.6),
-  	plyr (>= 1.8.5),
-  	RColorBrewer (>= 1.1.2),
-    moments (>= 0.14),
-    snow (>= 0.4-3),
-    testthat (>= 2.3.1),
-    stats (>= 3.6.2),
-    utils (>= 3.6.2),
-    Matrix (>= 1.2.18)
 RoxygenNote: 7.0.2
 Roxygen: list(r6 = FALSE)
 Suggests: 
@@ -44,3 +22,25 @@ Suggests:
 VignetteBuilder: knitr
 BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
 URL: https://personalytics.rti.org/ 
+Depends: 
+    R,
+    R6
+Imports: 
+    doSNOW,
+    forecast,
+    foreach,
+    gamlss,
+    gamlss.tr,
+    nlme,
+    parallel,
+    gridExtra,
+    ggplot2,
+    multilevel,
+    plyr,
+    RColorBrewer,
+    moments,
+    snow,
+    testthat,
+    stats,
+    utils,
+    Matrix
