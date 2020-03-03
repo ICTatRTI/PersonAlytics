@@ -779,6 +779,7 @@
 #' @import gamlss.dist
 #' @importFrom gamlss re
 #' @import moments
+#' @import foreach
 #'
 #' @export
 #'
