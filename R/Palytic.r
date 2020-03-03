@@ -437,7 +437,7 @@
       if( missing(value) ) private$.family
       else
       {
-        if(! "gamlss.family" %in% class(as.gamlss.family(value)) )
+        if(! "gamlss.family" %in% class(gamlss.dist::as.gamlss.family(value)) )
         {
           stop("\n`family`=", value, " is not in ",
                "gamlss.family, see `?gamlss.dist::gamlss.family`")
@@ -452,7 +452,7 @@
                       interactions = NULL,
                       time_power   = NULL,
                       correlation  = NULL,
-                      family       = as.gamlss.family(value),
+                      family       = gamlss.dist::as.gamlss.family(value),
                       fixed        = NULL,
                       random       = NULL,
                       formula      = NULL,
@@ -1531,7 +1531,7 @@ Palytic$set("public", "dist",
                 family <- names(getOrder(family))[which.min(family)]
               }
 
-              self$family <- as.gamlss.family(family)
+              self$family <- gamlss.dist::as.gamlss.family(family)
 
               # print descriptive statistics to the console
               if(!is.null(self$phase)) phase <- self$datac[[self$phase]]
@@ -2257,7 +2257,7 @@ Palytic$set("public", "GroupAR",
               }
 
               # if family is !NO override package
-              if( self$family$family[2] != as.gamlss.family(NO)$family[2] )
+              if( self$family$family[2] != gamlss.dist::as.gamlss.family(NO)$family[2] )
               {
                 package <- "gamlss"
                 message("\nFamily is set as `", self$family$family[2], "` which",
@@ -2384,7 +2384,7 @@ Palytic$set("public", "getTO",
               whichIC <- self$whichIC[1]
 
               # if family is !NO override package
-              if( self$family$family[2] != as.gamlss.family(NO)$family[2] )
+              if( self$family$family[2] != gamlss.dist::as.gamlss.family(NO)$family[2] )
               {
                 package <- "gamlss"
                 message("\nFamily is set as `", self$family$family[2], "` which",
@@ -2464,7 +2464,7 @@ Palytic$set("public", "GroupTO",
               whichIC <- self$whichIC[1]
 
               # if family is !NO override package
-              if( self$family$family[2] != as.gamlss.family(NO)$family[2] )
+              if( self$family$family[2] != gamlss.dist::as.gamlss.family(NO)$family[2] )
               {
                 package <- "gamlss"
                 message("\nFamily is set as `", self$family$family[2], "` which",
