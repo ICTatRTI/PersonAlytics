@@ -23,6 +23,7 @@ pwtime - function to make piecewise time variables for a multiphase study
 
 pwtime(-49:50, sort(rep(letters[1:5], length.out = 100)))
 
+\dontrun{
 # time should not be scaled in [0,1] or similar, rescale to integer
 OvaryICT2 <- OvaryICT
 OvaryICT2$Time <- round(OvaryICT2$Time*30)
@@ -35,6 +36,7 @@ p2 <- Palytic$new(data = OvaryICT2, ids='Mare', dv='follicles',
 
 summary(p1$lme())
 summary(p2$lme())
+}
 }
 \author{
 Stephen Tueller \email{Stueller@rti.org}

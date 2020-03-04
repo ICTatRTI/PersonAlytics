@@ -30,7 +30,7 @@ summary(t2)
 
 # verification tests - are the results the same?
 message( '\n\nAre fixed effects equal?\n', all.equal(summary(t1)$tTable, summary(t2)$tTable) )
-message( '\n\nAre variance components equal?\n',all.equal(VarCorr(t1), VarCorr(t2)) )
+message( '\n\nAre variance components equal?\n',all.equal(nlme::VarCorr(t1), nlme::VarCorr(t2)) )
 
 # verify estimates against known values
 message('\n\nAre stored values replicated?\n',

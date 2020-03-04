@@ -869,6 +869,7 @@ distTypes <- function(type)
 #'
 #' pwtime(-49:50, sort(rep(letters[1:5], length.out = 100)))
 #'
+#' \dontrun{
 #' # time should not be scaled in [0,1] or similar, rescale to integer
 #' OvaryICT2 <- OvaryICT
 #' OvaryICT2$Time <- round(OvaryICT2$Time*30)
@@ -881,6 +882,7 @@ distTypes <- function(type)
 #'
 #' summary(p1$lme())
 #' summary(p2$lme())
+#' }
 
 pwtime <- function(time, phase)
 {
@@ -891,10 +893,11 @@ pwtime <- function(time, phase)
   }
 
   # if phase is not numeric, convert to numeric
-  phaseNames <- levels(phase) # not needed yet, may need to recoved labels
+  if(is.factor(phase)) phaseNames <- levels(phase)
+  if(is.numeric(phase) | is.character(phase)) phaseNames <- unique(phase)
   if( !is.numeric(phase) )
   {
-    phase <- as.numeric(phase)
+    phase <- as.numeric( factor(phase) )
   }
 
   # unique phases
