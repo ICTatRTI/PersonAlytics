@@ -4,15 +4,30 @@
 \alias{to01}
 \title{to01 - function to convent any variable to the [0,1] range}
 \usage{
-to01(x, na.rm = TRUE, squeeze = FALSE, prior = 0.5)
+to01(x, na.rm = TRUE, squeeze = FALSE, prior = 0.5, type = "both")
 }
 \arguments{
 \item{x}{A numeric vector.}
 
 \item{na.rm}{Logical, should missing data be excluded when calculating min/max}
+
+\item{prior}{Numeric, a prior propability for squeezing from [0,1] to (0,1) where
+the square bracket indicates inclusion of endpoints and paretheses excludes the
+endpoints. See the references.}
+
+\item{type}{Character. Options are "both" which squeezes from [0,1] to (0,1),
+"floor" which squeezes from [0,1] to (0,1], and "ceiling" which squeezes from [0,1] to [0,1).}
 }
 \description{
 to01 - function to convent any variable to the [0,1] range
+}
+\examples{
+set.seed(4269)
+x <- rnorm(100)
+summary(to01(x))
+summary(to01(x, squeeze=TRUE))
+summary(to01(x, squeeze=TRUE, type="floor"))
+summary(to01(x, squeeze=TRUE, type="ceiling"))
 }
 \references{
 Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54.
