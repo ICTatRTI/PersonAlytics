@@ -705,15 +705,36 @@ alf <- function(x)
 #' @author Stephen Tueller \email{Stueller@@rti.org}
 #' @param x A numeric vector.
 #' @param na.rm Logical, should missing data be excluded when calculating min/max
+#' @param prior Numeric, a prior propability for squeezing from [0,1] to (0,1) where
+#' the square bracket indicates inclusion of endpoints and paretheses excludes the
+#' endpoints. See the references.
+#' @param type Character. Options are "both" which squeezes from [0,1] to (0,1),
+#' "floor" which squeezes from [0,1] to (0,1], and "ceiling" which squeezes from [0,1] to [0,1).
 #' @references Smithson, M., & Verkuilen, J. (2006). A better lemon squeezer? Maximum-likelihood regression with beta-distributed dependent variables. Psychological Methods, 11(1), 54.
 #' @export
-to01 <- function(x, na.rm=TRUE, squeeze=FALSE, prior=.5)
+#' @examples
+#' set.seed(4269)
+#' x <- rnorm(100)
+#' summary(to01(x))
+#' summary(to01(x, squeeze=TRUE))
+#' summary(to01(x, squeeze=TRUE, type="floor"))
+#' summary(to01(x, squeeze=TRUE, type="ceiling"))
+to01 <- function(x, na.rm=TRUE, squeeze=FALSE, prior=.5,
+                 type="both")
 {
   xp <- (x - min(x, na.rm=na.rm))/(max(x, na.rm=na.rm)-min(x, na.rm=na.rm))
   if(squeeze)
   {
     n  <- length(x)
     xp <- (xp*(n-1)+prior)/n
+  }
+  if(type=="floor")
+  {
+    xp[xp==max(xp, na.rm=TRUE)] <- 1
+  }
+  if(type=="ceiling")
+  {
+    xp[xp==min(xp, na.rm=TRUE)] <- 0
   }
   return(xp)
 }
