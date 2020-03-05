@@ -101,7 +101,8 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
         if(nbest > nrow(best)) nbestr <- nrow(best)
         if(nbestr > 0)
         {
-          best <- best[order(abs(best$Targ.Value), decreasing = TRUE),][seq(1,nbestr),]
+          best <- best[order(abs(best[[names(temp)[targEffecSize]]]),
+                             decreasing = TRUE),][seq(1,nbestr),]
         }
         best <- data.frame(best)
         row.names(best) <- NULL
