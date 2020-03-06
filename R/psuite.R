@@ -50,6 +50,8 @@ psuite <- function(DVout, output, method="BY", nbest=NULL, alpha=.05,
     #st[2] <- gsub(":", "-", st[2])
     #st <- paste(st, collapse=".")
 
+    if(!exists("output")) stop("Please provide a name for your output.")
+
     dn <- paste('PersonAlytics output for', output)
     if(!dir.exists(dn))  dir.create(dn)
 
