@@ -6,7 +6,6 @@
 \usage{
 psuite(
   DVout,
-  ids,
   output,
   method = "BY",
   nbest = NULL,
@@ -16,8 +15,6 @@ psuite(
 }
 \arguments{
 \item{DVout}{A data frame created by \code{\link{PersonAlytic}}.}
-
-\item{ids}{The variable in \code{DVout} across which to adjust.}
 
 \item{output}{A character string for labeling the output}
 

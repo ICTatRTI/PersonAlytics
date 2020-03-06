@@ -11,7 +11,6 @@
 #' Apply p.adjust and add output and graphics
 #'
 #' @param DVout A data frame created by \code{\link{PersonAlytic}}.
-#' @param ids The variable in \code{DVout} across which to adjust.
 #' @param output A character string for labeling the output
 #' @param method One of \code{\link{p.adjust.methods}}.
 #' @param nbest The \code{nbest} largest parameters for the target predictor with
@@ -20,10 +19,9 @@
 #' @param rawdata The raw data for plotting.
 #'
 
-psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
+psuite <- function(DVout, output, method="BY", nbest=NULL, alpha=.05,
                    rawdata=NULL)
 {
-
   pav <- paste("-PAv", packageVersion("PersonAlytics"), "-", sep='')
 
   if(! method %in% p.adjust.methods)
@@ -37,8 +35,8 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
   # apply the adjustments by ids and dvs, if
   # - group based, byVariable will be dvs only
   # - only 1 dv, we still get ids within dv
-  byVariable <- paste(DVout$dv, DVout[[ids]], sep="_")
-  DVoutadj   <- plyr::rbind.fill(as.list(by(data = DVout[, c(ids, 'dv', 'target_iv',
+  byVariable <- paste(DVout$dv, DVout[["ids"]], sep="_")
+  DVoutadj   <- plyr::rbind.fill(as.list(by(data = DVout[, c('ids', 'dv', 'target_iv',
                                                         'targ_ivs_lrt_pvalue')],
                                             INDICES = byVariable,
                                             FUN = adjuster, method=method)))
