@@ -88,62 +88,70 @@ psuite <- function(DVout, ids, output, method="BY", nbest=NULL, alpha=.05,
         fn <- paste(paste("./", dn, "/", sep=""),
                     paste("Best", nbest, mthd, 'pvalues_for', d, sep="_"), sep="")
 
-        # summary stats
-        ss <- mean(temp[,wc[i]]<alpha, na.rm=TRUE)
-
-        # section title
-        cat(ln, nbest, "largest effects for `", d, "` with the", mthd, "p-value.\n\n",
-            'Proportion p < alpha = ', alpha, ": ", ss, '\n',
-            ln)
-        # select rows with p < alpha
-        tivloc <- which(names(temp)=='target_iv')
-        best <- temp[temp[,wc[i]]<alpha,c(tivloc, targEffecSize, wc[i])]
-        # select the nbest best
-        nbestr <- nbest
-        if(nbest > nrow(best)) nbestr <- nrow(best)
-        if(nbestr > 0)
+        # escape if all p-values are missing
+        if(all(is.na(temp[,wc[i]])))
         {
-          best <- best[order(abs(best[[names(temp)[targEffecSize]]]),
-                             decreasing = TRUE),][seq(1,nbestr),]
+          cat("All p-values are NA\n", ln)
         }
-        best <- data.frame(best)
-        row.names(best) <- NULL
-        if(!all(is.na(best)))
+        if(!all(is.na(temp[,wc[i]])))
         {
-          print( best, digits = 3 )
+          # summary stats
+          ss <- mean(temp[,wc[i]]<alpha, na.rm=TRUE)
 
-          ## graphics
-          #if(!is.null(rawdata))
-          #{
-          #  # add foreach %dopar% here
-          #  bestplots <- list()
-          #  for(p in seq_along(best))
-          #  {
-          #    w  <- which(temp$target_iv==best$target_iv[p])
-          #    iv <- unlist( strsplit( toString(temp$ivs[w]), ", " ) )
-          #    g  <- try(trajplot(data=rawdata                                         ,
-          #                       ids=toString(temp$ids[w])                            ,
-          #                       dv=toString(temp$dv[w])                              ,
-          #                       time=toString(temp$time[w])                          ,
-          #                       phase=toString(temp$phase[w])                        ,
-          #                       ivs=ifelse(length(iv)>1, iv[seq_along(iv)[-1]], NULL) ,
-          #                       target_iv=iv[length(iv)]                             ,
-          #                       target_nm=toString(temp$target_iv[w])
-          #    ), TRUE)
-          #    if(! "try-error" %in% class(g) ) bestplots[[p]] <- g
+          # section title
+          cat(ln, nbest, "largest effects for `", d, "` with the", mthd, "p-value.\n\n",
+              'Proportion p < alpha = ', alpha, ": ", ss, '\n',
+              ln)
+          # select rows with p < alpha
+          tivloc <- which(names(temp)=='target_iv')
+          best <- temp[temp[,wc[i]]<alpha,c(tivloc, targEffecSize, wc[i])]
+          # select the nbest best
+          nbestr <- nbest
+          if(nbest > nrow(best)) nbestr <- nrow(best)
+          if(nbestr > 0)
+          {
+            best <- best[order(abs(best[[names(temp)[targEffecSize]]]),
+                               decreasing = TRUE),][seq(1,nbestr),]
+          }
+          best <- data.frame(best)
+          row.names(best) <- NULL
+          if(!all(is.na(best)))
+          {
+            print( best, digits = 3 )
 
-          #  }
-          #  pdf(paste(fn, pav, "pdf", sep="."), onefile = TRUE)
-          #  lapply(bestplots, gridExtra::grid.arrange)
-          #  dev.off()
-          #}
+            ## graphics
+            #if(!is.null(rawdata))
+            #{
+            #  # add foreach %dopar% here
+            #  bestplots <- list()
+            #  for(p in seq_along(best))
+            #  {
+            #    w  <- which(temp$target_iv==best$target_iv[p])
+            #    iv <- unlist( strsplit( toString(temp$ivs[w]), ", " ) )
+            #    g  <- try(trajplot(data=rawdata                                         ,
+            #                       ids=toString(temp$ids[w])                            ,
+            #                       dv=toString(temp$dv[w])                              ,
+            #                       time=toString(temp$time[w])                          ,
+            #                       phase=toString(temp$phase[w])                        ,
+            #                       ivs=ifelse(length(iv)>1, iv[seq_along(iv)[-1]], NULL) ,
+            #                       target_iv=iv[length(iv)]                             ,
+            #                       target_nm=toString(temp$target_iv[w])
+            #    ), TRUE)
+            #    if(! "try-error" %in% class(g) ) bestplots[[p]] <- g
+
+            #  }
+            #  pdf(paste(fn, pav, "pdf", sep="."), onefile = TRUE)
+            #  lapply(bestplots, gridExtra::grid.arrange)
+            #  dev.off()
+            #}
+          }
+          if(all(is.na(best)))
+          {
+            cat("All p-values are >", alpha, "\n\n\n")
+          }
+
+          write.csv(best,  paste(fn, pav, "csv", sep="."))
         }
-        if(all(is.na(best)))
-        {
-          cat("All p-values are >", alpha, "\n\n\n")
-        }
-
-        write.csv(best,  paste(fn, pav, "csv", sep="."))
       }
     }
     while( sink.number() > 0 ) sink()
