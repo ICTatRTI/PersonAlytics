@@ -110,6 +110,7 @@ htp <- function(data                                                   ,
     {
       # pre-clean loop
       if(exists("t0")) rm(t0)
+
       # set up the  palytic object
       t0 <- PersonAlytics::Palytic$new(data=data  ,
                         ids=ids                   ,
@@ -424,7 +425,8 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
     #    '\ntarget_iv: ', target_ivs[[iv]], '\nPQ: ', toString(PQ),
     #    "\n\n", file='FitWithTargetIVtest.txt', append=TRUE)
   }
-  # the target iv variance was 0
+
+  # if the target iv variance was 0
   if( is.na(tivv) ) tivv <- FALSE
   if( length( unlist(target_ivs[iv]) ) != 0 & !tivv )
   {
@@ -466,7 +468,16 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   #-------------------------------------------------------------------------
   # descriptive statistics
   #-------------------------------------------------------------------------
-  descr_id <- t1$describe(useObs)
+  sk   <- t1$summary()$skew_kurt
+  sk   <- sk[nrow(sk):1,] # improves viewing in the csv output
+  skl  <- c(sk)
+  sknm <- expand.grid(names(skl[2:length(skl)]),
+                      paste("Phase", sk$Phase, sep="_"))
+  sknm <- paste(sknm[,2], sknm[,1], sep="_")
+  skv <- c(t(sk[,2:ncol(sk)]))
+  names(skv) <- sknm
+
+  descr_id <- c(skv, t1$describe(useObs))
 
   #-------------------------------------------------------------------------
   # re-fit models with REML (unless arma)

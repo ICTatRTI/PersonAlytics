@@ -659,6 +659,8 @@ pa1 <- function(e=parent.frame())
 
   sink(file=fileName)
   print( Grp.out$tTable )
+  cat("\n\n")
+  print( t1$summary()$skew_kurt )
   sink()
 
   return(Grp.out)
@@ -801,6 +803,7 @@ paHTP <- function(e=parent.frame())
                  debugforeach  = e$debugforeach  ,
                  cores         = e$cores         )
   }
+
   if( !e$individual_mods )
   {
     grp.dims <- dims

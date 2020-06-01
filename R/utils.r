@@ -78,7 +78,8 @@ dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
 
   if(!is.list(out)) out <- list(out)
 
-  descriptives <- round(do.call(rbind, out),2)
+  descriptives <- data.frame(Phase=names(out), round(do.call(rbind, out),2))
+  row.names(descriptives) <- NULL
 
   if( print )
   {
@@ -97,14 +98,22 @@ dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
 .dstats <- function(dv, more=FALSE)
 {
 
-  skewness = moments::skewness(dv, na.rm=TRUE)
-  kurtosis = moments::kurtosis(dv, na.rm=TRUE)
+  skewness <- moments::skewness(dv, na.rm=TRUE)
+  kurtosis <- moments::kurtosis(dv, na.rm=TRUE)
+
+  dvstand       <- scale(dv)
+  leftoutliers  <- sum(dvstand < -3)
+  rightoutliers <- sum(dvstand >  3)
+  outliers      <- sum(leftoutliers, rightoutliers)
 
   descriptives <- c(mean            = mean(dv, na.rm=TRUE)                ,
                     median          = median(dv, na.rm=TRUE)              ,
                     sd              = sd(dv, na.rm=TRUE)                  ,
                     skewness        = skewness                            ,
-                    kurtosis        = kurtosis
+                    kurtosis        = kurtosis                            ,
+                    leftoutliers    = leftoutliers                        ,
+                    rightoutliers   = rightoutliers                       ,
+                    outliers        = outliers
   )
 
   if(more){
@@ -118,7 +127,10 @@ dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
                     cubeRootSkew    = sign(skewness)*(abs(skewness))^(1/3),
                     kurtosis        = kurtosis                            ,
                     kurtosisMinus3  = kurtosis-3                          ,
-                    qurtRootKurt    = sign(kurtosis)*(abs(kurtosis))^(1/4)
+                    qurtRootKurt    = sign(kurtosis)*(abs(kurtosis))^(1/4),
+                    leftoutliers    = leftoutliers                        ,
+                    rightoutliers   = rightoutliers                      ,
+                    outliers        = outliers
   )}
 
   invisible( descriptives )

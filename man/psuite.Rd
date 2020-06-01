@@ -28,7 +28,7 @@ psuite(
 
 \item{alpha}{The type I error rate.}
 
-\item{rawdata}{The raw data for plotting.}
+\item{rawdata}{The raw data for plotting (not implemented).}
 }
 \description{
 Apply p.adjust and add output and graphics
