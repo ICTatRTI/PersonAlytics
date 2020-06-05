@@ -717,8 +717,8 @@ alf <- function(x)
 #' @author Stephen Tueller \email{Stueller@@rti.org}
 #' @param x A numeric vector.
 #' @param na.rm Logical, should missing data be excluded when calculating min/max
-#' @param prior Numeric, a prior propability for squeezing from [0,1] to (0,1) where
-#' the square bracket indicates inclusion of endpoints and paretheses excludes the
+#' @param prior Numeric, a prior probability for squeezing from [0,1] to (0,1) where
+#' the square bracket indicates inclusion of endpoints and parentheses excludes the
 #' endpoints. See the references.
 #' @param type Character. Options are "both" which squeezes from [0,1] to (0,1),
 #' "floor" which squeezes from [0,1] to (0,1], and "ceiling" which squeezes from [0,1] to [0,1).
