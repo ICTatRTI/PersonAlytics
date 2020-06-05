@@ -56,8 +56,12 @@ test_that("ManyV1",
                         subgroup = OvaryICT$Mare==1
   )
 
+  l <- which(names(t1)=="ma1.Estimate")
+  u <- which(names(t1)=="Time.Phase.Pr...z..")
   testthat::expect_equal( c(t(mare1$tTable[1:5,])),
-             unname(unlist(t1[t1$Mare==1,44:63])) )
+             unname(unlist(t1[t1$Mare==1,l:u])) )
+
+
 
   # verify against a 'manual' auto.arima run
   m1   <- OvaryICT$Mare==1
