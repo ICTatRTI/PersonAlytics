@@ -74,12 +74,18 @@ dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
     pout <- lapply(dvl, .dstats, more=more)
     pout$OverAll <- out
     out  <- pout; rm(pout)
+
+    if(!is.list(out)) out <- list(out)
+
+    descriptives <- data.frame(Phase=names(out), round(do.call(rbind, out),2))
+    row.names(descriptives) <- NULL
   }
 
-  if(!is.list(out)) out <- list(out)
-
-  descriptives <- data.frame(Phase=names(out), round(do.call(rbind, out),2))
-  row.names(descriptives) <- NULL
+  if( is.null(phase) )
+  {
+    descriptives <- data.frame(Phase='None', t(round(out,2)))
+    row.names(descriptives) <- NULL
+  }
 
   if( print )
   {

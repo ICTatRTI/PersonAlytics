@@ -1,0 +1,7 @@
+               Value Std.Error  DF   t-value      p-value
+(Intercept) 10.86191 0.8828363 296 12.303430 2.240170e-28
+Time         2.28347 1.2719903 296  1.795194 7.364274e-02
+
+
+  Phase  mean median   sd skewness kurtosis leftoutliers rightoutliers outliers
+1  None 12.04     12 5.04     0.38     2.54            0             0        0

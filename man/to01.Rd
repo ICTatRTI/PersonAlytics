@@ -11,8 +11,8 @@ to01(x, na.rm = TRUE, squeeze = FALSE, prior = 0.5, type = "both")
 
 \item{na.rm}{Logical, should missing data be excluded when calculating min/max}
 
-\item{prior}{Numeric, a prior propability for squeezing from [0,1] to (0,1) where
-the square bracket indicates inclusion of endpoints and paretheses excludes the
+\item{prior}{Numeric, a prior probability for squeezing from [0,1] to (0,1) where
+the square bracket indicates inclusion of endpoints and parentheses excludes the
 endpoints. See the references.}
 
 \item{type}{Character. Options are "both" which squeezes from [0,1] to (0,1),
