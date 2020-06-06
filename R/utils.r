@@ -108,8 +108,8 @@ dstats <- function(dv, phase=NULL, more=FALSE, print=FALSE)
   kurtosis <- moments::kurtosis(dv, na.rm=TRUE)
 
   dvstand       <- scale(dv)
-  leftoutliers  <- sum(dvstand < -3)
-  rightoutliers <- sum(dvstand >  3)
+  leftoutliers  <- sum(dvstand < -3, na.rm=TRUE)
+  rightoutliers <- sum(dvstand >  3, na.rm=TRUE)
   outliers      <- sum(leftoutliers, rightoutliers)
 
   descriptives <- c(mean            = mean(dv, na.rm=TRUE)                ,
