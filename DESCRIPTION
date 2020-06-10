@@ -15,15 +15,15 @@ LazyData: true
 RoxygenNote: 7.0.2
 Roxygen: list(r6 = FALSE)
 Suggests: 
-    knitr (>= 1.26),
-    rmarkdown (>= 2.0),
-    lme4 (>= 1.1.21)
+    knitr,
+    rmarkdown,
+    lme4
 VignetteBuilder: knitr
 BugReports: https://github.com/ICTatRTI/PersonAlytics/issues
 URL: https://personalytics.rti.org/ 
 Depends: 
     gamlss.dist,
-    R (>= 3.6),
+    R (>= 3.4),
     R6
 Imports: 
     foreach,
