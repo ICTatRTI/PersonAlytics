@@ -447,10 +447,16 @@ makeForms <- function(ids          = "Mare"                   ,
   }
   if( !is.null(phase) )
   {
+    # 2021-05-05 Note: collapse was previously '*' to force the phase*time
+    # interaction, which we've decided not to do. As a temporory fix, we
+    # change collapse to '+', but we still need the option of dropping the
+    # interaction even when asked by the user if the interaction is causing
+    # convergence problems
     if(dropTime != "int")
     {
-      rhs <- paste( paste(time, phase, sep='*'), collapse = '+')
+      rhs <- paste( c(time, phase), collapse = '+')
     }
+    # 2021-05-05 Note: this has not changed as of writing
     if(dropTime == "int")
     {
       rhs <- paste( c(time, phase), collapse = '+')
