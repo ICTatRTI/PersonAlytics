@@ -12,7 +12,7 @@ Description: Tools and illustrations for fitting idiographic trial data using ga
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true		
-RoxygenNote: 7.0.2
+RoxygenNote: 7.1.1
 Roxygen: list(r6 = FALSE)
 Suggests: 
     knitr,
