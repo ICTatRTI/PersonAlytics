@@ -52,23 +52,27 @@ pkgss <-  matrix( unlist( strsplit(pkgs, "\\(") ), ncol=2, byrow=TRUE)[,1]
 
 # Introduction
 
+## Purpose 
+
 The purpose of this user's guide is to illustrate how to use `PersonAlytics` to analyze 
 
 1. Single case time series data, also known as single subject or N-of-1 studies. Interrupted time series design designs can be used to introduce one (or more) interventions which results in two (or more) phases (e.g., pre-intervention and post-intervention). 
 
 2. Small sample intensive longitudinal design data.
 
-3. Idiographic clinical trial data (ICT), which uses a single-case or small sample longitudinal data set where all participants experience two or more treatment phases (e.g., baseline and follow-up). 
+3. Idiographic clinical trial data (ICT), which uses a single-case or small sample longitudinal data set where all participants experience two or more treatment phases (e.g., baseline and follow-up) and their data were modeled individually.
 
 These three types of data are analyzed using longitudinal mixed effects models, also known as hierarchical linear models, multilevel models, latent growth curve models, or mixed method trajectory analysis. 
 
-While there are already several R packages such as `nlme` and `gamlss` that can be used to implement these models, the purpose of the `PersonAlytics` package is to automate the following aspects of analyzing these types of data: 
+While there are already several R packages to fit and compare Gaussian linear and nonlinear mixed-effects models, such as `nlme`: Linear and Nonlinear Mixed Effect Models (Pinheiro, Bates, DebRoy, & Sarkar, 2020) and `gamlss`: Generalized Additive Models for Location Scale and Shape (Rigby & Stasinopoulos, 2005), the purpose of the `PersonAlytics` package is to extend upon them by automating the following aspects of analyzing these types of data: 
 
-1. Model selection for detecting the shape of the trajectory of the dependent variable over time. Using a good fitting trajectory shape yields parameters that correspond to the shape and improve interpretability. Current options include polynomial growth (e.g., linear, quadratic, cubic, etc.) and piecewise growth (e.g., linear growth within each phase). 
+1. Model selection for detecting the shape of the trajectory of the dependent variable over time. Using a good fitting trajectory shape yields parameters that correspond to the underlying model-implied pattern of change and improve interpretability. Current options for the growth trajectory include polynomial growth (e.g., linear, quadratic, cubic, etc.) and piecewise growth (e.g., linear growth within each phase).
 
-2. Model selection for detecting an appropriate time series model for the residuals. Getting a good fitting residual correlation model improves standard error estimation.
+2. Model selection for detecting the pattern of temporal dependencies or autoregressive processes amongst the dependent variable using an appropriate time series model. Temporal dependency is captured as residual covariance. Getting a good fitting residual correlation model improves standard error estimation.
 
 3. Analysis of mixed effects models in situations where the combination of predictors, outcomes, and/or individuals (i.e., in the case where individual level models are desired such as in personalized medicine) yields a number of analyses to unwieldy implement manually. This is especially true if the model selection process for the trajectory shape and the residual correlation model is conducted for each combination of predictors, outcomes, and/or individuals. High throughput analyses are achieved in `PersonAlytics` through parallelization. Jobs are split among two or more processors on a computer and run in parallel. Results are recombined at the end of the process. Included in `PersonAlytics` are options for the user to specify Type I error rate or False Discovery Rate (FDR) corrections. See the section title "High Throughput Examples" for details on implementing high throughput analyses. 
+
+## Features
 
 <p class="comment">
 **High Throughput**. The `PersonAlytics` package automates the task of conducting large numbers of analyses using high throughput computation. A large number of analyses may be required when the combination of predictors, outcomes, and/or individuals yields a number of analyses to unwieldy implement manually.
@@ -77,6 +81,39 @@ While there are already several R packages such as `nlme` and `gamlss` that can 
 <p class="comment">
 **Parallelization**. High throughput analyses are achieved through parallelization. Jobs are split among two or more processors on a computer and are run in parallel to each other. Results are recombined at the end of the process. 
 </p>
+
+## Frequently Asked Question
+
+1. Is missing data a problem?  Missing data can be handled with the default estimation methods, i.e., REML (the restricted, or residual, or reduced) maximum likelihood approach, whih is a particular form of maximum likelihood estimation that bases estimates on a restrited likelihood function instead of on a maximum likelihood fit of all the information.
+
+2. Is heterogeneous data struture a problem?  No, individuals can have different number of observations or missing patterns.
+
+3. The minimum number of time points need for the analysis? This depends on a few factors, including the number of variables, the complexity in the time series models, etc. Rules of thumb for any analysis can be applied, i.e., a more complex situation require a larger amount of timepoint to ensure sufficient power. Having at least 60 time points is normal for time series data, but we had achieve adequate results of univariate mixed effect models with number of time points as low as 20.  That being said, our team is conducting simuation studies to evaluation the performance of models in relate to the number of observations.
+
+4. Can the function include exogeneous variables and their interactions? Yes, multiple exogeneous variables can be included as covariates of the model, using `ivs` parameter, the interactions can be specified using `interactions` parameter (more details below). General guidelines of including covariates and their interactions apply to here. For example, possibility of collinearity that can bias the estimation of standard error, missingness in covariates that leads to lose of samples (and power), etc. We remind users to keep the number of covariates reasonaly low and select the list of covariates that carries theoretical implications.
+
+5. Does the program support other types of response variables (e.g., binary, ordinal, counts data) or distributions?  Yes,  a variaty list of variables and distribution are available in consistent to what is offerred by `gamlss` (check under `gamlss.family` for a list of distribution available). Note that some of them require data transformation or rescaling prior to analysis, `PersonAlytics` provide function to automatically transform the data for you. For example, the `to01` is a function to rescale any variables to the [0,1] range so that the transformed data can be analyzed following a beta family. As part of the future simulation study plan, our team is evaluating the performance of models using response variables that follow ordinal or counts distributions.
+
+6. What do I do if I obtain an error? Any initial trouble-shooting strategies?
+
+Ensure your directories for your data are correct, and no other files are in this directory.
+
+Ensure that the data is long format, in which repeated observations are stacked vertically, with the columns being variables and the rows containing the observations.
+
+Ensure that all variables have variability (i.e., are not constant)??
+
+Any other common issues??
+
+If you still run into issues, please email your code and the error you received, or any other questions or concerns to: [INSERT PACKAGE EMAIL HERE]
+
+Please cite the package (we really appreciate it): [Stephen Tueller, Ty Rinedour and Derek Ramirez (2020). PersonAlytics: Analytics for
+  single-case and small N intensive longitudinal designs, idiographic clinical trials
+  (ICT), and interrupted time series.. R package version 0.3.0.9.
+  https://personalytics.rti.org/
+]
+
+
+## Working Example
 
 <p class="comment">
 **High Throughput Example 1: Migraine Triggers**. 346 migraine patients were followed for 90 days. They recorded information on 71 potential migraine and non-migraine headache triggers such as alcohol, weather, and exercise. Individual models were required to determine the five person-specific triggers with the largest effect size. Even though 90 time points is large, it was deemed to small to estimate all 71 trigger effects simultaneously, so trigger effects were estimated one at a time. The analysis required 346 patients X 2 outcomes X 71 triggers = 49,132 PersonAlytic runs.
@@ -93,7 +130,7 @@ Ty to write content here
 
 # Installing `PersonAlytics`
 
-*Note. It is assumed that the user has basic familiarity with `R`. If needed, there are numerous online tutorials to help the user become familiar with `R`.* That said, we will define a few key terms here that are used throughout this document:
+*Note. It is assumed that the user has basic familiarity with `R`. If needed, there are numerous online tutorials to help the user become familiar with `R` (e.g., https://r4ds.had.co.nz).* That said, we will define a few key terms here that are used throughout this document:
 
 * Console: This is the part of `R` that can be used interactively. Code can be typed in and results will be displayed in the console. 
 
@@ -157,7 +194,7 @@ The `PersonAlytic()` function is the primary user interface for the `PersonAlyti
 
 We will illustrate the basic parameters of the `PersonAlytic()` function using a data set called OvaryICT, which contains data modified from the Ovary data in the `nlme` package. A description is available by typing `?Ovary` in the `R` console. The `OvaryICT` data set was modified to include a phase variable to represent the structure of an ICT. A description of the modifications are available by typing `?OvaryICT` in the `R` console. The `OvaryICT` data come with the `PersonAlytics` package and are used in most of the documentation examples. A phase variable is an essential component of an ICT. A typical phase variable represents pre- and post-treatment phases of a study, and more that two phases are an option in `PersonAlytics`.
 
-The first six rows of the OvaryICT data are shown in Table x. Note that the data are in 'long format'. In the example below, Mare 1's first six time points are represented in separate rows. The time points are days prior to ovulation (for negative values), at ovulation (for values of 0 or 1) or between ovulations (for positive values other than 0 and 1). In addition to the phase variables (phase 1 and phase 2), the `OvaryICT` data also includes six randomly generated predictors (or independent variables) named Target1 to Target6 which will be used to illustrate other `PersonAlytics` features. 
+The first six rows of the OvaryICT data are shown in Table x. Note that the data are in 'long format' where the repeated observations of one construct from each person are listed in one column. In the example below, Mare 1's first six time points are represented in separate rows. The time points are days prior to ovulation (for negative values), at ovulation (for values of 0 or 1) or between ovulations (for positive values other than 0 and 1). In addition to the phase variables (phase 1 and phase 2), the `OvaryICT` data also includes six randomly generated predictors (or independent variables) named Target1 to Target6 which will be used to illustrate other `PersonAlytics` features. 
 
 ```{r, echo=FALSE}
 kable(head(PersonAlytics::OvaryICT), digits = 2)
@@ -230,7 +267,7 @@ eg_time_power <- PersonAlytic(output="MyResults",
 
 ### Residual Correlation Structure
 
-The residual autocorrelation structure can be specified by the user using the `correlation` parameter. The `correlation` parameter default is NULL, corresponding to no within-group correlations. 
+The residual autocorrelation structure can be specified by the user using the `correlation` parameter. The `correlation` parameter default is NULL, corresponding to no within-person temporal auto-correlations. 
 
 Any option listed in the  `?corStruct` documentation of the `nlme` package can be specified (see also the correlation parameter in `?lme`). When specifying a correlation structure, the parameters P and Q  must be specified explicitly and the entire correlation structure must be in quotes. Alternatively, PersonAlytics can automatically detect the values for P and Q for an ARMA(P,Q) model using the AR option of the `autoSelect` parameter as described below.
 
@@ -247,7 +284,7 @@ eg_correlation <- PersonAlytic(output="MyResults",
                 autoSelect=NULL)
 ```
 
-Note that the parameters `p` and `q` must be lower case and the entire correlation structure must be in quotes. Alternatively, `PersonAlytics` can perform automatic model selection for the values for `p` and `q` in an `ARMA(p,q)` model using the `AR` parameter of the `autoSelect` parameter as described in the section on autoselection. 
+Note that the parameters `p` and `q` must be lower case and the entire correlation structure must be in quotes. Alternatively, `PersonAlytics` can perform automatic model selection for the values for `p` and `q` in an `ARMA(p,q)` model using the `AR` parameter of the `autoSelect` parameter as described in the section on autoselection (Pinheiro & Bates, 2000). 
 
 *Note: For users unfamiliar with residual correlation structures (or other features of the `nlme` package), a helpful reference is the book "Mixed-Effects Models in S and S-PLUS" by Pinheiro and Bates (2000).* 
 
