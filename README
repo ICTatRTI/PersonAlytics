@@ -1,11 +1,10 @@
-PersonAlytics
-========================================================
-
-PersonAlytics: State-of-theArt Small Sample Analytics
+**PersonAlytics: State-of-theArt Small Sample Analytics**
 
 \url{https://personalytics.rti.org/}
 
 ## Installation
 
-`install.packages("devtools")`
-`devtools::install_github("ICTatRTI/PersonAlytics", build_opts = c("--no-resave-data", "--no-manual"), build_vignettes = TRUE)`
+```r
+install.packages("devtools")
+devtools::install_github("ICTatRTI/PersonAlytics", build_opts = c("--no-resave-data", "--no-manual"), build_vignettes = TRUE)
+```
