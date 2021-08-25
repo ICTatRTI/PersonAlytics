@@ -1,4 +1,4 @@
-[PersonAlytics: State-of-theArt Small Sample Analytics](https://personalytics.rti.org/) <img src="http://pact.eastus.cloudapp.azure.com/Content/personalytics-logo.jpg" align="right" />
+[PersonAlytics: State-of-theArt Small Sample Analytics](https://personalytics.rti.org/) <img src="http://pact.eastus.cloudapp.azure.com/Content/personalytics-logo.jpg" align="left" />
 ========================================================
 
 ## Installation
