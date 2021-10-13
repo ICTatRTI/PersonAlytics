@@ -316,6 +316,12 @@
 #' @param cores Integer. The defaults is \code{parallel::detectCores()-1}, or
 #' one fewer cores than what is detected on the machine.
 #'
+#' @param userFormula List of formulae used to override default model
+#' construction. Items in the list must include \code{fixed} and \code{random}
+#' to specify the parameters of the same names using \link{\code{lme}}, or
+#' \code{formula} to specify the parameter of the same name in
+#' \link{\code{gamlss}}.
+#'
 #' @param ... Not currently used.
 #'
 #' @examples
@@ -439,8 +445,6 @@
 
 # non-user options allowed in ...
 # packageTest - override the package, for research purposes
-# userFormula - override the formulae, named list that can include any of
-#   fixed, random, formula
 
 
 PersonAlytic <- function(output          = NULL                                  ,
@@ -474,6 +478,7 @@ PersonAlytic <- function(output          = NULL                                 
                          fpc             = 0                                     ,
 						             debugforeach    = FALSE                                 ,
                          cores           = parallel::detectCores()-1             ,
+						             userFormula     = NULL                                  ,
                          ...)
 {
   #message('alignPhase=',alignPhase)
@@ -527,15 +532,33 @@ PersonAlytic <- function(output          = NULL                                 
     message('\npackage was overridden by packageTest to be `', package, '`\n')
   }
 
-  # for internal testing use only, allows us to override formulae, e.g., to
-  # test random intercepts only or random slopes only models
-  userFormula = list(
+  # check userFormula
+  userFormulae <- list(
     fixed=NULL,
     random=NULL,
     formula=NULL)
-  if('userFormula'  %in% names(args))
+  if(!is.null(userFormula))
   {
-    userFormula <- args$userFormula
+    supportedForms <- names(userFormula)[names(userFormula) %in%
+                                           names(userFormulae)]
+    for(i in seq_along(supportedForms))
+    {
+      if(!inherits(userFormula[[supportedForms[i]]], "formula"))
+      {
+        stop("\nuserFormula$", supportedForms[i], " is not a formula:\n\n",
+             userFormula[[supportedForms[i]]], "\n\n use:\n",
+             "userFormula$", supportedForms[i], " <- formula(",
+             userFormula[[supportedForms[i]]], ")\n\n")
+      }
+    }
+
+    unsupportedForms <- names(userFormula)[!names(userFormula) %in%
+                                           names(userFormulae)]
+    if(length(unsupportedForms)> 0)
+    {
+      warning("\nThe following items in userFormula are not yet supported:\n\n",
+              paste(unsupportedForms, "\n"))
+    }
   }
 
   # override individual_mods if only 1 id, 1 dv, <= 1 target_iv
