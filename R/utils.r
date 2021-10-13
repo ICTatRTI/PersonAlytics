@@ -365,8 +365,14 @@ forms <- function(data                     ,
   vars <- vars[which(vars!="1" & vars!="0")]
   vars <- vars[!is.na(vars)]
 
-  wvars <- which( ! vars %in% names(data) )
+  # allow for `-1` to be a variable (e.g., no intercept passed by `userFormula`)
+  if(any(vars %in% "-1"))
+  {
+    vars <- vars[vars != "-1"]
+  }
 
+  # which variables are not in the data?
+  wvars <- which( ! vars %in% names(data) )
   if( length(wvars) > 0 )
   {
     stop( paste('\n`', vars[wvars], '` is not in the data\n', sep='') )
