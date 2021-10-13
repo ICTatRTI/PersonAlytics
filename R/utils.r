@@ -355,21 +355,16 @@ forms <- function(data                     ,
   formula <- theForms$formula
 
   # check that the variables are in the data
-  ivs.test <- unlist(lapply(ivs, strsplit, ":"))
+  frmSplit <- "\\:|\\+|\\-|\\*"
+  ivs.test <- unlist(lapply(ivs, strsplit, frmSplit))
   vars <- unique( c(ids, dv, time$analysis, phase, ivs.test,
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- as.character( vars )
-  vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, '\\*|\\+'), unlist))) )
+  vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, frmSplit), unlist))) )
   wi <- which( substr(vars, 1, 2) == "I(" )
   vars[wi] <- unlist(strsplit(gsub("\\I|\\(|\\)", "", vars[wi]), "\\^"))[1]
-  vars <- vars[which(vars!="1" & vars!="0")]
+  vars <- vars[which(vars!="1" & vars!="0" & vars != "-1")]
   vars <- vars[!is.na(vars)]
-
-  # allow for `-1` to be a variable (e.g., no intercept passed by `userFormula`)
-  if(any(vars %in% "-1"))
-  {
-    vars <- vars[vars != "-1"]
-  }
 
   # which variables are not in the data?
   wvars <- which( ! vars %in% names(data) )
@@ -450,7 +445,7 @@ makeForms <- function(ids          = "Mare"                   ,
   checkivs <- ""
   if(!is.null(ivs))
   {
-    checkivs <- unlist(strsplit(ivs, "\\+|\\*|\\:"))
+    checkivs <- unlist(strsplit(ivs, "\\+|\\*|\\:\\-"))
   }
   fixedTime <- time
   if(dropTime == "yes" | any(checkivs == "-1 "))

@@ -35,6 +35,7 @@ PersonAlytic(
   fpc = 0,
   debugforeach = FALSE,
   cores = parallel::detectCores() - 1,
+  userFormula = NULL,
   ...
 )
 }
@@ -312,6 +313,12 @@ implemented.}
 
 \item{cores}{Integer. The defaults is \code{parallel::detectCores()-1}, or
 one fewer cores than what is detected on the machine.}
+
+\item{userFormula}{List of formulae used to override default model
+construction. Items in the list must include \code{fixed} and \code{random}
+to specify the parameters of the same names using \code{\link{lme}}, or
+\code{formula} to specify the parameter of the same name in
+\code{\link{gamlss}}. See \code{\link{byPhasebyGroup}} for an example.}
 
 \item{...}{Not currently used.}
 }

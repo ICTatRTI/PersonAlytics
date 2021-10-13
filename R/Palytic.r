@@ -937,6 +937,7 @@ Palytic <- R6::R6Class("Palytic",
                        #--------------------------------------------------------
                        public = list(
 
+                         #' @name initialize
                          #' @description
                          #' Create a new Palytic Object
                          #' @param data A \code{\link{data.frame}} that contains as variables \code{ids},
@@ -1258,6 +1259,7 @@ Palytic <- R6::R6Class("Palytic",
 
 # add methods ####
 
+#' @name summary
 #' @description
 #' Print a summary of the inputs, the cleaned data,
 #' and the raw data in a Palytic object
@@ -1313,6 +1315,7 @@ Palytic$set("public", "summary",
             overwrite = TRUE
 )
 
+#' @name detect
 #' @description
 #' Conduction autoselection based on the inputs to the \code{autoSelect} parameter
 #' when initializing an new Palytic object.
@@ -1413,6 +1416,7 @@ Palytic$set("public", "detect",
             overwrite = TRUE
 )
 
+#' @name dist
 #' @description
 #' This method plots the density of your dependent variable if \code{plot=TRUE} and
 #' lets the user implement \code{gamlss} automated
@@ -1547,6 +1551,7 @@ Palytic$set("public", "dist",
             overwrite = TRUE
 )
 
+#' @name describe
 #' @description
 #' Descriptive statistics for data in a Palytic object. This method gives the
 #' correlation between \code{dv} and each continuous variable in \code{ivs}
@@ -1632,6 +1637,7 @@ Palytic$set("public", "describe",
             overwrite = TRUE
 )
 
+#' @name arma
 #' @description
 #' For individual level models, random intercepts and
 #' random slopes are not defined. In this situatation, an \code{ARMA(p,q)}
@@ -1757,6 +1763,7 @@ Palytic$set("public", "arma",
 # > if("contrasts" %in% names(args)) # then pass `contrasts` to lme
 # or some other method of matching arguments, see ?match.arg
 
+#' @name lme
 #' @description
 #' This method fits the linear mixed effects
 #' \code{lme} model implied by the \code{Palytic} fields \code{ids},
@@ -2037,6 +2044,7 @@ getARnEQ1 <- function(m, PQ, dv, debug=FALSE)
 # $gamlss() ####
 ### TODO(Stephen) add residual correlation search for n=1
 
+#' @name gamlss
 #' @description
 #' This method fits the \code{lme} model implied
 #' by the \code{Palytic} fields \code{ids}, \code{dv}, \code{phase}, \code{time}
@@ -2236,6 +2244,7 @@ Palytic$set("public", "gamlss",
 )
 
 # this needs much editing
+#' @name GroupAR
 #' @description
 #' The same as \code{getAR} when the ARMA order is desired for the full sample.
 #'
@@ -2378,6 +2387,7 @@ ARpq <- function(clone, p, q, subgroup, package="nlme")
   return(corMod)
 }
 
+#' @name getTO
 #' @description
 #' Use model comparisons to test for the polynomial order of time
 #' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
@@ -2453,6 +2463,7 @@ Palytic$set("public", "getTO",
 # TODO:hard coded lme at this point, option for gamlss later
 # needs much editing
 
+#' @name GroupTO
 #' @description
 #' The same as \code{getTime_power} when the polynomial of time is desired for
 #' the full sample.
@@ -2524,6 +2535,7 @@ Palytic$set("public", "GroupTO",
 # This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
 # of the data for ICTviz is theoretical, this function is for real data
 
+#' @name plot
 #' @description
 #' Plot the data in your Palytic object with design elements including time and
 #' phase.

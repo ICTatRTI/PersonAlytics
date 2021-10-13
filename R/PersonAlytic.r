@@ -318,9 +318,9 @@
 #'
 #' @param userFormula List of formulae used to override default model
 #' construction. Items in the list must include \code{fixed} and \code{random}
-#' to specify the parameters of the same names using \link{\code{lme}}, or
+#' to specify the parameters of the same names using \code{\link{lme}}, or
 #' \code{formula} to specify the parameter of the same name in
-#' \link{\code{gamlss}}.
+#' \code{\link{gamlss}}. See \code{\link{byPhasebyGroup}} for an example.
 #'
 #' @param ... Not currently used.
 #'
@@ -532,6 +532,7 @@ PersonAlytic <- function(output          = NULL                                 
     message('\npackage was overridden by packageTest to be `', package, '`\n')
   }
 
+
   # check userFormula
   userFormulae <- list(
     fixed=NULL,
@@ -560,6 +561,24 @@ PersonAlytic <- function(output          = NULL                                 
               paste(unsupportedForms, "\n"))
     }
   }
+
+  # if -1 is at the end of fixed or formula, it needs to be at the front
+  nointCheck <- function(frm)
+  {
+    oldfrm <- as.character(frm)
+    temp <- unlist(strsplit(oldfrm[length(oldfrm)], "-"))
+    if(temp[length(temp)] == " 1")
+    {
+      olddv <- ifelse(oldfrm[1]=="~", oldfrm[2], oldfrm[1])
+      newfrm <- formula(paste(olddv, "~ -1 +", temp[1]))
+      return(newfrm)
+    }
+    if(temp[1]=="") return(frm)
+  }
+  if(!is.null(userFormula$fixed)) userFormula$fixed <- nointCheck(userFormula$fixed)
+  # next line is untested
+  if(!is.null(userFormula$formula)) userFormula$formula <- nointCheck(userFormula$formula)
+
 
   # override individual_mods if only 1 id, 1 dv, <= 1 target_iv
   luid <- length(unique(data[[ids]]))

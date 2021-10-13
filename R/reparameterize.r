@@ -1,9 +1,12 @@
-#' Function to reparameterize ICT data with 2+ groups and 2+ phase
+#' Function to create dummy codes for phase and group specific effects.
+#'
+#' In ICT data with 2+ groups and 2+ phases, dummy coding can be used to
+#' estimate group and phase specific intercepts and slopes.
 #'
 #' @export
 #'
 #' @param data A \code{data.frame} with a time and phase variables
-#' (see \link{\code{PersonAlytic}}), and a grouping variable (which would
+#' (see \code{\link{PersonAlytic}}), and a grouping variable (which would
 #' normally be passed to \code{PersonAlytic} via the \code{ivs} parameter).
 #'
 #' @param time Character. The name of the time variable.
@@ -14,6 +17,59 @@
 #'
 #' @examples
 #'
+#' # create group and phase specific dummy indicators after creating an
+#' # artificial "Group" variable in the Ovary data.
+#' OvaryICT2 <- OvaryICT
+#' OvaryICT2$Group <- as.numeric(OvaryICT2$Mare<7)
+#' OvaryICT2 <- byPhasebyGroup(OvaryICT2, "Time", "Phase", "Group")
+#'
+#' # view the new variables, group and phase specific intercepts and slopes
+#' OvaryICT2$dummyNames
+#'
+#' # view the right hand side formula of the fixed effects produced by
+#' # `byPhasebyGroup`, noting the `-1` elimination of an overall intercept
+#' OvaryICT2$fixed
+#'
+#' # fit a model using the new variables with
+#' # - no intercept
+#' # - no overall time variable
+#' userFormula <- list()
+#' userFormula$fixed <- formula(paste("follicles ~ ", OvaryICT2$fixed)) # add dependent variable
+#' userFormula$random <- ~ Time | Mare
+#'
+#' t0 <- PersonAlytic(output      = 'byPhasebyGroup'     ,
+#'                    data        = OvaryICT2$data       ,
+#'                    ids         = "Mare"               ,
+#'                    dvs         = "follicles"          ,
+#'                    time        = "Time"               ,
+#'                    ivs         = OvaryICT2$dummyNames ,
+#'                    package     = "nlme"               ,
+#'                    userFormula = userFormula          ,
+#'                    correlation = "corARMA(p=1)"       ,
+#'                    autoSelect  = list()               ,
+#'                    method      = "ML"                 )
+#' summary(t0)
+#'
+#' # note that the following moves the `-1` to the end of the formula, test
+#' # that this still works
+#' userFormula$fixed <- update(formula(paste(" ~ ", OvaryICT2$fixed)), follicles ~ .)
+#' t1 <- PersonAlytic(output      = 'byPhasebyGroup'     ,
+#'                    data        = OvaryICT2$data       ,
+#'                    ids         = "Mare"               ,
+#'                    dvs         = "follicles"          ,
+#'                    time        = "Time"               ,
+#'                    ivs         = OvaryICT2$dummyNames ,
+#'                    package     = "nlme"               ,
+#'                    userFormula = userFormula          ,
+#'                    correlation = "corARMA(p=1)"       ,
+#'                    autoSelect  = list()               ,
+#'                    method      = "ML"                 )
+#' summary(t1)
+#'
+#' # if nothing returns, the test passes
+#' testthat::expect_equal(summary(t0)$tTable, summary(t1)$tTable)
+#'
+
 byPhasebyGroup <- function(data, time, phase, group)
 {
   g <- unique(data[[group]])
@@ -39,9 +95,14 @@ byPhasebyGroup <- function(data, time, phase, group)
     }
   }
 
+  # create a data frame with the new variables
   newdata <- data.frame(data, do.call(data.frame, dummies))
 
-  list(data=newdata, dummyNames = names(dummies))
+  # create a fixed effects formula with no intercept
+  fixed <- paste("- 1 + ", paste(names(dummies), collapse = "+"))
+
+
+  list(data=newdata, dummyNames = names(dummies), fixed = fixed)
 
 }
 
