@@ -446,26 +446,38 @@ makeForms <- function(ids          = "Mare"                   ,
 {
   # construct or update the formula objects
 
+  # check for no intercept indicated by `dropTime="yes"` or in `ivs`
+  checkivs <- ""
+  if(!is.null(ivs))
+  {
+    checkivs <- unlist(strsplit(ivs, "\\+|\\*|\\:"))
+  }
+  fixedTime <- time
+  if(dropTime == "yes" | any(checkivs == "-1 "))
+  {
+    fixedTime <- "-1"
+  }
+
   # fixed
   if(  is.null(phase) )
   {
-    rhs <- paste(time, collapse = '+')
+    rhs <- paste(fixedTime, collapse = '+')
   }
   if( !is.null(phase) )
   {
     # 2021-05-05 Note: collapse was previously '*' to force the phase*time
-    # interaction, which we've decided not to do. As a temporory fix, we
+    # interaction, which we've decided not to do. As a temporary fix, we
     # change collapse to '+', but we still need the option of dropping the
     # interaction even when asked by the user if the interaction is causing
     # convergence problems
     if(dropTime != "int")
     {
-      rhs <- paste( c(time, phase), collapse = '+')
+      rhs <- paste( c(fixedTime, phase), collapse = '+')
     }
     # 2021-05-05 Note: this has not changed as of writing
     if(dropTime == "int")
     {
-      rhs <- paste( c(time, phase), collapse = '+')
+      rhs <- paste( c(fixedTime, phase), collapse = '+')
     }
   }
   fixed  <- formula( paste(dv, "~", rhs ) )
