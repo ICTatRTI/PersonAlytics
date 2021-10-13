@@ -446,7 +446,7 @@ makeForms <- function(ids          = "Mare"                   ,
 {
   # construct or update the formula objects
 
-  # check for no intercept indicated by `dropTime="yes"` or in `ivs`
+  # check for no intercept indicated by `dropTime="yes"` or "-1" in `ivs`
   checkivs <- ""
   if(!is.null(ivs))
   {
