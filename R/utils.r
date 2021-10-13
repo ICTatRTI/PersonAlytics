@@ -443,7 +443,7 @@ makeForms <- function(ids          = "Mare"                   ,
 
   # check for no intercept indicated by `dropTime="yes"` or "-1" in `ivs`
   checkivs <- ""
-  if(!is.null(ivs))
+  if(!is.null(ivs) & length(ivs) > 0)
   {
     checkivs <- unlist(strsplit(ivs, "\\+|\\*|\\:\\-"))
   }

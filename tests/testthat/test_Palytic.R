@@ -1,5 +1,6 @@
 context("Palytic")
 library(PersonAlytics)
+library(gamlss)
 
 test_that("PalyticBasics",
 {
