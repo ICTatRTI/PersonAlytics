@@ -8,14 +8,35 @@
 #' @param data A \code{data.frame} with a time and phase variables
 #' (see \code{\link{PersonAlytic}}), and a grouping variable (which would
 #' normally be passed to \code{PersonAlytic} via the \code{ivs} parameter).
+#' Alternatively, \code{data=NULL} can be used in conjunction with \code{time},
+#' \code{phase}, and \code{group} to produce generic variable names and a
+#' design matrix.
 #'
-#' @param time Character. The name of the time variable.
+#' @param time Character. The name of the time variable, or if \code{data=NULL},
+#' \code{time} must be a numeric vector with all of time points in a
+#' hypothetical study.
 #'
-#' @param phase Character. The name of the phase variable.
+#' @param phase Character. The name of the phase variable, or if \code{data=NULL},
+#' \code{phase} must be either a numeric integer specifying the number of phases
+#' or a character vector with the phase names.
 #'
-#' @param group Character. The name of the group variable.
+#' @param group Character. The name of the group variable., or if \code{data=NULL},
+#' \code{group} must be either a numeric integer specifying the number of groups
+#' or a character vector with the group names.
 #'
 #' @examples
+#'
+#' # produce a design matrix for a hypothetical study with 20 time points,
+#' # 2 phases, and 3 groups
+#' studyDesign <- byPhasebyGroup(NULL, -9:10, 2, 3)
+#' head(studyDesign$data)
+#' studyDesign$dummyNames
+#'
+#' # an alternative specification
+#' studyDesign <- byPhasebyGroup(NULL, -9:10, c("baseline", "intervention"),
+#'                  c("treatment", "control"))
+#' head(studyDesign$data)
+#' studyDesign$dummyNames
 #'
 #' # create group and phase specific dummy indicators after creating an
 #' # artificial "Group" variable in the Ovary data.
@@ -91,26 +112,51 @@
 
 byPhasebyGroup <- function(data, time, phase, group)
 {
+  if(is.null(data))
+  {
+    if(length(phase)==1 & length(group)==1)
+    {
+      if(!is.numeric(phase) | !is.numeric(group))
+      {
+        stop("\n`phase` and `group` must be numeric integers, currently:\n\n",
+             paste(paste(c("phase", "group"), c(phase, group), sep=" = "),
+                   collapse = "\n"))
+      }
+      phase <- 1:phase
+      group <- 1:group
+    }
+    data <- expand.grid(time=time, phase=phase, group=group)
+    time <- "time"
+    phase <- "phase"
+    group <- "group"
+  }
+
   g <- unique(data[[group]])
   p <- unique(data[[phase]])
+
+  gpref <- ""
+  ppref <- ""
+
+  if(is.numeric(g)) gpref <- "g"
+  if(is.numeric(p)) ppref <- "p"
 
   dummies <- list()
   for(i in seq_along(g))
   {
     for(j in seq_along(p))
     {
-      term <- paste("g", g[i], "p", p[j], sep="")
+      term <- paste(gpref, g[i], "_", ppref, p[j], sep="")
 
       wg <- data[[group]] == g[i]
       wp <- data[[phase]] == p[j]
 
-      # slope first so it is easy to drop the first one as referent
-      slp  <- paste(term, "slope", sep="_")
-      dummies[[slp]] <- as.numeric(wg & wp) * data[[time]]
-
-      # intercepts next
+      # intercepts
       int  <- paste(term, "int", sep="_")
       dummies[[int]] <- as.numeric(wg & wp)
+
+      # slopes
+      slp  <- paste(term, "slope", sep="_")
+      dummies[[slp]] <- as.numeric(wg & wp) * data[[time]]
     }
   }
 
@@ -124,6 +170,9 @@ byPhasebyGroup <- function(data, time, phase, group)
   list(data=newdata, dummyNames = names(dummies), fixed = fixed)
 
 }
+
+
+
 
 
 

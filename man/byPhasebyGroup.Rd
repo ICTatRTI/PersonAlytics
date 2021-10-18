@@ -9,19 +9,32 @@ byPhasebyGroup(data, time, phase, group)
 \arguments{
 \item{data}{A \code{data.frame} with a time and phase variables
 (see \code{\link{PersonAlytic}}), and a grouping variable (which would
-normally be passed to \code{PersonAlytic} via the \code{ivs} parameter).}
+normally be passed to \code{PersonAlytic} via the \code{ivs} parameter).
+Alternatively, \code{data=NULL} can be used in conjunction with \code{time},
+\code{phase}, and \code{group} to produce generic variable names and a
+design matrix.}
 
-\item{time}{Character. The name of the time variable.}
+\item{time}{Character. The name of the time variable, or if \code{data=NULL},
+\code{time} must be a numeric vector with all of time points in a
+hypothetical study.}
 
-\item{phase}{Character. The name of the phase variable.}
+\item{phase}{Character. The name of the phase variable, or if \code{data=NULL},
+\code{phase} must be a numeric integer specifying the number of phases.}
 
-\item{group}{Character. The name of the group variable.}
+\item{group}{Character. The name of the group variable., or if \code{data=NULL},
+\code{group} must be a numeric integer specifying the number of groups.}
 }
 \description{
 In ICT data with 2+ groups and 2+ phases, dummy coding can be used to
 estimate group and phase specific intercepts and slopes.
 }
 \examples{
+
+# produce a design matrix for a hypothetical study with 20 time points,
+# 2 phases, and 3 groups
+studyDesign <- byPhasebyGroup(NULL, -9:10, 2, 3)
+head(studyDesign$data)
+studyDesign$dummyNames
 
 # create group and phase specific dummy indicators after creating an
 # artificial "Group" variable in the Ovary data.
