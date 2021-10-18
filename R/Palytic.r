@@ -1317,7 +1317,7 @@ Palytic$set("public", "summary",
 
 #' @name detect
 #' @description
-#' Conduction autoselection based on the inputs to the \code{autoSelect} parameter
+#' Conduct autoselection based on the inputs to the \code{autoSelect} parameter
 #' when initializing an new Palytic object.
 #'
 #' @param subgroup Logical vector. If \code{NULL} results are provided for the full
@@ -2532,7 +2532,7 @@ Palytic$set("public", "GroupTO",
             overwrite = TRUE
             )
 
-# This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
+# This function borrows from ICTviz() in PersonAlyticsPower, but the nature
 # of the data for ICTviz is theoretical, this function is for real data
 
 #' @name plot
@@ -2541,7 +2541,7 @@ Palytic$set("public", "GroupTO",
 #' phase.
 #'
 #' @param subgroup Logical vector. If \code{NULL} results are provided for the full
-#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' sample. If a logical vector of the same length as the number of rows in the data,
 #' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
 #' @param groupVar Character. The name of a grouping variable in the data that
 #' will be used to stratify the plot.
@@ -2605,5 +2605,33 @@ Palytic$set("public", "plot",
             overwrite = TRUE
             )
 
+#' @name applyUserFormula
+#' @description
+#' Apply user formulae to the palytic object
+#'
+#' @param userFormula A userFormula, see \code{\link{PersonAlytic}}
+Palytic$set("public", "applyUserFormula",
+            function(userFormula)
+            {
+              if(!is.null(userFormula))
+              {
+                if( any(unlist(lapply(userFormula, function(x) !is.null(x)))) )
+                {
+                  isnnform <- function(x)
+                  {
+                    if( !is.null(x) )
+                    {
+                      return( is.formula(x) )
+                    }
+                    else return(FALSE)
+                  }
+                  if( isnnform(userFormula$fixed) ) self$fixed <- userFormula$fixed
+                  if( isnnform(userFormula$random) ) self$random <- userFormula$random
+                  if( isnnform(userFormula$formula) ) self$formula <- userFormula$formula
+                }
+              }
+            },
+            overwrite = TRUE
+            )
 
 

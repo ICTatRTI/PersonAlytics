@@ -129,6 +129,9 @@ htp <- function(data                                                   ,
 
       )
 
+      # userFormula
+      t0$applyUserFormula(userFormula)
+
       # autoselect
       t0$detect(subgroup    = NULL        ,
                 model       = NULL        ,
@@ -209,6 +212,9 @@ htp <- function(data                                                   ,
                         family       = family       ,
                         method       = "ML"         # requested method used later
       )
+
+      # userFormula
+      t0$applyUserFormula(userFormula)
 
       # autoselect
       t0$detect(subgroup    = NULL        ,
@@ -492,9 +498,14 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
              file='REMLlme.txt', append=TRUE), silent = TRUE )
     t1$method <- "REML"
     t1$family <- family #TODO(Stephen): prior line drops family, why??
-    if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs, sigma.formula=sigma.formula )
-    if("lme"    %in% class(modid)) Model <- t1$lme( useObs,
-                                      fpc=fpc, popsize2 = popsize2)
+    if("gamlss" %in% class(modid))
+    {
+      Model <- t1$gamlss( useObs, sigma.formula=sigma.formula )
+    }
+    if("lme"    %in% class(modid))
+    {
+      Model <- t1$lme( useObs, fpc=fpc, popsize2 = popsize2)
+    }
     if( any(c("gamlss", "lme") %in% class(Model)) )
     {
       err_id$method <- err_id$estimator <- "REML"
@@ -723,6 +734,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
     ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
     ivvs <- ivvs[!grepl("\\(", ivvs)]
     ivvs <- ivvs[!grepl("\\^", ivvs)]
+    ivvs <- ivvs[-which(!is.na(as.numeric(ivvs)))]
     ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
                            function(x) !all(duplicated(x)[-1L])) )
 

@@ -69,6 +69,25 @@
 #' # if nothing returns, the test passes
 #' testthat::expect_equal(summary(t0)$tTable, summary(t1)$tTable)
 #'
+#' \dontrun{
+#'
+#' # multiple DVs with no target_ivs and group models
+#' # this fails to implement the userFormula, see https://github.com/ICTatRTI/PersonAlytics/issues/25
+#' t2 <- PersonAlytic(output          = 'MultiDVnoIDnoIV'          ,
+#'                    data            = OvaryICT2$data             ,
+#'                    ids             = "Mare"                     ,
+#'                    dvs             = names(OvaryICT)[c(3,9:11)] ,
+#'                    ivs             = OvaryICT2$dummyNames       ,
+#'                    time            = "Time"                     ,
+#'                    package         = "nlme"                     ,
+#'                    individual_mods = FALSE                      ,
+#'                    target_ivs      = NULL                       ,
+#'                    autoSelect      = list()                     ,
+#'                    userFormula     = userFormula                )
+#'
+#'
+#' }
+#'
 
 byPhasebyGroup <- function(data, time, phase, group)
 {

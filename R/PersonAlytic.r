@@ -532,7 +532,6 @@ PersonAlytic <- function(output          = NULL                                 
     message('\npackage was overridden by packageTest to be `', package, '`\n')
   }
 
-
   # check userFormula
   userFormulae <- list(
     fixed=NULL,
@@ -658,22 +657,8 @@ pa1 <- function(e=parent.frame())
                     standardize=e$standardize   ,
                     autoSelect=e$autoSelect     )
 
-  # allow for formula override so that we can test intercept only and
-  # slope only models
-  if( any(unlist(lapply(e$userFormula, function(x) !is.null(x)))) )
-  {
-    isnnform <- function(x)
-    {
-      if( !is.null(x) )
-      {
-        return( is.formula(x) )
-      }
-      else return(FALSE)
-    }
-    if( isnnform(e$userFormula$fixed) ) t1$fixed <- e$userFormula$fixed
-    if( isnnform(e$userFormula$random) ) t1$random <- e$userFormula$random
-    if( isnnform(e$userFormula$formula) ) t1$formula <- e$userFormula$formula
-  }
+  # userFormula
+  t1$applyUserFormula(e$userFormula)
 
   # autoselection
   if(e$package=="nlme" | e$package=="arma")
@@ -811,10 +796,11 @@ paHTP <- function(e=parent.frame())
     print(e$autoSelect   ); cat('\n')
     print(e$PQ           ); cat('\n')
     print(e$whichIC      ); cat('\n')
-    print(e$polyMax     ); cat('\n')
+    print(e$polyMax      ); cat('\n')
     print(e$sigma.formula); cat('\n')
     print(e$debugforeach ); cat('\n')
     print(e$cores        ); cat('\n')
+    print(e$userFormula  ); cat('\n')
     cat('\n\n\n')
   }
 
@@ -843,6 +829,7 @@ paHTP <- function(e=parent.frame())
                  whichIC       = e$whichIC       ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,
+                 userFormula   = e$userFormula   ,
                  cores         = e$cores         )
   }
 
@@ -873,6 +860,7 @@ paHTP <- function(e=parent.frame())
                  whichIC       = e$whichIC       ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,
+                 userFormula   = e$userFormula   ,
                  cores         = e$cores         )
 
   }

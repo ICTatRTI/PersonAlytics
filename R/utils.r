@@ -445,7 +445,7 @@ makeForms <- function(ids          = "Mare"                   ,
   checkivs <- ""
   if(!is.null(ivs) & length(ivs) > 0)
   {
-    checkivs <- unlist(strsplit(ivs, "\\+|\\*|\\:\\-"))
+    checkivs <- unlist(strsplit(unlist(ivs), "\\+|\\*|\\:\\-"))
   }
   fixedTime <- time
   if(dropTime == "yes" | any(checkivs == "-1 "))
