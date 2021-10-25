@@ -359,27 +359,6 @@
       if( missing(value) ) private$.correlation
       else
       {
-        #TODO: move to utils
-        fixcor <- function(x)
-        {
-          if(!is.null(x))
-          {
-            if( x != "NULL" )
-            {
-              x <- unlist( strsplit(x, "::") )
-              return( paste("nlme", x[length(x)], sep="::" ) )
-            }
-            if( x == "NULL" )
-            {
-              return(NULL)
-            }
-          }
-          if( is.null(x)  )
-          {
-            return(x)
-          }
-        }
-        #iscor <- try( iscorStruct(fixcor(value)), TRUE )
         value <- fixcor(value)
         if(! iscorStruct(value) )
         {

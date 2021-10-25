@@ -259,7 +259,7 @@ htp <- function(data                                                   ,
       message('\n\nModel fitting for the dependent variable `', dvs[dv],
               '` took:\n ', capture.output(Sys.time() - start), ".\n\n")
 
-      cat('\n\n') #TODO is this needed?
+      cat('\n\n')
     }
 
     # disaggregate messages
@@ -649,7 +649,7 @@ htpForms <- function(err_id, t1, dims, id, package, modid)
                                    #rmSpecChar(modid$PalyticSummary$correlation),
                                    correlation0,
                                    ifelse(package=="arma",
-                                          #TODO() this doesn't get the ride order
+                                          #TODO() this doesn't get the right order
                                           #gerARIMAorder(modid$arima),
                                           err_id$correlation, # placeholder
                                           rmSpecChar(t1$corStructs[id,2])))
@@ -676,7 +676,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
 
   # identify inputs
   err_id['ids']          <- t1$ids
-  err_id['dv']           <- dv #TODO(Stephen) column not appearing in output??
+  err_id['dv']           <- dv
   err_id['time']         <- t1$time[1]
   err_id['phase']        <- t1$phase
   err_id['ivs']          <- toString( t1$ivs )

@@ -47,7 +47,7 @@ plotICT <- function(self, data, legendName=NULL,
                         phase=self$phase, na.rm=TRUE)
   # set up grouping variable(s)
   group <- 1
-  #*#if(length(groupvars)>1) group <- groupvars[2] # TODO general to 2+ groupvars
+  #*#if(length(groupvars)>1) group <- groupvars[2] # TODO generalize to 2+ groupvars
 
   # calculate dodging & range
   xrange <- range(data[[self$time$raw]], na.rm=TRUE)
