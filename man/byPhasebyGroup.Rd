@@ -19,10 +19,12 @@ design matrix.}
 hypothetical study.}
 
 \item{phase}{Character. The name of the phase variable, or if \code{data=NULL},
-\code{phase} must be a numeric integer specifying the number of phases.}
+\code{phase} must be either a numeric integer specifying the number of phases
+or a character vector with the phase names.}
 
 \item{group}{Character. The name of the group variable., or if \code{data=NULL},
-\code{group} must be a numeric integer specifying the number of groups.}
+\code{group} must be either a numeric integer specifying the number of groups
+or a character vector with the group names.}
 }
 \description{
 In ICT data with 2+ groups and 2+ phases, dummy coding can be used to
@@ -33,6 +35,12 @@ estimate group and phase specific intercepts and slopes.
 # produce a design matrix for a hypothetical study with 20 time points,
 # 2 phases, and 3 groups
 studyDesign <- byPhasebyGroup(NULL, -9:10, 2, 3)
+head(studyDesign$data)
+studyDesign$dummyNames
+
+# an alternative specification
+studyDesign <- byPhasebyGroup(NULL, -9:10, c("baseline", "intervention"),
+                 c("treatment", "control"))
 head(studyDesign$data)
 studyDesign$dummyNames
 
