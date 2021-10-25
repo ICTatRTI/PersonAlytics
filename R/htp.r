@@ -130,14 +130,20 @@ htp <- function(data                                                   ,
       )
 
       # userFormula
-      t0$applyUserFormula(userFormula)
+      if(!is.null(userFormula))
+      {
+        dvFormula <- userFormula
+        rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
+        dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
+        t0$fixed <- dvFormula$fixed
+        t0$random <- dvFormula$random
+      }
 
       # autoselect
       t0$detect(subgroup    = NULL        ,
                 model       = NULL        ,
                 parallel    = "no"        ,
                 plot        = FALSE       ,
-                userFormula = userFormula ,
                 dims        = dims        ,
                 package     = package     )
       .htp(t0, id=1, iv=1, dv, dvs, ivs,
@@ -214,14 +220,20 @@ htp <- function(data                                                   ,
       )
 
       # userFormula
-      t0$applyUserFormula(userFormula)
+      if(!is.null(userFormula))
+      {
+        dvFormula <- userFormula
+        rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
+        dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
+        t0$fixed <- dvFormula$fixed
+        t0$random <- dvFormula$random
+      }
 
       # autoselect
       t0$detect(subgroup    = NULL        ,
                 model       = NULL        ,
                 parallel    = "snow"      ,
                 plot        = FALSE       ,
-                userFormula = userFormula ,
                 dims        = dims        ,
                 package     = package     )
 

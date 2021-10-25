@@ -2605,33 +2605,6 @@ Palytic$set("public", "plot",
             overwrite = TRUE
             )
 
-#' @name applyUserFormula
-#' @description
-#' Apply user formulae to the palytic object
-#'
-#' @param userFormula A userFormula, see \code{\link{PersonAlytic}}
-Palytic$set("public", "applyUserFormula",
-            function(userFormula)
-            {
-              if(!is.null(userFormula))
-              {
-                if( any(unlist(lapply(userFormula, function(x) !is.null(x)))) )
-                {
-                  isnnform <- function(x)
-                  {
-                    if( !is.null(x) )
-                    {
-                      return( is.formula(x) )
-                    }
-                    else return(FALSE)
-                  }
-                  if( isnnform(userFormula$fixed) ) self$fixed <- userFormula$fixed
-                  if( isnnform(userFormula$random) ) self$random <- userFormula$random
-                  if( isnnform(userFormula$formula) ) self$formula <- userFormula$formula
-                }
-              }
-            },
-            overwrite = TRUE
-            )
+
 
 

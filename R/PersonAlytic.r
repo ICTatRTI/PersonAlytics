@@ -559,6 +559,12 @@ PersonAlytic <- function(output          = NULL                                 
       warning("\nThe following items in userFormula are not yet supported:\n\n",
               paste(unsupportedForms, "\n"))
     }
+
+    if(length(userFormula$fixed) < 3)
+    {
+      stop("\nlength(userFormula$fixed) must be 3, make sure there is a LHS",
+           "\nvariable. If multiple dvs are present, this will be overwritten.")
+    }
   }
 
   # if -1 is at the end of fixed or formula, it needs to be at the front
@@ -657,8 +663,16 @@ pa1 <- function(e=parent.frame())
                     standardize=e$standardize   ,
                     autoSelect=e$autoSelect     )
 
+
   # userFormula
-  t1$applyUserFormula(e$userFormula)
+  if(!is.null(e$userFormula))
+  {
+    dvFormula <- e$userFormula
+    rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
+    dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
+    t1$fixed <- dvFormula$fixed
+    t1$random <- dvFormula$random
+  }
 
   # autoselection
   if(e$package=="nlme" | e$package=="arma")
