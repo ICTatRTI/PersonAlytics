@@ -163,6 +163,10 @@ htp <- function(data                                                   ,
     IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
     IDdesc <- plyr::rbind.fill(IDdesc)
 
+    # disaggregate fit statistics
+    IDfit <- lapply( IDout, function(x) data.frame(x$fitStats))
+    IDfit <- plyr::rbind.fill(IDfit)
+
     # parameter estimates
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
     IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum) )
@@ -175,11 +179,12 @@ htp <- function(data                                                   ,
       IFoutSummFPC <- plyr::rbind.fill(IDoutSumFPC)
     }
 
-    if(!fpc) DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
+    if(!fpc) DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm,
+                                IDfit=IDfit)
     if(fpc & package == "nlme")
     {
       DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm,
-                         IDoutSummFPC=IFoutSummFPC)
+                         IDoutSummFPC=IFoutSummFPC, IDfit=IDfit)
     }
 
     message('\n\nModel fitting took:\n ', capture.output(Sys.time() - start), ".\n\n")
@@ -270,6 +275,10 @@ htp <- function(data                                                   ,
     IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
     IDdesc <- plyr::rbind.fill(IDdesc)
 
+    # disaggregate fit statistics
+    IDfit <- lapply( IDout, function(x) data.frame(x$fitStats))
+    IDfit <- plyr::rbind.fill(IDfit)
+
     # parameter estimates
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
     IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum))
@@ -284,12 +293,13 @@ htp <- function(data                                                   ,
 
     # put outputs in a list, to be aggregated outside of the dv loop
     if(!fpc) DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc,
-                                        IDoutSumm=IDoutSumm)
+                                        IDoutSumm=IDoutSumm, IDfit=IDfit)
     if(fpc & package == "nlme")
     {
       DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc,
                                  IDoutSumm=IDoutSumm,
-                                 IDoutSummFPC=IFoutSummFPC)
+                                 IDoutSummFPC=IFoutSummFPC,
+                                 IDfit=IDfit)
     }
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
@@ -300,14 +310,15 @@ htp <- function(data                                                   ,
   IDmsg     <- plyr::rbind.fill( lapply(DVout, function(x) x$IDmsg) )
   IDdesc    <- plyr::rbind.fill( lapply(DVout, function(x) x$IDdesc) )
   IDoutSumm <- plyr::rbind.fill( lapply(DVout, function(x) x$IDoutSumm) )
+  IDfitSumm <- plyr::rbind.fill( lapply(DVout, function(x) x$IDfit))
 
   if(fpc & package == "nlme")
   {
     IDoutSummFPC <- plyr::rbind.fill( lapply(DVout, function(x) x$IDoutSummFPC) )
     names(IDoutSummFPC) <- paste(names(IDoutSummFPC), 'FPC', sep='.')
-    outmat <- cbind(IDmsg, IDdesc, IDoutSumm, IDoutSummFPC)
+    outmat <- cbind(IDmsg, IDdesc, IDoutSumm, IDoutSummFPC, IDfitSumm)
   }
-  if(!fpc) outmat <- cbind(IDmsg, IDdesc, IDoutSumm)
+  if(!fpc) outmat <- cbind(IDmsg, IDdesc, IDoutSumm, IDfitSumm)
 
   row.names(outmat) <- NULL
 
@@ -546,6 +557,11 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   err_id <- htpForms(err_id, t1, dims, id, package, modid=Model)
 
   #-------------------------------------------------------------------------
+  # get fit statistics
+  #-------------------------------------------------------------------------
+  fitStats <- data.frame(t(Model$fit))
+
+  #-------------------------------------------------------------------------
   # reduce the size of Model
   #-------------------------------------------------------------------------
   IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac,
@@ -564,16 +580,17 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)
   if( !fpc | package != "nlme" )
   {
-    return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
+    return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id,
+                  fitStats=fitStats) )
   }
   if(fpc & package == "nlme")
   {
     return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id,
-                  IDoutSumFPC=IDoutSumFPC) )
+                  IDoutSumFPC=IDoutSumFPC, fitStats=fitStats) )
   }
 }
 
-#' getParameters: extract parameter table, the `Model` variable is too big
+#' getParameters: extract parameter table
 #'
 #' @param Model Statistical model output from \code{\link{Palytic}} methods
 #' \code{$lme}, \code{$gamlss}, or \code{$arma}

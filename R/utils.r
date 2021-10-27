@@ -1015,5 +1015,20 @@ fixcor <- function(x)
   }
 }
 
-
+#' fitStats
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @keywords internal
+#  Note that DF in mixed effects models is complex, see this for resources
+#  https://community.rstudio.com/t/degree-of-freedom-in-lme-output/11343/4
+fitStats <- function(x)
+{
+  if(! class(x) %in% c("lme", "gamlss", "forecast_ARIMA"))
+  {
+    stop("\nx is not an `lme` or `gamlss` object")
+  }
+  LL <- logLik(x)
+  DF <- capture.output(LL)
+  DF <- as.numeric(unlist(strsplit( strsplit(DF, "df=")[[1]][2], "\\)")))
+  c(LL = LL, DF=DF, AIC = AIC(x), BIC = BIC(x))
+}
 

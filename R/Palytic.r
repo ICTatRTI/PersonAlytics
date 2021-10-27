@@ -1729,7 +1729,8 @@ Palytic$set("public", "arma",
               m1 <- list(arima = m1, tTable = tTable,
                          PalyticSummary = self$summary(),
                          xregs = colnames(xdat),
-                         lrt = list(wasLRTrun=wasLRTrun, lrtp=lrtp) )
+                         lrt = list(wasLRTrun=wasLRTrun, lrtp=lrtp),
+                         fit = fitStats(m1))
               return(m1)
             },
             overwrite = TRUE
@@ -1890,10 +1891,6 @@ Palytic$set("public", "lme",
               {
                 m1 <- cleanCall(modelResult=m1, PalyticObj=self)
               }
-              #!#m1 <<- m1
-              #!#print( formula(m1) )
-              #!#m1 <- cleanCall(modelResult=m1, PalyticObj=self,
-              #!#                newformula)
 
               # lrt
               # H0: m1 == m0
@@ -1929,10 +1926,18 @@ Palytic$set("public", "lme",
               if( "lme" %in% class(m1) )
               {
                 if( fpc ) m1$FPCtTable <- as.matrix(FPC(object=m1, popsize2=popsize2))
-                m1$tTable <- summary(m1)$tTable # easier for simulation studies
+
+                # add the summary tables to m1
+                m1$tTable <- summary(m1)$tTable
                 m1$PalyticSummary <- self$summary(wm)
+
+                # designate which model was fit
                 m1$whichPalyticMod <- wm
+
+                # record lrt and other fit statistics
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
+                m1$fit <- fitStats(m1)
+
                 return(m1)
               }
               else
@@ -2201,14 +2206,21 @@ Palytic$set("public", "gamlss",
                 wasLRTrun <- TRUE
               }
 
-              # output
+              # return
               if("gamlss" %in% class(m1))
               {
+                # add the summmary tables to m1
                 capture.output( tTable <- summary(m1), file='NUL')
                 m1$tTable <- tTable
                 m1$PalyticSummary <- self$summary()
+
+                # designate which model was fit
                 m1$whichPalyticMod <- paste('Palytic gamlss model #', wm)
+
+                # record lrt and other fit statistics
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
+                m1$fit <- fitStats(m1)
+
                 return(m1)
               }
               if("try-error" %in% class(m1))
