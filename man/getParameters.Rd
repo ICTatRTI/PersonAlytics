@@ -2,7 +2,7 @@
 % Please edit documentation in R/htp.r
 \name{getParameters}
 \alias{getParameters}
-\title{getParameters: extract parameter table, the `Model` variable is too big}
+\title{getParameters: extract parameter table}
 \usage{
 getParameters(Model, package, target_iv, data, fpc)
 }
@@ -17,6 +17,6 @@ getParameters(Model, package, target_iv, data, fpc)
 \item{target_ivs}{See \code{targe_ivs} in \code{\link{PersonAlytic}}}
 }
 \description{
-getParameters: extract parameter table, the `Model` variable is too big
+getParameters: extract parameter table
 }
 \keyword{internal}

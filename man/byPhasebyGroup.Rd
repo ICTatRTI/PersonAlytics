@@ -4,7 +4,7 @@
 \alias{byPhasebyGroup}
 \title{Function to create dummy codes for phase and group specific effects.}
 \usage{
-byPhasebyGroup(data, time, phase, group)
+byPhasebyGroup(data, time, phase, group, retime = TRUE)
 }
 \arguments{
 \item{data}{A \code{data.frame} with a time and phase variables
@@ -25,6 +25,10 @@ or a character vector with the phase names.}
 \item{group}{Character. The name of the group variable., or if \code{data=NULL},
 \code{group} must be either a numeric integer specifying the number of groups
 or a character vector with the group names.}
+
+\item{retime}{Logical. Default is \code{TRUE}. Should the time (slope)
+variables be rescaled within each phase and group to go from 0 to the
+number of time points minus 1.}
 }
 \description{
 In ICT data with 2+ groups and 2+ phases, dummy coding can be used to

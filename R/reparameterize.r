@@ -24,6 +24,10 @@
 #' \code{group} must be either a numeric integer specifying the number of groups
 #' or a character vector with the group names.
 #'
+#' @param retime Logical. Default is \code{TRUE}. Should the time (slope)
+#' variables be rescaled within each phase and group to go from 0 to the
+#' number of time points minus 1.
+#'
 #' @examples
 #'
 #' # produce a design matrix for a hypothetical study with 20 time points,
@@ -110,7 +114,7 @@
 #' }
 #'
 
-byPhasebyGroup <- function(data, time, phase, group)
+byPhasebyGroup <- function(data, time, phase, group, retime = TRUE)
 {
   if(is.null(data))
   {
@@ -160,6 +164,9 @@ byPhasebyGroup <- function(data, time, phase, group)
     }
   }
 
+  # rescale the slope variables to have min(x)==0
+  if(retime) dummies <- retimes(dummies)
+
   # create a data frame with the new variables
   newdata <- data.frame(data, do.call(data.frame, dummies))
 
@@ -169,6 +176,30 @@ byPhasebyGroup <- function(data, time, phase, group)
 
   list(data=newdata, dummyNames = names(dummies), fixed = fixed)
 
+}
+
+#' retime
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @keywords internal
+retime <- function(x=30:45)
+{
+  xnot0 <- which(x!=0)
+  xno0  <- x[xnot0] - min(x[xnot0], na.rm = T)
+  x[xnot0] <- xno0
+  x
+}
+
+#' retimes
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @keywords internal
+retimes <- function(dummies)
+{
+  wslopes <- names(dummies)[grepl("_slope", names(dummies))]
+  for(i in wslopes)
+  {
+    dummies[[i]] <- retime(dummies[[i]])
+  }
+  dummies
 }
 
 

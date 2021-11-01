@@ -663,13 +663,12 @@ pa1 <- function(e=parent.frame())
                     standardize=e$standardize   ,
                     autoSelect=e$autoSelect     )
 
-
   # userFormula
   if(!is.null(e$userFormula))
   {
     dvFormula <- e$userFormula
     rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
-    dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
+    dvFormula$fixed <- formula(paste(e$dvs, "~", rhs))
     t1$fixed <- dvFormula$fixed
     t1$random <- dvFormula$random
   }
