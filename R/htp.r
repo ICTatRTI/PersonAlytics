@@ -130,13 +130,20 @@ htp <- function(data                                                   ,
       )
 
       # userFormula
-      if(!is.null(userFormula))
+      if(!is.null(userFormula$fixed))
       {
         dvFormula <- userFormula
         rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
         dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
         t0$fixed <- dvFormula$fixed
-        t0$random <- dvFormula$random
+      }
+      if(!is.null(userFormula$random))
+      {
+        t0$random <- userFormula$random
+      }
+      if(!is.null(userFormula$formula))
+      {
+        t0$formula <- userFormula$formula
       }
 
       # autoselect
@@ -225,13 +232,20 @@ htp <- function(data                                                   ,
       )
 
       # userFormula
-      if(!is.null(userFormula))
+      if(!is.null(userFormula$fixed))
       {
         dvFormula <- userFormula
         rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
         dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
         t0$fixed <- dvFormula$fixed
-        t0$random <- dvFormula$random
+      }
+      if(!is.null(userFormula$random))
+      {
+        t0$random <- userFormula$random
+      }
+      if(!is.null(userFormula$formula))
+      {
+        t0$formula <- userFormula$formula
       }
 
       # autoselect

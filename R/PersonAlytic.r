@@ -537,7 +537,7 @@ PersonAlytic <- function(output          = NULL                                 
     fixed=NULL,
     random=NULL,
     formula=NULL)
-  if(!is.null(userFormula))
+  if(!all(unlist(lapply(userFormula, is.null))))
   {
     supportedForms <- names(userFormula)[names(userFormula) %in%
                                            names(userFormulae)]
@@ -664,13 +664,20 @@ pa1 <- function(e=parent.frame())
                     autoSelect=e$autoSelect     )
 
   # userFormula
-  if(!is.null(e$userFormula))
+  if(!is.null(e$userFormula$fixed))
   {
     dvFormula <- e$userFormula
     rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
     dvFormula$fixed <- formula(paste(e$dvs, "~", rhs))
     t1$fixed <- dvFormula$fixed
-    t1$random <- dvFormula$random
+  }
+  if(!is.null(e$userFormula$random))
+  {
+    t1$random <- e$userFormula$random
+  }
+  if(!is.null(e$userFormula$formula))
+  {
+    t1$formula <- e$userFormula$formula
   }
 
   # autoselection
