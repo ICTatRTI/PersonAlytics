@@ -579,6 +579,7 @@ PersonAlytic <- function(output          = NULL                                 
       return(newfrm)
     }
     if(temp[1]=="") return(frm)
+    else return(frm)
   }
   if(!is.null(userFormula$fixed)) userFormula$fixed <- nointCheck(userFormula$fixed)
   # next line is untested
