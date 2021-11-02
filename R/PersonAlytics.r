@@ -1,4 +1,4 @@
-#' PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials
+#' PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials:
 #'
 #' The PersonAlytics package provides the simplified user interface
 #' for implementing linear mixed effects models for idiographic clinical trials
@@ -48,10 +48,7 @@
 #' for dealing with heteroscedasticity implemented by including mixed effects models for
 #' the variance.
 #'
-#' @section PersonAlytics functions
-#' pending...
-#'
-#' @section The Palytic class
+#' @section The Palytic class:
 #' See \code{\link{Palytic}}
 #'
 #' @docType package

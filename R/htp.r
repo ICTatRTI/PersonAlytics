@@ -129,12 +129,28 @@ htp <- function(data                                                   ,
 
       )
 
+      # userFormula
+      if(!is.null(userFormula$fixed))
+      {
+        dvFormula <- userFormula
+        rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
+        dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
+        t0$fixed <- dvFormula$fixed
+      }
+      if(!is.null(userFormula$random))
+      {
+        t0$random <- userFormula$random
+      }
+      if(!is.null(userFormula$formula))
+      {
+        t0$formula <- userFormula$formula
+      }
+
       # autoselect
       t0$detect(subgroup    = NULL        ,
                 model       = NULL        ,
                 parallel    = "no"        ,
                 plot        = FALSE       ,
-                userFormula = userFormula ,
                 dims        = dims        ,
                 package     = package     )
       .htp(t0, id=1, iv=1, dv, dvs, ivs,
@@ -154,6 +170,10 @@ htp <- function(data                                                   ,
     IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
     IDdesc <- plyr::rbind.fill(IDdesc)
 
+    # disaggregate fit statistics
+    IDfit <- lapply( IDout, function(x) data.frame(x$fitStats))
+    IDfit <- plyr::rbind.fill(IDfit)
+
     # parameter estimates
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
     IDoutSum <- lapply( IDout, function(x) data.frame(x$IDoutSum) )
@@ -166,11 +186,12 @@ htp <- function(data                                                   ,
       IFoutSummFPC <- plyr::rbind.fill(IDoutSumFPC)
     }
 
-    if(!fpc) DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm)
+    if(!fpc) DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm,
+                                IDfit=IDfit)
     if(fpc & package == "nlme")
     {
       DVout[[1]] <- list(IDmsg=IDmsg, IDdesc=IDdesc, IDoutSumm=IDoutSumm,
-                         IDoutSummFPC=IFoutSummFPC)
+                         IDoutSummFPC=IFoutSummFPC, IDfit=IDfit)
     }
 
     message('\n\nModel fitting took:\n ', capture.output(Sys.time() - start), ".\n\n")
@@ -210,12 +231,28 @@ htp <- function(data                                                   ,
                         method       = "ML"         # requested method used later
       )
 
+      # userFormula
+      if(!is.null(userFormula$fixed))
+      {
+        dvFormula <- userFormula
+        rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
+        dvFormula$fixed <- formula(paste(dvs[[dv]], "~", rhs))
+        t0$fixed <- dvFormula$fixed
+      }
+      if(!is.null(userFormula$random))
+      {
+        t0$random <- userFormula$random
+      }
+      if(!is.null(userFormula$formula))
+      {
+        t0$formula <- userFormula$formula
+      }
+
       # autoselect
       t0$detect(subgroup    = NULL        ,
                 model       = NULL        ,
                 parallel    = "snow"      ,
                 plot        = FALSE       ,
-                userFormula = userFormula ,
                 dims        = dims        ,
                 package     = package     )
 
@@ -241,7 +278,7 @@ htp <- function(data                                                   ,
       message('\n\nModel fitting for the dependent variable `', dvs[dv],
               '` took:\n ', capture.output(Sys.time() - start), ".\n\n")
 
-      cat('\n\n') #TODO is this needed?
+      cat('\n\n')
     }
 
     # disaggregate messages
@@ -251,6 +288,10 @@ htp <- function(data                                                   ,
     # disaggregate depcriptive statistics
     IDdesc <- lapply( IDout, function(x) data.frame(x$Describe))
     IDdesc <- plyr::rbind.fill(IDdesc)
+
+    # disaggregate fit statistics
+    IDfit <- lapply( IDout, function(x) data.frame(x$fitStats))
+    IDfit <- plyr::rbind.fill(IDfit)
 
     # parameter estimates
     if(dims$ID[1]!="All Cases") names(IDout) <- paste(ids, uids, sep=".")
@@ -266,12 +307,13 @@ htp <- function(data                                                   ,
 
     # put outputs in a list, to be aggregated outside of the dv loop
     if(!fpc) DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc,
-                                        IDoutSumm=IDoutSumm)
+                                        IDoutSumm=IDoutSumm, IDfit=IDfit)
     if(fpc & package == "nlme")
     {
       DVout[[dvs[[dv]]]] <- list(IDmsg=IDmsg, IDdesc=IDdesc,
                                  IDoutSumm=IDoutSumm,
-                                 IDoutSummFPC=IFoutSummFPC)
+                                 IDoutSummFPC=IFoutSummFPC,
+                                 IDfit=IDfit)
     }
 
     rm(t0, IDoutSumm, IDmsg, IDdesc )
@@ -282,14 +324,15 @@ htp <- function(data                                                   ,
   IDmsg     <- plyr::rbind.fill( lapply(DVout, function(x) x$IDmsg) )
   IDdesc    <- plyr::rbind.fill( lapply(DVout, function(x) x$IDdesc) )
   IDoutSumm <- plyr::rbind.fill( lapply(DVout, function(x) x$IDoutSumm) )
+  IDfitSumm <- plyr::rbind.fill( lapply(DVout, function(x) x$IDfit))
 
   if(fpc & package == "nlme")
   {
     IDoutSummFPC <- plyr::rbind.fill( lapply(DVout, function(x) x$IDoutSummFPC) )
     names(IDoutSummFPC) <- paste(names(IDoutSummFPC), 'FPC', sep='.')
-    outmat <- cbind(IDmsg, IDdesc, IDoutSumm, IDoutSummFPC)
+    outmat <- cbind(IDmsg, IDdesc, IDoutSumm, IDoutSummFPC, IDfitSumm)
   }
-  if(!fpc) outmat <- cbind(IDmsg, IDdesc, IDoutSumm)
+  if(!fpc) outmat <- cbind(IDmsg, IDdesc, IDoutSumm, IDfitSumm)
 
   row.names(outmat) <- NULL
 
@@ -492,9 +535,14 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
              file='REMLlme.txt', append=TRUE), silent = TRUE )
     t1$method <- "REML"
     t1$family <- family #TODO(Stephen): prior line drops family, why??
-    if("gamlss" %in% class(modid)) Model <- t1$gamlss( useObs, sigma.formula=sigma.formula )
-    if("lme"    %in% class(modid)) Model <- t1$lme( useObs,
-                                      fpc=fpc, popsize2 = popsize2)
+    if("gamlss" %in% class(modid))
+    {
+      Model <- t1$gamlss( useObs, sigma.formula=sigma.formula )
+    }
+    if("lme"    %in% class(modid))
+    {
+      Model <- t1$lme( useObs, fpc=fpc, popsize2 = popsize2)
+    }
     if( any(c("gamlss", "lme") %in% class(Model)) )
     {
       err_id$method <- err_id$estimator <- "REML"
@@ -523,6 +571,11 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   err_id <- htpForms(err_id, t1, dims, id, package, modid=Model)
 
   #-------------------------------------------------------------------------
+  # get fit statistics
+  #-------------------------------------------------------------------------
+  fitStats <- data.frame(t(Model$fit))
+
+  #-------------------------------------------------------------------------
   # reduce the size of Model
   #-------------------------------------------------------------------------
   IDoutSum <- getParameters(Model, package, target_ivs[[iv]], t1$datac,
@@ -541,16 +594,17 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   #IDout[[i]] <- list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id)
   if( !fpc | package != "nlme" )
   {
-    return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id ) )
+    return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id,
+                  fitStats=fitStats) )
   }
   if(fpc & package == "nlme")
   {
     return( list( Messages=err_id, IDoutSum=IDoutSum, Describe=descr_id,
-                  IDoutSumFPC=IDoutSumFPC) )
+                  IDoutSumFPC=IDoutSumFPC, fitStats=fitStats) )
   }
 }
 
-#' getParameters: extract parameter table, the `Model` variable is too big
+#' getParameters: extract parameter table
 #'
 #' @param Model Statistical model output from \code{\link{Palytic}} methods
 #' \code{$lme}, \code{$gamlss}, or \code{$arma}
@@ -626,7 +680,7 @@ htpForms <- function(err_id, t1, dims, id, package, modid)
                                    #rmSpecChar(modid$PalyticSummary$correlation),
                                    correlation0,
                                    ifelse(package=="arma",
-                                          #TODO() this doesn't get the ride order
+                                          #TODO() this doesn't get the right order
                                           #gerARIMAorder(modid$arima),
                                           err_id$correlation, # placeholder
                                           rmSpecChar(t1$corStructs[id,2])))
@@ -653,7 +707,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
 
   # identify inputs
   err_id['ids']          <- t1$ids
-  err_id['dv']           <- dv #TODO(Stephen) column not appearing in output??
+  err_id['dv']           <- dv
   err_id['time']         <- t1$time[1]
   err_id['phase']        <- t1$phase
   err_id['ivs']          <- toString( t1$ivs )
@@ -723,6 +777,7 @@ htpErrors <- function(t1, id, dv, dims, package, useObs, target_iv)
     ivvs <- unique( gsub(" ", "", unlist(ivvs)) )
     ivvs <- ivvs[!grepl("\\(", ivvs)]
     ivvs <- ivvs[!grepl("\\^", ivvs)]
+    ivvs <- ivvs[-which(!is.na(as.numeric(ivvs)))]
     ivv  <- unlist( lapply(data.frame(temp[,ivvs]),
                            function(x) !all(duplicated(x)[-1L])) )
 

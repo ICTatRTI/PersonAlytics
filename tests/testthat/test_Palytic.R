@@ -1,5 +1,6 @@
 context("Palytic")
 library(PersonAlytics)
+library(gamlss)
 
 test_that("PalyticBasics",
 {
@@ -10,7 +11,7 @@ test_that("PalyticBasics",
   t1.lme    <- summary(t1$lme())
   form1 <- t1$formula
 
-  testthat::expect_equal( t1.gamlss[1:4,1], t1.lme$tTable[,1], tolerance = 0.01 )
+  testthat::expect_equal( t1.gamlss[1:3,1], t1.lme$tTable[,1], tolerance = 0.01 )
 
   t1$correlation <- "corARMA(p=1, q=0)"
   t1.gamlss.ar1 <- t1$gamlss(); t1.gamlss.ar1s <- summary( t1.gamlss.ar1 )
@@ -135,7 +136,8 @@ test_that("groupAR_Order",
   #dim(m1$data)
 
   t1 <- Palytic$new(data =  PersonAlytics::OvaryICT, ids='Mare', dv='follicles',
-                    time='Time', phase='Phase', autoSelect = list(AR=list(P=3,Q=3)))
+                    time='Time', phase='Phase', interactions = list(c('Time', 'Phase')),
+                    autoSelect = list(AR=list(P=3,Q=3)))
   t1$GroupAR()
   m1t <- t1$lme()
   #m1t$call

@@ -359,27 +359,6 @@
       if( missing(value) ) private$.correlation
       else
       {
-        #TODO: move to utils
-        fixcor <- function(x)
-        {
-          if(!is.null(x))
-          {
-            if( x != "NULL" )
-            {
-              x <- unlist( strsplit(x, "::") )
-              return( paste("nlme", x[length(x)], sep="::" ) )
-            }
-            if( x == "NULL" )
-            {
-              return(NULL)
-            }
-          }
-          if( is.null(x)  )
-          {
-            return(x)
-          }
-        }
-        #iscor <- try( iscorStruct(fixcor(value)), TRUE )
         value <- fixcor(value)
         if(! iscorStruct(value) )
         {
@@ -937,6 +916,7 @@ Palytic <- R6::R6Class("Palytic",
                        #--------------------------------------------------------
                        public = list(
 
+                         #' @name initialize
                          #' @description
                          #' Create a new Palytic Object
                          #' @param data A \code{\link{data.frame}} that contains as variables \code{ids},
@@ -1258,6 +1238,7 @@ Palytic <- R6::R6Class("Palytic",
 
 # add methods ####
 
+#' @name summary
 #' @description
 #' Print a summary of the inputs, the cleaned data,
 #' and the raw data in a Palytic object
@@ -1313,8 +1294,9 @@ Palytic$set("public", "summary",
             overwrite = TRUE
 )
 
+#' @name detect
 #' @description
-#' Conduction autoselection based on the inputs to the \code{autoSelect} parameter
+#' Conduct autoselection based on the inputs to the \code{autoSelect} parameter
 #' when initializing an new Palytic object.
 #'
 #' @param subgroup Logical vector. If \code{NULL} results are provided for the full
@@ -1413,6 +1395,7 @@ Palytic$set("public", "detect",
             overwrite = TRUE
 )
 
+#' @name dist
 #' @description
 #' This method plots the density of your dependent variable if \code{plot=TRUE} and
 #' lets the user implement \code{gamlss} automated
@@ -1547,6 +1530,7 @@ Palytic$set("public", "dist",
             overwrite = TRUE
 )
 
+#' @name describe
 #' @description
 #' Descriptive statistics for data in a Palytic object. This method gives the
 #' correlation between \code{dv} and each continuous variable in \code{ivs}
@@ -1632,6 +1616,7 @@ Palytic$set("public", "describe",
             overwrite = TRUE
 )
 
+#' @name arma
 #' @description
 #' For individual level models, random intercepts and
 #' random slopes are not defined. In this situatation, an \code{ARMA(p,q)}
@@ -1744,7 +1729,8 @@ Palytic$set("public", "arma",
               m1 <- list(arima = m1, tTable = tTable,
                          PalyticSummary = self$summary(),
                          xregs = colnames(xdat),
-                         lrt = list(wasLRTrun=wasLRTrun, lrtp=lrtp) )
+                         lrt = list(wasLRTrun=wasLRTrun, lrtp=lrtp),
+                         fit = fitStats(m1))
               return(m1)
             },
             overwrite = TRUE
@@ -1757,6 +1743,7 @@ Palytic$set("public", "arma",
 # > if("contrasts" %in% names(args)) # then pass `contrasts` to lme
 # or some other method of matching arguments, see ?match.arg
 
+#' @name lme
 #' @description
 #' This method fits the linear mixed effects
 #' \code{lme} model implied by the \code{Palytic} fields \code{ids},
@@ -1904,10 +1891,6 @@ Palytic$set("public", "lme",
               {
                 m1 <- cleanCall(modelResult=m1, PalyticObj=self)
               }
-              #!#m1 <<- m1
-              #!#print( formula(m1) )
-              #!#m1 <- cleanCall(modelResult=m1, PalyticObj=self,
-              #!#                newformula)
 
               # lrt
               # H0: m1 == m0
@@ -1943,10 +1926,18 @@ Palytic$set("public", "lme",
               if( "lme" %in% class(m1) )
               {
                 if( fpc ) m1$FPCtTable <- as.matrix(FPC(object=m1, popsize2=popsize2))
-                m1$tTable <- summary(m1)$tTable # easier for simulation studies
+
+                # add the summary tables to m1
+                m1$tTable <- summary(m1)$tTable
                 m1$PalyticSummary <- self$summary(wm)
+
+                # designate which model was fit
                 m1$whichPalyticMod <- wm
+
+                # record lrt and other fit statistics
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
+                m1$fit <- fitStats(m1)
+
                 return(m1)
               }
               else
@@ -2037,6 +2028,7 @@ getARnEQ1 <- function(m, PQ, dv, debug=FALSE)
 # $gamlss() ####
 ### TODO(Stephen) add residual correlation search for n=1
 
+#' @name gamlss
 #' @description
 #' This method fits the \code{lme} model implied
 #' by the \code{Palytic} fields \code{ids}, \code{dv}, \code{phase}, \code{time}
@@ -2214,14 +2206,21 @@ Palytic$set("public", "gamlss",
                 wasLRTrun <- TRUE
               }
 
-              # output
+              # return
               if("gamlss" %in% class(m1))
               {
+                # add the summmary tables to m1
                 capture.output( tTable <- summary(m1), file='NUL')
                 m1$tTable <- tTable
                 m1$PalyticSummary <- self$summary()
+
+                # designate which model was fit
                 m1$whichPalyticMod <- paste('Palytic gamlss model #', wm)
+
+                # record lrt and other fit statistics
                 m1$lrt <- list(wasLRTrun=wasLRTrun, lrtp=lrtp)
+                m1$fit <- fitStats(m1)
+
                 return(m1)
               }
               if("try-error" %in% class(m1))
@@ -2236,6 +2235,7 @@ Palytic$set("public", "gamlss",
 )
 
 # this needs much editing
+#' @name GroupAR
 #' @description
 #' The same as \code{getAR} when the ARMA order is desired for the full sample.
 #'
@@ -2378,6 +2378,7 @@ ARpq <- function(clone, p, q, subgroup, package="nlme")
   return(corMod)
 }
 
+#' @name getTO
 #' @description
 #' Use model comparisons to test for the polynomial order of time
 #' @param package Character. Options are \code{"nlme"} and \code{"gamlss"} as
@@ -2453,6 +2454,7 @@ Palytic$set("public", "getTO",
 # TODO:hard coded lme at this point, option for gamlss later
 # needs much editing
 
+#' @name GroupTO
 #' @description
 #' The same as \code{getTime_power} when the polynomial of time is desired for
 #' the full sample.
@@ -2521,15 +2523,16 @@ Palytic$set("public", "GroupTO",
             overwrite = TRUE
             )
 
-# This functions borrows from ICTviz() in PersonAlyticsPower, but the nature
+# This function borrows from ICTviz() in PersonAlyticsPower, but the nature
 # of the data for ICTviz is theoretical, this function is for real data
 
+#' @name plot
 #' @description
 #' Plot the data in your Palytic object with design elements including time and
 #' phase.
 #'
 #' @param subgroup Logical vector. If \code{NULL} results are provided for the full
-#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' sample. If a logical vector of the same length as the number of rows in the data,
 #' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
 #' @param groupVar Character. The name of a grouping variable in the data that
 #' will be used to stratify the plot.
@@ -2592,6 +2595,7 @@ Palytic$set("public", "plot",
             },
             overwrite = TRUE
             )
+
 
 
 

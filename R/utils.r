@@ -355,18 +355,19 @@ forms <- function(data                     ,
   formula <- theForms$formula
 
   # check that the variables are in the data
-  ivs.test <- unlist(lapply(ivs, strsplit, ":"))
+  frmSplit <- "\\:|\\+|\\-|\\*"
+  ivs.test <- unlist(lapply(ivs, strsplit, frmSplit))
   vars <- unique( c(ids, dv, time$analysis, phase, ivs.test,
                     all.vars(fixed), all.vars(random), all.vars(formula)) )
   vars <- as.character( vars )
-  vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, '\\*|\\+'), unlist))) )
+  vars <- unique( gsub(" ", "", unlist(lapply(strsplit(vars, frmSplit), unlist))) )
   wi <- which( substr(vars, 1, 2) == "I(" )
   vars[wi] <- unlist(strsplit(gsub("\\I|\\(|\\)", "", vars[wi]), "\\^"))[1]
-  vars <- vars[which(vars!="1" & vars!="0")]
+  vars <- vars[which(vars!="1" & vars!="0" & vars != "-1")]
   vars <- vars[!is.na(vars)]
 
+  # which variables are not in the data?
   wvars <- which( ! vars %in% names(data) )
-
   if( length(wvars) > 0 )
   {
     stop( paste('\n`', vars[wvars], '` is not in the data\n', sep='') )
@@ -440,26 +441,38 @@ makeForms <- function(ids          = "Mare"                   ,
 {
   # construct or update the formula objects
 
+  # check for no intercept indicated by `dropTime="yes"` or "-1" in `ivs`
+  checkivs <- ""
+  if(!is.null(ivs) & length(ivs) > 0)
+  {
+    checkivs <- unlist(strsplit(unlist(ivs), "\\+|\\*|\\:\\-"))
+  }
+  fixedTime <- time
+  if(dropTime == "yes" | any(checkivs == "-1 "))
+  {
+    fixedTime <- "-1"
+  }
+
   # fixed
   if(  is.null(phase) )
   {
-    rhs <- paste(time, collapse = '+')
+    rhs <- paste(fixedTime, collapse = '+')
   }
   if( !is.null(phase) )
   {
     # 2021-05-05 Note: collapse was previously '*' to force the phase*time
-    # interaction, which we've decided not to do. As a temporory fix, we
+    # interaction, which we've decided not to do. As a temporary fix, we
     # change collapse to '+', but we still need the option of dropping the
     # interaction even when asked by the user if the interaction is causing
     # convergence problems
     if(dropTime != "int")
     {
-      rhs <- paste( c(time, phase), collapse = '+')
+      rhs <- paste( c(fixedTime, phase), collapse = '+')
     }
     # 2021-05-05 Note: this has not changed as of writing
     if(dropTime == "int")
     {
-      rhs <- paste( c(time, phase), collapse = '+')
+      rhs <- paste( c(fixedTime, phase), collapse = '+')
     }
   }
   fixed  <- formula( paste(dv, "~", rhs ) )
@@ -979,22 +992,43 @@ pwtime <- function(time, phase)
   return(Time)
 }
 
-# # from https://github.com/OuhscBbmc/OuhscMunge/blob/master/R/update-packages-addin.R
-# #' Download and install dependencies
-# #'
-# #' When called in the repo of an R package, its package dependencies are inspected
-# #' and the obsolete ones are updated.  This function is a thin wrapper around
-# #' \code{remotes::update_packages(remotes::dev_package_deps()$package, dependencies=T)}.  Unlike the # 'Update' button in RStudio's 'Packages' panel,
-# #' this function will (a) update from CRAN and remote sources like GitHub and
-# #' (b) not attempt to install local packages that are unrelated to the current package.
-# #'
-# #' @note
-# #' This function only works if run inside a valid package.  It reads the dependencies enumerated in # the package's
-# #' [DESCRIPTION](https://cran.r-project.org/doc/manuals/r-release/R-exts.html#The-DESCRIPTION-file) # file.
-# #'
-# #' @export
-# update_packages_addin <- function() {
-#   dependency_list <- remotes::dev_package_deps()
-#   remotes::update_packages(dependency_list$package, dependencies=TRUE)
-# }
+#' fixcor
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @keywords internal
+fixcor <- function(x)
+{
+  if(!is.null(x))
+  {
+    if( x != "NULL" )
+    {
+      x <- unlist( strsplit(x, "::") )
+      return( paste("nlme", x[length(x)], sep="::" ) )
+    }
+    if( x == "NULL" )
+    {
+      return(NULL)
+    }
+  }
+  if( is.null(x)  )
+  {
+    return(x)
+  }
+}
+
+#' fitStats
+#' @author Stephen Tueller \email{Stueller@@rti.org}
+#' @keywords internal
+#  Note that DF in mixed effects models is complex, see this for resources
+#  https://community.rstudio.com/t/degree-of-freedom-in-lme-output/11343/4
+fitStats <- function(x)
+{
+  if(! class(x) %in% c("lme", "gamlss", "forecast_ARIMA"))
+  {
+    stop("\nx is not an `lme` or `gamlss` object")
+  }
+  LL <- logLik(x)
+  DF <- capture.output(LL)
+  DF <- as.numeric(unlist(strsplit( strsplit(DF, "df=")[[1]][2], "\\)")))
+  c(LL = LL, DF=DF, AIC = AIC(x), BIC = BIC(x))
+}
 

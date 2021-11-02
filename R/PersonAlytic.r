@@ -316,6 +316,12 @@
 #' @param cores Integer. The defaults is \code{parallel::detectCores()-1}, or
 #' one fewer cores than what is detected on the machine.
 #'
+#' @param userFormula List of formulae used to override default model
+#' construction. Items in the list must include \code{fixed} and \code{random}
+#' to specify the parameters of the same names using \code{\link{lme}}, or
+#' \code{formula} to specify the parameter of the same name in
+#' \code{\link{gamlss}}. See \code{\link{byPhasebyGroup}} for an example.
+#'
 #' @param ... Not currently used.
 #'
 #' @examples
@@ -439,8 +445,6 @@
 
 # non-user options allowed in ...
 # packageTest - override the package, for research purposes
-# userFormula - override the formulae, named list that can include any of
-#   fixed, random, formula
 
 
 PersonAlytic <- function(output          = NULL                                  ,
@@ -474,6 +478,7 @@ PersonAlytic <- function(output          = NULL                                 
                          fpc             = 0                                     ,
 						             debugforeach    = FALSE                                 ,
                          cores           = parallel::detectCores()-1             ,
+						             userFormula     = NULL                                  ,
                          ...)
 {
   #message('alignPhase=',alignPhase)
@@ -527,16 +532,59 @@ PersonAlytic <- function(output          = NULL                                 
     message('\npackage was overridden by packageTest to be `', package, '`\n')
   }
 
-  # for internal testing use only, allows us to override formulae, e.g., to
-  # test random intercepts only or random slopes only models
-  userFormula = list(
+  # check userFormula
+  userFormulae <- list(
     fixed=NULL,
     random=NULL,
     formula=NULL)
-  if('userFormula'  %in% names(args))
+  if(!all(unlist(lapply(userFormula, is.null))))
   {
-    userFormula <- args$userFormula
+    supportedForms <- names(userFormula)[names(userFormula) %in%
+                                           names(userFormulae)]
+    for(i in seq_along(supportedForms))
+    {
+      if(!inherits(userFormula[[supportedForms[i]]], "formula"))
+      {
+        stop("\nuserFormula$", supportedForms[i], " is not a formula:\n\n",
+             userFormula[[supportedForms[i]]], "\n\n use:\n",
+             "userFormula$", supportedForms[i], " <- formula(",
+             userFormula[[supportedForms[i]]], ")\n\n")
+      }
+    }
+
+    unsupportedForms <- names(userFormula)[!names(userFormula) %in%
+                                           names(userFormulae)]
+    if(length(unsupportedForms)> 0)
+    {
+      warning("\nThe following items in userFormula are not yet supported:\n\n",
+              paste(unsupportedForms, "\n"))
+    }
+
+    if(length(userFormula$fixed) < 3)
+    {
+      stop("\nlength(userFormula$fixed) must be 3, make sure there is a LHS",
+           "\nvariable. If multiple dvs are present, this will be overwritten.")
+    }
   }
+
+  # if -1 is at the end of fixed or formula, it needs to be at the front
+  nointCheck <- function(frm)
+  {
+    oldfrm <- as.character(frm)
+    temp <- unlist(strsplit(oldfrm[length(oldfrm)], "-"))
+    if(temp[length(temp)] == " 1")
+    {
+      olddv <- ifelse(oldfrm[1]=="~", oldfrm[2], oldfrm[1])
+      newfrm <- formula(paste(olddv, "~ -1 +", temp[1]))
+      return(newfrm)
+    }
+    if(temp[1]=="") return(frm)
+    else return(frm)
+  }
+  if(!is.null(userFormula$fixed)) userFormula$fixed <- nointCheck(userFormula$fixed)
+  # next line is untested
+  if(!is.null(userFormula$formula)) userFormula$formula <- nointCheck(userFormula$formula)
+
 
   # override individual_mods if only 1 id, 1 dv, <= 1 target_iv
   luid <- length(unique(data[[ids]]))
@@ -616,21 +664,21 @@ pa1 <- function(e=parent.frame())
                     standardize=e$standardize   ,
                     autoSelect=e$autoSelect     )
 
-  # allow for formula override so that we can test intercept only and
-  # slope only models
-  if( any(unlist(lapply(e$userFormula, function(x) !is.null(x)))) )
+  # userFormula
+  if(!is.null(e$userFormula$fixed))
   {
-    isnnform <- function(x)
-    {
-      if( !is.null(x) )
-      {
-        return( is.formula(x) )
-      }
-      else return(FALSE)
-    }
-    if( isnnform(e$userFormula$fixed) ) t1$fixed <- e$userFormula$fixed
-    if( isnnform(e$userFormula$random) ) t1$random <- e$userFormula$random
-    if( isnnform(e$userFormula$formula) ) t1$formula <- e$userFormula$formula
+    dvFormula <- e$userFormula
+    rhs <- Reduce(paste, deparse(dvFormula$fixed[[3]]))
+    dvFormula$fixed <- formula(paste(e$dvs, "~", rhs))
+    t1$fixed <- dvFormula$fixed
+  }
+  if(!is.null(e$userFormula$random))
+  {
+    t1$random <- e$userFormula$random
+  }
+  if(!is.null(e$userFormula$formula))
+  {
+    t1$formula <- e$userFormula$formula
   }
 
   # autoselection
@@ -769,10 +817,11 @@ paHTP <- function(e=parent.frame())
     print(e$autoSelect   ); cat('\n')
     print(e$PQ           ); cat('\n')
     print(e$whichIC      ); cat('\n')
-    print(e$polyMax     ); cat('\n')
+    print(e$polyMax      ); cat('\n')
     print(e$sigma.formula); cat('\n')
     print(e$debugforeach ); cat('\n')
     print(e$cores        ); cat('\n')
+    print(e$userFormula  ); cat('\n')
     cat('\n\n\n')
   }
 
@@ -801,6 +850,7 @@ paHTP <- function(e=parent.frame())
                  whichIC       = e$whichIC       ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,
+                 userFormula   = e$userFormula   ,
                  cores         = e$cores         )
   }
 
@@ -831,6 +881,7 @@ paHTP <- function(e=parent.frame())
                  whichIC       = e$whichIC       ,
                  sigma.formula = e$sigma.formula ,
                  debugforeach  = e$debugforeach  ,
+                 userFormula   = e$userFormula   ,
                  cores         = e$cores         )
 
   }

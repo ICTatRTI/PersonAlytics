@@ -3,7 +3,7 @@
 \docType{package}
 \name{PersonAlytics}
 \alias{PersonAlytics}
-\title{PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials}
+\title{PersonAlytics: Analytics for single-case, small N, and Idiographic Clinical Trials:}
 \description{
 The PersonAlytics package provides the simplified user interface
 for implementing linear mixed effects models for idiographic clinical trials
@@ -53,6 +53,11 @@ mixed effects models can be fit using the \code{\link{gamlss}} option
 for dealing with heteroscedasticity implemented by including mixed effects models for
 the variance.
 }
+\section{The Palytic class}{
+
+See \code{\link{Palytic}}
+}
+
 \author{
 Stephen Tueller \email{stueller@rti.org}
 }

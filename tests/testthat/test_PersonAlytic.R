@@ -14,17 +14,20 @@ test_that("ManyV1",
                      phase   = "Phase"     ,
                      time    = "Time"      ,
                      package = "nlme"      ,
+                     interactions = list(c("Time", "Phase"),
+                                         c("Phase", "I(Time^2)"),
+                                         c("Phase", "I(Time^3)")),
                      autoSelect = list(TO=list(polyMax=3))   )
 
   testthat::expect_equal(t0$tTable[,1],
                c( `(Intercept)`     =   10.487701 ,
-                  Time              =  -13.174889 ,
-                  Phase             =  -91.115823 ,
-                  `I(Time^2)`       =   31.066552 ,
-                  `I(Time^3)`       =    7.217541 ,
-                  `Time:Phase`      =  354.693415 ,
-                  `Phase:I(Time^2)` = -416.363710 ,
-                  `Phase:I(Time^3)` =  128.882955
+                  Time              =  -13.174886 ,
+                  `I(Time^2)`       =   31.066515 ,
+                  `I(Time^3)`       =    7.217603 ,
+                  Phase             =  -91.115799 ,
+                  `Time:Phase`      =  354.693314 ,
+                  `I(Time^2):Phase` = -416.363545 ,
+                  `I(Time^3):Phase` =  128.882840
                   )
   )
 
@@ -42,6 +45,7 @@ test_that("ManyV1",
                      phase           = "Phase"     ,
                      time            = "Time"      ,
                      package         = "arma"      ,
+                     interactions    = list(c("Time", "Phase")),
                      individual_mods = TRUE        )
 
 
@@ -53,6 +57,7 @@ test_that("ManyV1",
                         phase    = "Phase"          ,
                         time     = "Time"           ,
                         package  = "arma"           ,
+                        interactions    = list(c("Time", "Phase")),
                         subgroup = OvaryICT$Mare==1
   )
 
@@ -92,7 +97,7 @@ test_that("ManyV1",
                      target_ivs      = paste("Target", 1:2, sep=""),
                      nbest           = 2
                      )
-  # no real test, but it needs to run to check directory jumping
+  # no real test, but it needs to run to check directory changes
 
   # just clean up
   file.remove( dir(getwd(), glob2rx("*.txt")) )
