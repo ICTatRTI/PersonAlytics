@@ -203,7 +203,48 @@ retimes <- function(dummies)
 }
 
 
-
+#' Function to create a formula from a list of group and phase specific
+#' intercepts and slopes
+#'
+#' used by the PersonAlyticsPower GUI
+#'
+#' @export
+#'
+#' @param terms Character vector or list.
+#'
+#' @param random A random effects formula. The default is \code{~ Time | id} as
+#' used by PersonAlyticsPower
+#'
+#' @examples
+#'
+#' terms <- c("group1_phase1_int",
+#'            "group1_phase1_slope",
+#'            "group1_phase2_int",
+#'            "group1_phase2_slope",
+#'            "group1_phase3_int",
+#'            "group1_phase3_slope",
+#'            "group2_phase1_int",
+#'            "group2_phase1_slope",
+#'            "group2_phase2_int",
+#'            "group2_phase2_slope",
+#'            "group2_phase3_int",
+#'            "group2_phase3_slope")
+#' termsToFormula(terms)
+#'
+termsToFormula <- function(terms, random = ~Time | id)
+{
+  if(length(terms) > 0)
+  {
+    frm <- paste(unlist(terms), collapse = "+")
+    frm <- paste("y1 ~ -1", frm, sep="+")
+    return(list(fixed = formula(frm),
+         random = random))
+  }
+  if(length(terms)==0)
+  {
+    return(list())
+  }
+}
 
 
 
