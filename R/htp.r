@@ -573,7 +573,11 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   #-------------------------------------------------------------------------
   # get fit statistics
   #-------------------------------------------------------------------------
-  fitStats <- data.frame(t(Model$fit))
+  fitStats <- NULL
+  if(!is.null(Model$fit) | !is.matrix(Model$fit))
+  {
+    fitStats <- data.frame(t(Model$fit))
+  }
 
   #-------------------------------------------------------------------------
   # reduce the size of Model

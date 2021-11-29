@@ -54,6 +54,12 @@ clean <- function(data		 	                                            ,
     stop("\n`family`=", family, " is not a 'gamlss.family' family.")
   }
 
+  # check time
+  if(! "raw" %in% names(time))
+  {
+    time <- c(time, raw = time[1])
+  }
+
   # check that variables are in the data set
   vars <- unique( c(ids, dv, time$raw, phase, unlist(ivs), unlist(dvs),
                     unlist(target_ivs), all.vars(fixed), all.vars(random),
