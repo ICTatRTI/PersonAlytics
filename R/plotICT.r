@@ -27,7 +27,7 @@ plotICT <- function(self, data, legendName=NULL,
                     type=c('density', 'histogram', 'freqpoly'),
                     ylim=NULL, printStats=TRUE)
 {
-  # check whetehr the time variable is continuous, if yes it
+  # check whether the time variable is continuous, if yes it
   # needs to be aggregated so that we don't have time points with only
   # one observation
   time <- data[[self$time$raw]]
