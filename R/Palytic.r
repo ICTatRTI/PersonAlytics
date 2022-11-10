@@ -2079,7 +2079,7 @@ Palytic$set("public", "gamlss",
 
               wm <- "Full Model"
 
-              # turn the trace of to prevent printing it to the console,
+              # turn the trace off to prevent printing it to the console,
               # increase c.crit from .001 to .005 to speed things up a little
               ctrl <- gamlss::gamlss.control(trace=FALSE, c.crit=.005)
 
