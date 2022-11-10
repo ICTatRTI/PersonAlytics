@@ -1022,7 +1022,7 @@ fixcor <- function(x)
 #  https://community.rstudio.com/t/degree-of-freedom-in-lme-output/11343/4
 fitStats <- function(x)
 {
-  if(! class(x) %in% c("lme", "gamlss", "forecast_ARIMA"))
+  if(! any(class(x) %in% c("lme", "gamlss", "forecast_ARIMA")))
   {
     stop("\nx is not an `lme` or `gamlss` object")
   }

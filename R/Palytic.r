@@ -1444,7 +1444,7 @@ Palytic$set("public", "dist",
               ncats   <- length(table(dv))
               isInt   <- identical(dv, round(dv,0))
               isBin   <- ncats==2
-              is01    <- min(dv, na.rm=TRUE) >= 0 & max(dv, na.rm=TRUE) <= 1
+              is01    <- min(dv, na.rm=TRUE) >= 0 & max(dv, na.rm=TRUE) <= 1 & !isBin
               min0    <- min(dv, na.rm=TRUE) >= 0
               isMult  <- isInt & !isBin & ncats <= 5
               isCount <- isInt & min0
