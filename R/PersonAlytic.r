@@ -528,7 +528,7 @@ PersonAlytic <- function(output          = NULL                                 
   if("packageTest" %in% names(args))
   {
     if(args$packageTest=='lme') args$packageTest <- 'nlme'
-    if(args$packageTest %in% c('nlme', 'gamlls', 'arma')) package <- args$packageTest
+    if(args$packageTest %in% c('nlme', 'gamlss', 'arma')) package <- args$packageTest
     message('\npackage was overridden by packageTest to be `', package, '`\n')
   }
 
