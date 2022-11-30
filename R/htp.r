@@ -154,7 +154,8 @@ htp <- function(data                                                   ,
                 dims        = dims        ,
                 package     = package     )
       .htp(t0, id=1, iv=1, dv, dvs, ivs,
-           dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
+           dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach,
+           sigma.formula)
     }# end of foreach
     # stop the cluster
     parallel::stopCluster(cl)
@@ -269,7 +270,8 @@ htp <- function(data                                                   ,
         #i=1; id<-DIM$ID[i]; iv<-DIM$IV[i]
         t1 <- t0$clone(deep=TRUE)
         .htp(t1, id, iv, dv, dvs, ivs,
-             dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
+             dims, package, target_ivs, PQ, family, fpc, popsize2, debugforeach,
+             sigma.formula)
 
       } # end of foreach
       # stop the cluster
@@ -376,7 +378,8 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
 #' .htp
 #' @keywords internal
 .htp <- function(t1, id, iv, dv, dvs, ivs, dims,
-            package, target_ivs, PQ, family, fpc, popsize2, debugforeach)
+            package, target_ivs, PQ, family, fpc, popsize2, debugforeach,
+            sigma.formula)
 {
   #-------------------------------------------------------------------------
   # save information needed to help debug
@@ -456,7 +459,8 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
     #TODO(Stephen): override correlation search for ARMA?
     fitOutput <- fitWithTargetIV(t1, package, useObs, dims,
                                  dropVars=target_ivs[[iv]], PQ,
-                                 fpc=fpc, popsize2=popsize2)
+                                 fpc=fpc, popsize2=popsize2,
+                                 sigma.formula)
     err_id <- c(err_id, fitOutput$err_id)
     modid  <- fitOutput$modid
     rm(fitOutput)
@@ -488,7 +492,8 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   {
     mod1   <- fitWithTargetIV(t1, package, useObs, dims,
                               dropVars=NULL, PQ=PQ,
-                              fpc=fpc, popsize2=popsize2)
+                              fpc=fpc, popsize2=popsize2,
+                              sigma.formula)
     modid  <- mod1$modid
     err_id <- c(err_id, mod1$err_id)
     rm(mod1)
@@ -574,7 +579,7 @@ messenger <- function(dvLoop, dvs=NULL, dv=NULL,
   # get fit statistics
   #-------------------------------------------------------------------------
   fitStats <- NULL
-  if(!is.null(Model$fit) | !is.matrix(Model$fit))
+  if(!is.null(Model$fit) & (is.matrix(Model$fit) | is.vector(Model$fit)))
   {
     fitStats <- data.frame(t(Model$fit))
   }
@@ -955,7 +960,7 @@ isNullOrForm <- function(x)
 #' fit models with the target iv & calculate LRT
 #' @keywords internal
 fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3),
-                            fpc, popsize2)
+                            fpc, popsize2, sigma.formula)
 {
   # fit model with targe iv
   if(package=="nlme")
@@ -969,7 +974,7 @@ fitWithTargetIV <- function(t1, package, useObs, dims, dropVars=NULL, PQ=c(3,3),
   }
   if(package=="gamlss")
   {
-    modid <- fitWithTargetIVgamlss(t1, useObs, dims, dropVars)
+    modid <- fitWithTargetIVgamlss(t1, useObs, dims, dropVars, sigma.formula)
   }
 
   err_id <- modid$err_id
@@ -1051,7 +1056,7 @@ fitWithTargetIVarma <- function(t1, useObs, dims, dropVars, PQ)
 
 #' fitWithTargetIVgamlss
 #' @keywords internal
-fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars)
+fitWithTargetIVgamlss <- function(t1, useObs, dims, dropVars, sigma.formula)
 {
   err_id <- list()
   modid  <- t1$gamlss( useObs, sigma.formula=sigma.formula, dropVars=dropVars )
