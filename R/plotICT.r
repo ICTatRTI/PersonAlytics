@@ -35,6 +35,7 @@ plotICT <- function(self, data, legendName=NULL,
   {
     breaks <- hist(time, plot = FALSE)$breaks
     r      <- nchar(strsplit(as.character(breaks), "\\.")[[1]][2])
+    if(is.na(r)) r <- 1
     data[[self$time$raw]] <- round(time, r)
   }
   rm(time)
