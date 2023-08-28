@@ -18,7 +18,8 @@
   family,
   fpc,
   popsize2,
-  debugforeach
+  debugforeach,
+  sigma.formula
 )
 }
 \description{

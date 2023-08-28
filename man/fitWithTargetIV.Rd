@@ -12,7 +12,8 @@ fitWithTargetIV(
   dropVars = NULL,
   PQ = c(3, 3),
   fpc,
-  popsize2
+  popsize2,
+  sigma.formula
 )
 }
 \description{
