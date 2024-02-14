@@ -16,6 +16,3 @@ read_wraps(files, study_start = NULL, times = NULL, labels = NULL)
 \description{
 Read and extract json WRAP data from multiple participants
 }
-\author{
-Stephen Tueller \email{stueller@rti.org}
-}

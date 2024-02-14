@@ -13,6 +13,3 @@ the working directory.}
 \description{
 Function to get the earliest time from a set of json WRAP files
 }
-\author{
-Stephen Tueller \email{stueller@rti.org}
-}

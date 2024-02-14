@@ -14,11 +14,8 @@ variable. There should be one fewer `times` than the desired number of phase
 to be produced.}
 
 \item{labels}{a vector of the same length as `times` containing labels for the
-phases. Optional. If `labels` is `NULL` the phase labels will be 1, 2, 3, etc.}
+phases. Optional. If `labels` is `NULL` the phase labels will be 1, 2, 3, etc..}
 }
 \description{
 Function to overlay phase information on data
-}
-\author{
-Stephen Tueller \email{stueller@rti.org}
 }

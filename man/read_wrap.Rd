@@ -14,6 +14,3 @@ read_wrap(file, study_start = NULL)
 \description{
 Read and extract json WRAP data
 }
-\author{
-Stephen Tueller \email{stueller@rti.org}
-}
