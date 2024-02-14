@@ -207,13 +207,13 @@ checkID <- function(x, ids)
       # length unique x
       lux  <- length(unique(x))
       # length unique numeric x
-      lunx <- length(unique(as.numeric(x)))
+      lunx <- length(unique(as.numeric(factor(x))))
       if(lux==lunx)
       {
         warning('`', ids, '` is character but will be forced to numeric')
         return(as.numeric(x))
       }
-      if(lux==lunx)
+      if(lux!=lunx)
       {
         stop('`', ids, '` is character but cannot be forced to numeric.',
              ' For example, id="1.0" and id="1.00" are not unique after',
