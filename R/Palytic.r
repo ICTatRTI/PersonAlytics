@@ -1386,9 +1386,22 @@ Palytic$set("public", "detect",
               if(dims$ID[1]=="All Cases")
               {
                 if(detectTO) self$GroupTO(subgroup, package)
-                if(detectAR) self$GroupAR(subgroup,
-                                                doForeach=parallel=="snow",
-                                                package)
+                if(detectAR &
+                   self$family$family[2] ==
+                   gamlss.dist::as.gamlss.family(NO)$family[2])
+                {
+                  self$GroupAR(subgroup,
+                               doForeach=parallel=="snow",
+                               package)
+                }
+                if(detectAR &
+                   self$family$family[2] !=
+                   gamlss.dist::as.gamlss.family(NO)$family[2])
+                {
+                  message("\nCorrelation Structures for non-normal distributions is not",
+                          "\nsupported, returning correlation=NULL")
+                  NULL
+                }
               }
               # no return (for now)
             },
@@ -2266,10 +2279,13 @@ Palytic$set("public", "GroupAR",
               # if family is !NO override package
               if( self$family$family[2] != gamlss.dist::as.gamlss.family(NO)$family[2] )
               {
-                package <- "gamlss"
-                message("\nFamily is set as `", self$family$family[2], "` which",
+                if(package != "gamlss")
+                {
+                  message("\nFamily is set as `", self$family$family[2], "` which",
                         "\nis not supported by package='nlme'.",
                         "\nSwitching to package='gamlss'.")
+                }
+                package <- "gamlss"
               }
 
               # prevent recursive calls to autoselect
@@ -2284,7 +2300,7 @@ Palytic$set("public", "GroupAR",
               if(package %in% c("nlme", "arma")) nullMod <- self$lme(subgroup)
               if(package=="gamlss") nullMod <- self$gamlss(subgroup)
 
-              if( class(nullMod) %in% c("lme", "gamlss")  )
+              if( any(class(nullMod) %in% c("lme", "gamlss"))  )
               {
                 DIMS <- expand.grid(p=0:self$autoSelect$AR$P,
                                     q=0:self$autoSelect$AR$Q)
@@ -2369,12 +2385,13 @@ ARpq <- function(clone, p, q, subgroup, package="nlme")
   cortemp <- gsub('\n', '', cortemp)
   cortemp <- gsub(' ', '', cortemp)
   clone$correlation <- cortemp
-  if(package %in% c("nlme", "arma")) corMod <- clone$lme(subgroup)
-  if(package=="gamlss") corMod <- clone$gamlss(subgroup)
-  if( class(corMod) != "lme" )
+  if(any(package %in% c("nlme", "arma"))) corMod <- clone$lme(subgroup)
+  if(any(package %in% "gamlss")) corMod <- clone$gamlss(subgroup)
+  if(! any( class(corMod) %in% "lme" ))
   {
     corMod <- NULL
   }
+
   return(corMod)
 }
 

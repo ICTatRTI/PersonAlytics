@@ -913,7 +913,7 @@ paHTP <- function(e=parent.frame())
                      nbest=e$nbest,
                      alpha=e$alpha), silent = TRUE )
 
-    if(!class(DVpsuite) %in% "try-error")
+    if(!any(class(DVpsuite) %in% "try-error"))
     {
       if( ncol(DVpsuite) == (ncol(DVout)+length(e$p.method)+1) )
       {

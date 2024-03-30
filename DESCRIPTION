@@ -1,7 +1,7 @@
 Package: PersonAlytics
 Type: Package
 Title: Analytics for N-of-1 and small N intensive longitudinal designs, idiographic clinical trials (ICT), and interrupted time series
-Version: 0.3.1.9
+Version: 0.3.2.0
 Date: 2024-02-14
 Authors@R: c(person("Stephen J.", "Tueller", email = "stueller@rti.org", role = c("aut", "cre")),
              person("Derek", "Ramirez", email = "dramirez@rti.org", role = c("aut")),

@@ -13,7 +13,7 @@
 #'
 FPC <- function(object, popsize2)
 {
-  if(! class(object) %in% c('lme', 'merMod'))
+  if(! any(class(object) %in% c('lme', 'merMod')))
   {
     stop('`object` must be an lme or merMod object.')
   }

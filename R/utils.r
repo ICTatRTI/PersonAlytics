@@ -174,7 +174,7 @@ monotone <- function(ids, time, data)
 #' PersonAlytics:::iscorStruct(c(2,2))
 iscorStruct <- function(x)
 {
-  if( ! class(x) %in% c('NULL', 'character') &
+  if( ! any(class(x) %in% c('NULL', 'character')) &
       ( length(x)!=2 & !is.numeric(x) )
     )
   {

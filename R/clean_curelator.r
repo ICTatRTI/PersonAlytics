@@ -11,7 +11,7 @@
 #'
 clean_curelator <- function(data)
 {
-  if(class(data)!="data.frame") stop("clean_curelator: `data` must be a data.frame.")
+  if(! "data.frame" %in% class(data)) stop("clean_curelator: `data` must be a data.frame.")
   names(data) <- tolower(names(data))
   # atmospheric variables
   data$windgust      [data$windgust      >= 100] <- NA
