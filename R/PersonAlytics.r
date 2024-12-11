@@ -51,7 +51,7 @@
 #' @section The Palytic class:
 #' See \code{\link{Palytic}}
 #'
-#' @docType package
+#' @docType _PACKAGE
 #' @name PersonAlytics
 #' @author Stephen Tueller \email{stueller@@rti.org}
 #'

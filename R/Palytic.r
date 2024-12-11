@@ -1769,12 +1769,12 @@ Palytic$set("public", "arma",
 #' used by \code{\link{PersonAlytic}} to test \code{target_ivs}.
 #'
 #' @param subgroup Logical vector. If \code{NULL} results are provided for the full
-#' sample. If a logical vector of the same length as the nmuber of rows in the data,
+#' sample. If a logical vector of the same length as the number of rows in the data,
 #' the results are provided for the subgroup of cases for who \code{subgroup==TRUE}.
 #' @param dropVars Character or character vector. Names of variables to drop
 #' from the the analysis and conduct a likelihood ratio test (LRT) for the full
 #' model and the reduced model without the variables in \code{dropVars}.
-#' @param fpc Logical. Should the finite population correrction (FCP) be made
+#' @param fpc Logical. Should the finite population correction (FCP) be made
 #' to the analysis.
 #' @param popsize2 Numeric. If \code{fpc=TRUE}, what is the population size to
 #' be used in the FPC.

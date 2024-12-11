@@ -1,8 +1,8 @@
 Package: PersonAlytics
 Type: Package
 Title: Analytics for N-of-1 and small N intensive longitudinal designs, idiographic clinical trials (ICT), and interrupted time series
-Version: 0.3.2.0
-Date: 2024-02-14
+Version: 0.3.2.1
+Date: 2024-12-10
 Authors@R: c(person("Stephen J.", "Tueller", email = "stueller@rti.org", role = c("aut", "cre")),
              person("Derek", "Ramirez", email = "dramirez@rti.org", role = c("aut")),
              person("Ty A.", "Ridenour", email = "tridenour@rti.org", role = c("aut"))
@@ -12,7 +12,7 @@ Description: Tools and illustrations for fitting idiographic trial data using ga
 License: GPL-2 | GPL-3
 Encoding: UTF-8
 LazyData: true		
-RoxygenNote: 7.2.3
+RoxygenNote: 7.3.2
 Roxygen: list(r6 = FALSE)
 Suggests: 
     knitr,

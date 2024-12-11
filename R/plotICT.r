@@ -54,7 +54,8 @@ plotICT <- function(self, data, legendName=NULL,
   xrange <- range(data[[self$time$raw]], na.rm=TRUE)
   pd <- position_dodge(0.1*(xrange[2]-xrange[1]))
   #ylim <- range(c(summData$sdlo, summData$sdhi), na.rm=TRUE) # this results in truncated tails
-  if(is.null(ylim)) ylim <- range(self$datac[[self$dv]], na.rm=TRUE)
+  #if(is.null(ylim))
+  ylim <- range(data[[self$dv]], na.rm=TRUE)
 
   # set up phase colors / borrowed from ICTviz() in PersonAlyticsPower
   # see'rects' in PersonAlyticsPower setup.r ICTviz()
@@ -84,8 +85,10 @@ plotICT <- function(self, data, legendName=NULL,
                      panel.grid.major = element_line(color="lightgrey"))
   #panel.grid.minor = element_line(color="lightgrey")
 
+  # Make time a factor
+  summData$Time <- factor(summData$Time)
 
-  # trajectory plot
+  # trajectory plot summary
   s <- ggplot(summData, aes_string(x=self$time$raw, y=self$dv,
                                    group=group, col=group)) +
     geom_errorbar(aes(ymin=sdlo, ymax=sdhi),
@@ -192,8 +195,8 @@ plotICT <- function(self, data, legendName=NULL,
   # annotate with descriptives
   if(printStats)
   {
-    ylims <- ggplot_build(d)$layout$panel_scales_y[[1]]$range$range
-    xlims <- ggplot_build(d)$layout$panel_scales_x[[1]]$range$range
+    ylims <- ggplot_build(d)$layout$panel_params[[1]]$y.range
+    xlims <- ggplot_build(d)$layout$panel_params[[1]]$x.range
     d <- d + annotate("text", x=xlims[2]*.95, y=abs(ylims[1]), label = rnms,
                       vjust=1, hjust=0)
   }
